@@ -1,0 +1,8 @@
+[Bb]in/
+[Oo]bj/
+.vs/
+TestResults/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
