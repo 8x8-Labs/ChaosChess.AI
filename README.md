@@ -2,7 +2,7 @@
 
 `ChaosChess.AI`는 Chaos Chess의 AI 의사결정 로직을 Unity에서 분리해 개발하고 테스트하기 위한 순수 C# 라이브러리입니다.
 
-이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271))을 완료했고, 현재 P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272))을 구성하고 있습니다. 실제 AI 평가와 카드·수 선택 로직은 후속 단계에서 구현합니다.
+이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271))과 P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272))을 완료했고, 현재 P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273))를 구성하고 있습니다. 카드·수 선택 로직은 후속 단계에서 구현합니다.
 
 ## 프로젝트 구성
 
@@ -12,6 +12,7 @@ ChaosChess.AI/
 │   └── ChaosChess.AI/
 │       ├── Abstractions/       # 외부 엔진·난수 경계
 │       ├── Domain/             # 순수 게임 상태 DTO
+│       ├── Evaluation/         # 결정론적 게임 상태 평가
 │       └── Fen/                # FEN 파서·직렬화
 ├── tests/
 │   └── ChaosChess.AI.Tests/    # net8.0 xUnit 테스트
@@ -64,6 +65,31 @@ P1은 AI가 Unity 없이 게임 상태를 읽고 테스트할 수 있도록 공�
 기물은 실제 정체성인 `PieceKind`와 현재 엔진에 전달할 `FenCode`를 분리합니다. 표준 기물 외에 `a`(Wall), `s`(Amazon), `y`(Chancellor), `z`(KnightRider)를 인식하며, 카드로 변경된 다른 ASCII 문자도 `Unknown` 종류로 원본 코드를 보존합니다. 현행 Unity·Fairy-Stockfish FEN과 동일하게 한 기물의 FEN 코드는 문자 하나입니다.
 
 P1에서는 인터페이스와 데이터 계약만 정의합니다. 실제 Fairy-Stockfish 프로세스/JNI 연결, Unity DTO 매핑, 상태 평가, 카드 판단 및 타일 효과 적용은 수행하지 않습니다.
+
+## P2 게임 상태 평가기
+
+`GameStateEvaluator`는 지정한 진영의 관점에서 현재 `GameState`를 `-100`부터 `100` 사이의 점수로 평가합니다. 양수는 유리, 음수는 불리, `0`은 중립입니다.
+
+- `Material`: 기물 가치 차이를 `13`으로 나눠 정규화합니다.
+- `Threat`: `Mine`과 `Fire` 반경 1 안에서 위협받는 기물 가치를 계산합니다.
+- `Advantage`: `Blessing`, `Peace`, `Portal`의 소유권에 따른 이점을 계산합니다.
+- `KingSafety`: 기물의 의사 공격 맵으로 킹 직접 공격과 주변 칸 위험을 계산합니다.
+
+기본 총점 계산식은 다음과 같습니다.
+
+```text
+TotalScore =
+    Material × 1.0
+  + Threat × 0.8
+  + Advantage × 0.6
+  + KingSafety × 0.5
+```
+
+각 항목과 총점은 반올림한 뒤 `-100..100`으로 제한합니다. 가중치는 `EvaluationOptions`로 교체할 수 있습니다.
+
+킹 안전도는 Unity나 외부 체스 엔진 없이 계산하는 의사 공격 맵입니다. 표준 기물과 Amazon, Chancellor, KnightRider를 지원하며 Wall은 공격하지 않고 슬라이딩 경로만 차단합니다. 핀, 체크 해소 가능 여부와 같은 합법 수 판정은 이 단계에 포함하지 않습니다.
+
+P2에서는 평가 기준만 제공합니다. 카드 선택, 이동 선택, Mobility·Board Control 평가와 미래 상태 시뮬레이션은 수행하지 않습니다.
 
 ## 로컬 검증
 
