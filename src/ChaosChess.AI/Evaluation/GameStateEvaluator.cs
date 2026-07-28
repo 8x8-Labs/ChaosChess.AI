@@ -84,7 +84,7 @@ namespace ChaosChess.AI.Evaluation
             {
                 int centipawns = samePerspective
                     ? evaluation.ScoreCentipawns.Value
-                    : -evaluation.ScoreCentipawns.Value;
+                    : evaluation.ScoreCentipawns.Value;
 
                 return new EngineScore(
                     NormalizeBoardCentipawnScore(centipawns),
