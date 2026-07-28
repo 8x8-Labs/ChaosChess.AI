@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChaosChess.AI.Abstractions;
 using ChaosChess.AI.Domain;
 
 namespace ChaosChess.AI.Evaluation
@@ -7,8 +8,9 @@ namespace ChaosChess.AI.Evaluation
     public sealed class GameStateEvaluator
     {
         private const double ScoreNormalizationDivisor = 13.0;
-        private const int DirectKingAttackRisk = 50;
-        private const int KingRingAttackRisk = 6;
+        private const int PredictedMateScore = 90;
+        private const int MaximumNonMateBoardScore = PredictedMateScore - 1;
+        private const int MaximumNonTerminalTotalScore = 99;
 
         private static readonly IReadOnlyDictionary<string, TileThreatRule> ThreatRules =
             new Dictionary<string, TileThreatRule>(StringComparer.OrdinalIgnoreCase)
@@ -25,10 +27,14 @@ namespace ChaosChess.AI.Evaluation
                 ["Portal"] = 15
             };
 
+        private readonly IChessEngine _chessEngine;
         private readonly EvaluationOptions _options;
 
-        public GameStateEvaluator(EvaluationOptions? options = null)
+        public GameStateEvaluator(
+            IChessEngine chessEngine,
+            EvaluationOptions? options = null)
         {
+            _chessEngine = chessEngine ?? throw new ArgumentNullException(nameof(chessEngine));
             _options = options ?? new EvaluationOptions();
         }
 
@@ -41,47 +47,57 @@ namespace ChaosChess.AI.Evaluation
 
             EnsureValidColor(perspective);
 
-            PieceColor opponent = OpponentOf(perspective);
-            bool perspectiveKingExists = HasKing(gameState.BoardState, perspective);
-            bool opponentKingExists = HasKing(gameState.BoardState, opponent);
+            PositionEvaluation positionEvaluation = _chessEngine.EvaluatePosition(
+                gameState.BoardState,
+                _options.SearchDepth);
 
-            if (!perspectiveKingExists || !opponentKingExists)
+            if (positionEvaluation == null)
             {
-                return CreateTerminalResult(perspectiveKingExists, opponentKingExists);
+                throw new InvalidOperationException("Chess engine returned no position evaluation.");
             }
 
-            int material = EvaluateMaterial(gameState.BoardState, perspective);
+            EngineScore engineScore = NormalizeEngineScore(positionEvaluation, perspective);
             int threat = EvaluateThreat(gameState, perspective);
             int advantage = EvaluateAdvantage(gameState, perspective);
-            int kingSafety = EvaluateKingSafety(gameState.BoardState, perspective);
             int totalScore = ClampAndRound(
-                (material * _options.MaterialWeight) +
+                (engineScore.BoardScore * _options.BoardScoreWeight) +
                 (threat * _options.ThreatWeight) +
-                (advantage * _options.AdvantageWeight) +
-                (kingSafety * _options.KingSafetyWeight));
+                (advantage * _options.AdvantageWeight),
+                -MaximumNonTerminalTotalScore,
+                MaximumNonTerminalTotalScore);
 
-            return new EvaluationResult(material, threat, advantage, kingSafety, totalScore);
+            return new EvaluationResult(
+                engineScore.BoardScore,
+                engineScore.MateIn,
+                threat,
+                advantage,
+                totalScore);
         }
 
-        private static int EvaluateMaterial(BoardState boardState, PieceColor perspective)
+        private static EngineScore NormalizeEngineScore(
+            PositionEvaluation evaluation,
+            PieceColor perspective)
         {
-            int balance = 0;
+            bool samePerspective = evaluation.Perspective == perspective;
 
-            foreach (PieceInfo piece in boardState.Pieces)
+            if (evaluation.ScoreCentipawns.HasValue)
             {
-                int value = GetPieceValue(piece.Kind);
+                int centipawns = samePerspective
+                    ? evaluation.ScoreCentipawns.Value
+                    : -evaluation.ScoreCentipawns.Value;
 
-                if (piece.Color == perspective)
-                {
-                    balance += value;
-                }
-                else
-                {
-                    balance -= value;
-                }
+                return new EngineScore(
+                    NormalizeBoardCentipawnScore(centipawns),
+                    mateIn: null);
             }
 
-            return NormalizeCentipawnScore(balance);
+            int mateIn = evaluation.MateIn!.Value;
+            int normalizedMateIn = samePerspective ? mateIn : -mateIn;
+            int boardScore = normalizedMateIn > 0
+                ? PredictedMateScore
+                : -PredictedMateScore;
+
+            return new EngineScore(boardScore, normalizedMateIn);
         }
 
         private static int EvaluateThreat(GameState gameState, PieceColor perspective)
@@ -132,86 +148,6 @@ namespace ChaosChess.AI.Evaluation
             return Clamp(balance);
         }
 
-        private static int EvaluateKingSafety(BoardState boardState, PieceColor perspective)
-        {
-            PieceColor opponent = OpponentOf(perspective);
-            HashSet<Square> opponentAttacks = PieceAttackMap.Create(boardState, opponent);
-            HashSet<Square> perspectiveAttacks = PieceAttackMap.Create(boardState, perspective);
-            int perspectiveRisk = EvaluateKingRisk(boardState, perspective, opponentAttacks);
-            int opponentRisk = EvaluateKingRisk(boardState, opponent, perspectiveAttacks);
-
-            return Clamp(opponentRisk - perspectiveRisk);
-        }
-
-        private static int EvaluateKingRisk(
-            BoardState boardState,
-            PieceColor kingColor,
-            HashSet<Square> opposingAttacks)
-        {
-            PieceInfo? king = FindKing(boardState, kingColor);
-
-            if (king == null)
-            {
-                return 100;
-            }
-
-            int risk = opposingAttacks.Contains(king.Square) ? DirectKingAttackRisk : 0;
-
-            for (int fileOffset = -1; fileOffset <= 1; fileOffset++)
-            {
-                for (int rankOffset = -1; rankOffset <= 1; rankOffset++)
-                {
-                    if ((fileOffset == 0 && rankOffset == 0) ||
-                        !IsOnBoard(king.Square.File + fileOffset, king.Square.Rank + rankOffset))
-                    {
-                        continue;
-                    }
-
-                    var adjacentSquare = new Square(
-                        king.Square.File + fileOffset,
-                        king.Square.Rank + rankOffset);
-
-                    if (opposingAttacks.Contains(adjacentSquare))
-                    {
-                        risk += KingRingAttackRisk;
-                    }
-                }
-            }
-
-            return Clamp(risk, 0, 100);
-        }
-
-        private static EvaluationResult CreateTerminalResult(
-            bool perspectiveKingExists,
-            bool opponentKingExists)
-        {
-            if (perspectiveKingExists == opponentKingExists)
-            {
-                return new EvaluationResult(0, 0, 0, 0, 0);
-            }
-
-            int score = perspectiveKingExists ? 100 : -100;
-            return new EvaluationResult(0, 0, 0, score, score);
-        }
-
-        private static bool HasKing(BoardState boardState, PieceColor color)
-        {
-            return FindKing(boardState, color) != null;
-        }
-
-        private static PieceInfo? FindKing(BoardState boardState, PieceColor color)
-        {
-            foreach (PieceInfo piece in boardState.Pieces)
-            {
-                if (piece.Color == color && piece.Kind == PieceKind.King)
-                {
-                    return piece;
-                }
-            }
-
-            return null;
-        }
-
         private static int GetPieceValue(PieceKind kind)
         {
             switch (kind)
@@ -242,6 +178,18 @@ namespace ChaosChess.AI.Evaluation
             return NormalizeCentipawnScore((double)score);
         }
 
+        private static int NormalizeBoardCentipawnScore(int score)
+        {
+            int rounded = (int)Math.Round(
+                score / ScoreNormalizationDivisor,
+                MidpointRounding.AwayFromZero);
+
+            return Clamp(
+                rounded,
+                -MaximumNonMateBoardScore,
+                MaximumNonMateBoardScore);
+        }
+
         private static int NormalizeCentipawnScore(double score)
         {
             return ClampAndRound(score / ScoreNormalizationDivisor);
@@ -254,11 +202,6 @@ namespace ChaosChess.AI.Evaluation
                 Math.Abs(left.Rank - right.Rank));
         }
 
-        private static PieceColor OpponentOf(PieceColor color)
-        {
-            return color == PieceColor.White ? PieceColor.Black : PieceColor.White;
-        }
-
         private static void EnsureValidColor(PieceColor color)
         {
             if (color != PieceColor.White && color != PieceColor.Black)
@@ -267,18 +210,16 @@ namespace ChaosChess.AI.Evaluation
             }
         }
 
-        private static bool IsOnBoard(int file, int rank)
-        {
-            return file >= 0 &&
-                   file < Square.BoardSize &&
-                   rank >= 0 &&
-                   rank < Square.BoardSize;
-        }
-
         private static int ClampAndRound(double value)
         {
             int rounded = (int)Math.Round(value, MidpointRounding.AwayFromZero);
             return Clamp(rounded);
+        }
+
+        private static int ClampAndRound(double value, int minimum, int maximum)
+        {
+            int rounded = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            return Clamp(rounded, minimum, maximum);
         }
 
         private static int Clamp(int value)
@@ -294,6 +235,19 @@ namespace ChaosChess.AI.Evaluation
             }
 
             return value > maximum ? maximum : value;
+        }
+
+        private readonly struct EngineScore
+        {
+            public EngineScore(int boardScore, int? mateIn)
+            {
+                BoardScore = boardScore;
+                MateIn = mateIn;
+            }
+
+            public int BoardScore { get; }
+
+            public int? MateIn { get; }
         }
 
         private readonly struct TileThreatRule

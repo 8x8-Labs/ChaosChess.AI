@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using ChaosChess.AI.Abstractions;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Evaluation;
 using Xunit;
@@ -6,77 +9,77 @@ namespace ChaosChess.AI.Tests.Evaluation;
 
 public sealed class GameStateEvaluatorTests
 {
-    [Fact]
-    public void Evaluate_BalancedKingsOnly_ReturnsNeutralResult()
+    [Theory]
+    [InlineData(130, PieceColor.White, PieceColor.White, 10)]
+    [InlineData(130, PieceColor.White, PieceColor.Black, -10)]
+    [InlineData(-260, PieceColor.Black, PieceColor.Black, -20)]
+    [InlineData(-260, PieceColor.Black, PieceColor.White, 20)]
+    public void Evaluate_CentipawnScore_IsNormalizedForRequestedPerspective(
+        int centipawns,
+        PieceColor enginePerspective,
+        PieceColor requestedPerspective,
+        int expectedBoardScore)
     {
-        GameState state = CreateState(
-            Piece(PieceKind.King, PieceColor.White, "a1"),
-            Piece(PieceKind.King, PieceColor.Black, "h8"));
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(enginePerspective, centipawns, null));
+        var evaluator = new GameStateEvaluator(engine);
 
-        EvaluationResult result = new GameStateEvaluator().Evaluate(state, PieceColor.White);
+        EvaluationResult result = evaluator.Evaluate(
+            CreateState(DefaultPieces()),
+            requestedPerspective);
 
-        Assert.Equal(0, result.Material);
-        Assert.Equal(0, result.Threat);
-        Assert.Equal(0, result.Advantage);
-        Assert.Equal(0, result.KingSafety);
-        Assert.Equal(0, result.TotalScore);
-    }
-
-    [Fact]
-    public void Evaluate_MaterialAdvantage_IsNormalizedAndPerspectiveRelative()
-    {
-        GameState state = CreateState(
-            Piece(PieceKind.King, PieceColor.White, "a1"),
-            Piece(PieceKind.Queen, PieceColor.White, "d3"),
-            Piece(PieceKind.King, PieceColor.Black, "h8"));
-        var evaluator = new GameStateEvaluator(new EvaluationOptions(1, 0, 0, 0));
-
-        EvaluationResult white = evaluator.Evaluate(state, PieceColor.White);
-        EvaluationResult black = evaluator.Evaluate(state, PieceColor.Black);
-
-        Assert.Equal(69, white.Material);
-        Assert.Equal(69, white.TotalScore);
-        Assert.Equal(-69, black.Material);
-        Assert.Equal(-69, black.TotalScore);
+        Assert.Equal(expectedBoardScore, result.BoardScore);
+        Assert.Null(result.MateIn);
+        Assert.Equal(expectedBoardScore, result.TotalScore);
     }
 
     [Theory]
-    [InlineData(PieceKind.Pawn, 8)]
-    [InlineData(PieceKind.Knight, 25)]
-    [InlineData(PieceKind.Bishop, 25)]
-    [InlineData(PieceKind.Rook, 38)]
-    [InlineData(PieceKind.Queen, 69)]
-    [InlineData(PieceKind.Amazon, 100)]
-    [InlineData(PieceKind.Chancellor, 69)]
-    [InlineData(PieceKind.KnightRider, 54)]
-    [InlineData(PieceKind.Wall, 0)]
-    public void Evaluate_UsesConfiguredPieceValues(PieceKind kind, int expectedMaterial)
+    [InlineData(2, PieceColor.White, PieceColor.White, 90, 2)]
+    [InlineData(2, PieceColor.White, PieceColor.Black, -90, -2)]
+    [InlineData(-1, PieceColor.Black, PieceColor.Black, -90, -1)]
+    [InlineData(-1, PieceColor.Black, PieceColor.White, 90, 1)]
+    public void Evaluate_PredictedMate_IsUrgentButNotTerminal(
+        int mateIn,
+        PieceColor enginePerspective,
+        PieceColor requestedPerspective,
+        int expectedBoardScore,
+        int expectedMateIn)
     {
-        GameState state = CreateState(
-            Piece(PieceKind.King, PieceColor.White, "a1"),
-            Piece(kind, PieceColor.White, "d4"),
-            Piece(PieceKind.King, PieceColor.Black, "h8"));
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(enginePerspective, null, mateIn));
+        var evaluator = new GameStateEvaluator(engine);
 
-        EvaluationResult result = new GameStateEvaluator().Evaluate(state, PieceColor.White);
+        EvaluationResult result = evaluator.Evaluate(
+            CreateState(DefaultPieces()),
+            requestedPerspective);
 
-        Assert.Equal(expectedMaterial, result.Material);
+        Assert.Equal(expectedBoardScore, result.BoardScore);
+        Assert.Equal(expectedMateIn, result.MateIn);
+        Assert.Equal(expectedBoardScore, result.TotalScore);
+        Assert.NotEqual(100, Math.Abs(result.TotalScore));
     }
 
     [Fact]
-    public void Evaluate_MissingKing_ReturnsTerminalScore()
+    public void Evaluate_ReevaluatedCardState_CanReversePredictedMate()
     {
-        GameState whiteWins = CreateState(
-            Piece(PieceKind.King, PieceColor.White, "a1"));
-        GameState whiteLoses = CreateState(
-            Piece(PieceKind.King, PieceColor.Black, "h8"));
-        var evaluator = new GameStateEvaluator();
+        GameState state = CreateState(DefaultPieces());
+        var beforeCard = new GameStateEvaluator(
+            new FakeChessEngine(new PositionEvaluation(PieceColor.White, null, -1)));
+        var afterCard = new GameStateEvaluator(
+            new FakeChessEngine(new PositionEvaluation(PieceColor.White, 390, null)));
 
-        Assert.Equal(100, evaluator.Evaluate(whiteWins, PieceColor.White).TotalScore);
-        Assert.Equal(-100, evaluator.Evaluate(whiteLoses, PieceColor.White).TotalScore);
+        EvaluationResult threatened = beforeCard.Evaluate(state, PieceColor.White);
+        EvaluationResult rescued = afterCard.Evaluate(state, PieceColor.White);
+
+        Assert.Equal(-90, threatened.BoardScore);
+        Assert.Equal(-1, threatened.MateIn);
+        Assert.Equal(30, rescued.BoardScore);
+        Assert.Null(rescued.MateIn);
+        Assert.True(rescued.TotalScore > threatened.TotalScore);
     }
 
     [Fact]
-    public void Evaluate_MineThreat_UsesOwnerAndThreatenedMaterial()
+    public void Evaluate_CombinesBoardScoreAndChaosAdjustments()
     {
         GameState state = CreateState(
             new[]
@@ -85,17 +88,63 @@ public sealed class GameStateEvaluatorTests
                 Piece(PieceKind.Queen, PieceColor.White, "d3"),
                 Piece(PieceKind.King, PieceColor.Black, "h8")
             },
-            new TileEffectInfo("mine-1", "Mine", Square.Parse("e4"), PieceColor.Black, 1));
-        var evaluator = new GameStateEvaluator(new EvaluationOptions(0, 1, 0, 0));
+            new TileEffectInfo("mine-1", "Mine", Square.Parse("e4"), PieceColor.Black, 1),
+            new TileEffectInfo("blessing-1", "Blessing", Square.Parse("b2"), PieceColor.White, 2),
+            new TileEffectInfo("portal-1", "Portal", Square.Parse("c3"), PieceColor.White, 1),
+            new TileEffectInfo("peace-1", "Peace", Square.Parse("g7"), PieceColor.Black, 3));
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 130, null));
 
-        EvaluationResult result = evaluator.Evaluate(state, PieceColor.White);
+        EvaluationResult result = new GameStateEvaluator(engine).Evaluate(
+            state,
+            PieceColor.White);
 
+        Assert.Equal(10, result.BoardScore);
         Assert.Equal(-69, result.Threat);
-        Assert.Equal(-69, result.TotalScore);
+        Assert.Equal(25, result.Advantage);
+        Assert.Equal(-30, result.TotalScore);
     }
 
     [Fact]
-    public void Evaluate_FireThreat_AppliesReducedWeight()
+    public void Evaluate_UsesFixedConfiguredSearchDepthAndWeights()
+    {
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 260, null));
+        var options = new EvaluationOptions(
+            searchDepth: 8,
+            boardScoreWeight: 0.5,
+            threatWeight: 0,
+            advantageWeight: 0);
+        var evaluator = new GameStateEvaluator(engine, options);
+
+        EvaluationResult result = evaluator.Evaluate(
+            CreateState(DefaultPieces()),
+            PieceColor.White);
+
+        Assert.Equal(8, engine.LastDepth);
+        Assert.Equal(1, engine.EvaluateCallCount);
+        Assert.Equal(10, result.TotalScore);
+    }
+
+    [Fact]
+    public void Evaluate_DefaultSearchDepth_IsTwelve()
+    {
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 0, null));
+
+        new GameStateEvaluator(engine).Evaluate(
+            CreateState(DefaultPieces()),
+            PieceColor.White);
+
+        Assert.Equal(12, engine.LastDepth);
+    }
+
+    [Theory]
+    [InlineData("Mine", -69)]
+    [InlineData("Fire", -55)]
+    public void Evaluate_ThreatEffects_UseThreatenedMaterial(
+        string effectType,
+        int expectedThreat)
     {
         GameState state = CreateState(
             new[]
@@ -104,132 +153,133 @@ public sealed class GameStateEvaluatorTests
                 Piece(PieceKind.Queen, PieceColor.White, "d3"),
                 Piece(PieceKind.King, PieceColor.Black, "h8")
             },
-            new TileEffectInfo("fire-1", "Fire", Square.Parse("e4"), PieceColor.Black, 1));
+            new TileEffectInfo("threat-1", effectType, Square.Parse("e4"), PieceColor.Black, 1));
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 0, null));
 
-        EvaluationResult result = new GameStateEvaluator().Evaluate(state, PieceColor.White);
+        EvaluationResult result = new GameStateEvaluator(engine).Evaluate(
+            state,
+            PieceColor.White);
 
-        Assert.Equal(-55, result.Threat);
+        Assert.Equal(expectedThreat, result.Threat);
     }
 
     [Fact]
     public void Evaluate_UnknownAndUnownedEffects_DoNotAffectScores()
     {
         GameState state = CreateState(
-            new[]
-            {
-                Piece(PieceKind.King, PieceColor.White, "a1"),
-                Piece(PieceKind.King, PieceColor.Black, "h8")
-            },
+            DefaultPieces(),
             new TileEffectInfo("unknown-1", "Unknown", Square.Parse("d4"), PieceColor.White, 1),
             new TileEffectInfo("mine-1", "Mine", Square.Parse("a1"), null, 1));
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 0, null));
 
-        EvaluationResult result = new GameStateEvaluator().Evaluate(state, PieceColor.White);
+        EvaluationResult result = new GameStateEvaluator(engine).Evaluate(
+            state,
+            PieceColor.White);
 
         Assert.Equal(0, result.Threat);
         Assert.Equal(0, result.Advantage);
+        Assert.Equal(0, result.TotalScore);
     }
 
     [Fact]
-    public void Evaluate_AdvantageEffects_AreAddedRelativeToPerspective()
+    public void Evaluate_LargeCentipawnScore_RemainsBelowPredictedMate()
     {
-        GameState state = CreateState(
-            new[]
-            {
-                Piece(PieceKind.King, PieceColor.White, "a1"),
-                Piece(PieceKind.King, PieceColor.Black, "h8")
-            },
-            new TileEffectInfo("blessing-1", "Blessing", Square.Parse("b2"), PieceColor.White, 2),
-            new TileEffectInfo("portal-1", "Portal", Square.Parse("c3"), PieceColor.White, 1),
-            new TileEffectInfo("peace-1", "Peace", Square.Parse("g7"), PieceColor.Black, 3));
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 5000, null));
 
-        EvaluationResult result = new GameStateEvaluator().Evaluate(state, PieceColor.White);
+        EvaluationResult result = new GameStateEvaluator(engine).Evaluate(
+            CreateState(DefaultPieces()),
+            PieceColor.White);
 
-        Assert.Equal(25, result.Advantage);
-        Assert.Equal(15, result.TotalScore);
+        Assert.Equal(89, result.BoardScore);
+        Assert.Equal(89, result.TotalScore);
     }
 
     [Fact]
-    public void Evaluate_DirectKingAttackAndRingAttack_AreCounted()
+    public void Evaluate_NonTerminalTotalScore_DoesNotUseTerminalValue()
     {
         GameState state = CreateState(
-            Piece(PieceKind.King, PieceColor.White, "e1"),
-            Piece(PieceKind.Rook, PieceColor.Black, "e8"),
-            Piece(PieceKind.King, PieceColor.Black, "a8"));
-        var evaluator = new GameStateEvaluator(new EvaluationOptions(0, 0, 0, 1));
+            DefaultPieces(),
+            new TileEffectInfo("blessing-1", "Blessing", Square.Parse("b2"), PieceColor.White, 1),
+            new TileEffectInfo("portal-1", "Portal", Square.Parse("c3"), PieceColor.White, 1));
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, null, 1));
 
-        EvaluationResult result = evaluator.Evaluate(state, PieceColor.White);
+        EvaluationResult result = new GameStateEvaluator(engine).Evaluate(
+            state,
+            PieceColor.White);
 
-        Assert.Equal(-56, result.KingSafety);
-        Assert.Equal(-56, result.TotalScore);
+        Assert.Equal(90, result.BoardScore);
+        Assert.Equal(99, result.TotalScore);
+        Assert.NotEqual(100, result.TotalScore);
     }
 
     [Fact]
-    public void Evaluate_WallBlocksSlidingAttack()
+    public void Evaluate_SameEngineEvaluation_ReturnsSameResult()
     {
-        GameState state = CreateState(
-            Piece(PieceKind.King, PieceColor.White, "e1"),
-            Piece(PieceKind.Wall, PieceColor.White, "e4"),
-            Piece(PieceKind.Rook, PieceColor.Black, "e8"),
-            Piece(PieceKind.King, PieceColor.Black, "a8"));
-
-        EvaluationResult result = new GameStateEvaluator().Evaluate(state, PieceColor.White);
-
-        Assert.Equal(0, result.KingSafety);
-    }
-
-    [Theory]
-    [InlineData(PieceKind.Amazon, "d3", -80)]
-    [InlineData(PieceKind.KnightRider, "c2", -50)]
-    public void Evaluate_ChaosPieceAttacks_AffectKingSafety(
-        PieceKind kind,
-        string attackerSquare,
-        int expectedKingSafety)
-    {
-        GameState state = CreateState(
-            Piece(PieceKind.King, PieceColor.White, "e1"),
-            Piece(kind, PieceColor.Black, attackerSquare),
-            Piece(PieceKind.King, PieceColor.Black, "h8"));
-
-        EvaluationResult result = new GameStateEvaluator().Evaluate(state, PieceColor.White);
-
-        Assert.Equal(expectedKingSafety, result.KingSafety);
-    }
-
-    [Fact]
-    public void Evaluate_SameInput_ReturnsSameResult()
-    {
-        GameState state = CreateState(
-            new[]
-            {
-                Piece(PieceKind.King, PieceColor.White, "a1"),
-                Piece(PieceKind.Rook, PieceColor.White, "d4"),
-                Piece(PieceKind.King, PieceColor.Black, "h8")
-            },
-            new TileEffectInfo("mine-1", "Mine", Square.Parse("e5"), PieceColor.Black, 1));
-        var evaluator = new GameStateEvaluator();
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 130, null));
+        var evaluator = new GameStateEvaluator(engine);
+        GameState state = CreateState(DefaultPieces());
 
         EvaluationResult first = evaluator.Evaluate(state, PieceColor.White);
         EvaluationResult second = evaluator.Evaluate(state, PieceColor.White);
 
-        Assert.Equal(first.Material, second.Material);
+        Assert.Equal(first.BoardScore, second.BoardScore);
+        Assert.Equal(first.MateIn, second.MateIn);
         Assert.Equal(first.Threat, second.Threat);
         Assert.Equal(first.Advantage, second.Advantage);
-        Assert.Equal(first.KingSafety, second.KingSafety);
         Assert.Equal(first.TotalScore, second.TotalScore);
     }
 
     [Fact]
-    public void Constructor_InvalidWeight_Throws()
+    public void PositionEvaluation_RequiresExactlyOneValidScore()
     {
+        Assert.Throws<ArgumentException>(
+            () => new PositionEvaluation(PieceColor.White, null, null));
+        Assert.Throws<ArgumentException>(
+            () => new PositionEvaluation(PieceColor.White, 10, 1));
         Assert.Throws<ArgumentOutOfRangeException>(
-            () => new EvaluationOptions(threatWeight: double.NaN));
+            () => new PositionEvaluation(PieceColor.White, null, 0));
         Assert.Throws<ArgumentOutOfRangeException>(
-            () => new EvaluationOptions(kingSafetyWeight: -1));
+            () => new PositionEvaluation((PieceColor)99, 10, null));
     }
 
-    private static GameState CreateState(params PieceInfo[] pieces)
+    [Fact]
+    public void Constructor_InvalidArguments_Throw()
     {
-        return CreateState(pieces, Array.Empty<TileEffectInfo>());
+        Assert.Throws<ArgumentNullException>(
+            () => new GameStateEvaluator(null!));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new EvaluationOptions(searchDepth: 0));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new EvaluationOptions(boardScoreWeight: double.NaN));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new EvaluationOptions(advantageWeight: -1));
+    }
+
+    [Fact]
+    public void Evaluate_InvalidArguments_Throw()
+    {
+        var engine = new FakeChessEngine(
+            new PositionEvaluation(PieceColor.White, 0, null));
+        var evaluator = new GameStateEvaluator(engine);
+
+        Assert.Throws<ArgumentNullException>(
+            () => evaluator.Evaluate(null!, PieceColor.White));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => evaluator.Evaluate(CreateState(DefaultPieces()), (PieceColor)99));
+    }
+
+    private static PieceInfo[] DefaultPieces()
+    {
+        return
+        [
+            Piece(PieceKind.King, PieceColor.White, "a1"),
+            Piece(PieceKind.King, PieceColor.Black, "h8")
+        ];
     }
 
     private static GameState CreateState(
@@ -249,24 +299,40 @@ public sealed class GameStateEvaluatorTests
 
     private static PieceInfo Piece(PieceKind kind, PieceColor color, string square)
     {
-        return new PieceInfo(kind, color, Square.Parse(square), FenCodeFor(kind));
+        string fenCode = kind == PieceKind.King ? "k" : "q";
+        return new PieceInfo(kind, color, Square.Parse(square), fenCode);
     }
 
-    private static string FenCodeFor(PieceKind kind)
+    private sealed class FakeChessEngine : IChessEngine
     {
-        return kind switch
+        private readonly PositionEvaluation _evaluation;
+
+        public FakeChessEngine(PositionEvaluation evaluation)
         {
-            PieceKind.Pawn => "p",
-            PieceKind.Knight => "n",
-            PieceKind.Bishop => "b",
-            PieceKind.Rook => "r",
-            PieceKind.Queen => "q",
-            PieceKind.King => "k",
-            PieceKind.Wall => "a",
-            PieceKind.Amazon => "s",
-            PieceKind.Chancellor => "y",
-            PieceKind.KnightRider => "z",
-            _ => "x"
-        };
+            _evaluation = evaluation;
+        }
+
+        public int EvaluateCallCount { get; private set; }
+
+        public int LastDepth { get; private set; }
+
+        public IReadOnlyList<MoveCandidate> GetTopMoves(
+            BoardState boardState,
+            int variationCount)
+        {
+            return Array.Empty<MoveCandidate>();
+        }
+
+        public PositionEvaluation EvaluatePosition(BoardState boardState, int depth)
+        {
+            EvaluateCallCount++;
+            LastDepth = depth;
+            return _evaluation;
+        }
+
+        public bool IsInCheck(BoardState boardState)
+        {
+            return false;
+        }
     }
 }
