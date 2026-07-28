@@ -7,6 +7,8 @@ namespace ChaosChess.AI.Abstractions
     {
         IReadOnlyList<MoveCandidate> GetTopMoves(BoardState boardState, int variationCount);
 
+        PositionEvaluation EvaluatePosition(BoardState boardState, int depth);
+
         bool IsInCheck(BoardState boardState);
     }
 }
