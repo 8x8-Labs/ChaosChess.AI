@@ -342,9 +342,16 @@ def list_pr_files(config: EnvConfig) -> list[PullRequestFile]:
     return files
 
 
-def has_existing_review_for_head(config: EnvConfig) -> bool:
+def has_existing_marker_for_head(config: EnvConfig) -> bool:
     owner, repo = split_repository(config.github_repository)
     marker = f"{REVIEW_MARKER_PREFIX}{config.pr_head_sha}{REVIEW_MARKER_SUFFIX}"
+
+    if has_existing_review_marker(config, owner, repo, marker):
+        return True
+    return has_existing_issue_comment_marker(config, owner, repo, marker)
+
+
+def has_existing_review_marker(config: EnvConfig, owner: str, repo: str, marker: str) -> bool:
     page = 1
 
     while True:
@@ -365,6 +372,35 @@ def has_existing_review_for_head(config: EnvConfig) -> bool:
             commit_id = str(review.get("commit_id") or "")
             if login == "github-actions[bot]" and commit_id == config.pr_head_sha and marker in body:
                 log("Existing Gemini review for this head SHA found. Skipping.")
+                return True
+
+        if len(data) < 100:
+            break
+        page += 1
+
+    return False
+
+
+def has_existing_issue_comment_marker(config: EnvConfig, owner: str, repo: str, marker: str) -> bool:
+    page = 1
+
+    while True:
+        data = github_get(
+            config,
+            f"/repos/{owner}/{repo}/issues/{config.pr_number}/comments",
+            {"per_page": 100, "page": page},
+        )
+        if not isinstance(data, list):
+            raise RuntimeError("GitHub issue comments response was not a list.")
+
+        for comment in data:
+            if not isinstance(comment, dict):
+                continue
+            user = comment.get("user")
+            login = user.get("login") if isinstance(user, dict) else None
+            body = str(comment.get("body") or "")
+            if login == "github-actions[bot]" and marker in body:
+                log("Existing Gemini status comment for this head SHA found. Skipping.")
                 return True
 
         if len(data) < 100:
@@ -779,7 +815,7 @@ def split_body_sections(body: str) -> tuple[str, str]:
 
 def submit_review(config: EnvConfig, comments: list[ReviewComment]) -> None:
     if not comments:
-        log("No valid review comments. Skipping GitHub review creation.")
+        submit_no_findings_comment(config)
         return
 
     owner, repo = split_repository(config.github_repository)
@@ -809,11 +845,21 @@ def submit_review(config: EnvConfig, comments: list[ReviewComment]) -> None:
     log(f"Submitted one GitHub pull request review with {len(comments)} inline comment(s).")
 
 
+def submit_no_findings_comment(config: EnvConfig) -> None:
+    owner, repo = split_repository(config.github_repository)
+    body = (
+        "Gemini Code Review 완료: 변경된 코드에서 인라인으로 지적할 문제를 찾지 못했습니다.\n\n"
+        f"{REVIEW_MARKER_PREFIX}{config.pr_head_sha}{REVIEW_MARKER_SUFFIX}"
+    )
+    github_post(config, f"/repos/{owner}/{repo}/issues/{config.pr_number}/comments", {"body": body})
+    log("Submitted Gemini no-findings status comment.")
+
+
 def run_review() -> None:
     config = validate_env()
     log(f"Starting Gemini code review with model {config.gemini_model}.")
 
-    if has_existing_review_for_head(config):
+    if has_existing_marker_for_head(config):
         return
 
     pr_files = list_pr_files(config)
