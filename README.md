@@ -54,7 +54,7 @@ P0에서는 AI 평가, 카드 채점, MoveFilter, 미래 시뮬레이션, Stockf
 
 P1은 AI가 Unity 없이 게임 상태를 읽고 테스트할 수 있도록 공용 계약을 정의합니다.
 
-- `IChessEngine`: 현재 상태의 MultiPV 후보와 체크 여부를 동기적으로 요청합니다.
+- `IChessEngine`: 현재 상태의 MultiPV 후보, 고정 깊이 판세 평가와 체크 여부를 동기적으로 요청합니다.
 - `IRandom`: 구현체를 주입해 같은 시드에서 같은 결정을 재현할 수 있게 합니다.
 - `BoardState`: 기물 배치, 현재 차례, 캐슬링, 앙파상, 수 카운터를 보관합니다.
 - `GameState`: 보드 상태와 사용 가능한 카드, 활성 타일 효과를 묶습니다.
@@ -68,28 +68,29 @@ P1에서는 인터페이스와 데이터 계약만 정의합니다. 실제 Fairy
 
 ## P2 게임 상태 평가기
 
-`GameStateEvaluator`는 지정한 진영의 관점에서 현재 `GameState`를 `-100`부터 `100` 사이의 점수로 평가합니다. 양수는 유리, 음수는 불리, `0`은 중립입니다.
+`GameStateEvaluator`는 주입된 `IChessEngine`의 판세 점수를 기본값으로 사용하고, 엔진이 알지 못하는 Chaos Chess의 타일 효과를 보정합니다. 결과는 지정한 진영의 관점에서 `-100`부터 `100` 사이이며 양수는 유리, 음수는 불리, `0`은 중립입니다.
 
-- `Material`: 기물 가치 차이를 `13`으로 나눠 정규화합니다.
+- `BoardScore`: Stockfish centipawn 점수를 `13`으로 나눠 정규화합니다.
 - `Threat`: `Mine`과 `Fire` 반경 1 안에서 위협받는 기물 가치를 계산합니다.
 - `Advantage`: `Blessing`, `Peace`, `Portal`의 소유권에 따른 이점을 계산합니다.
-- `KingSafety`: 기물의 의사 공격 맵으로 킹 직접 공격과 주변 칸 위험을 계산합니다.
+- `MateIn`: Stockfish의 mate 예측을 대상 진영 관점으로 보존합니다.
 
 기본 총점 계산식은 다음과 같습니다.
 
 ```text
 TotalScore =
-    Material × 1.0
+    BoardScore × 1.0
   + Threat × 0.8
   + Advantage × 0.6
-  + KingSafety × 0.5
 ```
 
-각 항목과 총점은 반올림한 뒤 `-100..100`으로 제한합니다. 가중치는 `EvaluationOptions`로 교체할 수 있습니다.
+centipawn 기반 `BoardScore`는 예측 mate보다 낮은 `-89..89`로 제한합니다. 보정까지 반영한 비종료 총점은 `-99..99`로 제한합니다. 탐색 깊이와 가중치는 `EvaluationOptions`로 교체할 수 있으며 기본 탐색 깊이는 `12`입니다. 시간 기반 탐색 대신 고정 깊이를 사용해 같은 엔진 설정과 입력에서 평가를 재현할 수 있게 합니다.
 
-킹 안전도는 Unity나 외부 체스 엔진 없이 계산하는 의사 공격 맵입니다. 표준 기물과 Amazon, Chancellor, KnightRider를 지원하며 Wall은 공격하지 않고 슬라이딩 경로만 차단합니다. 핀, 체크 해소 가능 여부와 같은 합법 수 판정은 이 단계에 포함하지 않습니다.
+Stockfish가 예측한 mate는 Chaos Chess의 실제 게임 종료가 아닙니다. 유리한 mate는 `+90`, 불리한 mate는 `-90`의 긴급도 점수로 변환하고 원본 `MateIn`을 함께 반환합니다. `±100`은 카드 사용 기회까지 확인한 실제 게임 종료 판정용으로 남겨둡니다.
 
-P2에서는 평가 기준만 제공합니다. 카드 선택, 이동 선택, Mobility·Board Control 평가와 미래 상태 시뮬레이션은 수행하지 않습니다.
+후속 카드 결정·시뮬레이션 단계는 카드 미사용 상태와 각 카드를 가상 적용한 상태를 각각 P2로 재평가합니다. Fairy Stockfish variant/FEN으로 표현 가능한 특수 기물과 행마는 엔진 평가에 맡기며, 엔진으로 표현할 수 없는 카드 기반 행마는 후속 규칙 시뮬레이터가 처리합니다.
+
+P2에서는 평가 기준과 엔진 계약만 제공합니다. 실제 Fairy Stockfish UCI `score cp`·`score mate` 파싱, 카드 선택, 이동 선택, Mobility·Board Control 평가, 미래 상태 시뮬레이션 및 Unity 연동은 수행하지 않습니다.
 
 ## 로컬 검증
 
