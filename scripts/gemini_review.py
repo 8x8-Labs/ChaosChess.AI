@@ -18,7 +18,7 @@ from typing import Any
 GITHUB_API_URL = "https://api.github.com"
 GITHUB_API_VERSION = "2022-11-28"
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/interactions"
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite"
+DEFAULT_GEMINI_MODEL = "gemini-flash-lite-latest"
 
 REQUIRED_ENV_VARS = (
     "GEMINI_API_KEY",
