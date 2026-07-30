@@ -2,7 +2,7 @@
 
 `ChaosChess.AI`는 Chaos Chess의 AI 의사결정 로직을 Unity에서 분리해 개발하고 테스트하기 위한 순수 C# 라이브러리입니다.
 
-이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271))과 P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272))을 완료했고, 현재 P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273))를 구성하고 있습니다. 카드·수 선택 로직은 후속 단계에서 구현합니다.
+이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273))를 완료했고, 현재 P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274))을 구성하고 있습니다. 이동 선택 로직은 후속 단계에서 구현합니다.
 
 ## 프로젝트 구성
 
@@ -11,6 +11,7 @@ ChaosChess.AI/
 ├── src/
 │   └── ChaosChess.AI/
 │       ├── Abstractions/       # 외부 엔진·난수 경계
+│       ├── Decision/           # 카드 사용 결정
 │       ├── Domain/             # 순수 게임 상태 DTO
 │       ├── Evaluation/         # 결정론적 게임 상태 평가
 │       └── Fen/                # FEN 파서·직렬화
@@ -91,6 +92,37 @@ Stockfish가 예측한 mate는 Chaos Chess의 실제 게임 종료가 아닙니�
 후속 카드 결정·시뮬레이션 단계는 카드 미사용 상태와 각 카드를 가상 적용한 상태를 각각 P2로 재평가합니다. Fairy Stockfish variant/FEN으로 표현 가능한 특수 기물과 행마는 엔진 평가에 맡기며, 엔진으로 표현할 수 없는 카드 기반 행마는 후속 규칙 시뮬레이터가 처리합니다.
 
 P2에서는 평가 기준과 엔진 계약만 제공합니다. 실제 Fairy Stockfish UCI `score cp`·`score mate` 파싱, 카드 선택, 이동 선택, Mobility·Board Control 평가, 미래 상태 시뮬레이션 및 Unity 연동은 수행하지 않습니다.
+
+## P3 카드 결정
+
+`CardDecisionModule`은 현재 평가 점수와 사용 가능한 카드 목록을 기준으로 이번 턴에 사용할 카드 후보를 결정합니다. 실제 카드 효과 적용, 가상 상태 생성, Unity 상태 변경은 수행하지 않고, 순수한 추천 결과만 반환합니다.
+
+- `EloCardProfile`: 카드 사용 임계값과 턴당 최대 카드 수를 정의합니다.
+- `ICardScorer`: 카드별 점수 계산 경계입니다.
+- `ConfiguredCardScorer`: 카드 ID별 점수를 우선 적용하고, 없으면 카테고리 점수를 사용합니다.
+- `CardDecisionResult`: 선택된 카드 추천 목록과 최종 예상 점수를 반환합니다.
+
+기본 프로파일은 최소 점수 증가량 `1`, 턴당 최대 카드 수 `1`입니다. 기본 카드 점수 계산식은 다음과 같습니다.
+
+```text
+baseScore =
+    cardId override score
+    otherwise category score
+    otherwise 0
+
+projectedScore = Clamp(currentScore + baseScore, -99, 99)
+effectiveGain = projectedScore - currentScore
+```
+
+선택 규칙은 다음과 같습니다.
+
+- `RemainingUses`가 `0`인 카드는 제외합니다.
+- `effectiveGain`이 `MinimumScoreGain` 이상인 카드만 선택합니다.
+- 가장 높은 `effectiveGain`을 가진 카드를 선택합니다.
+- 동점이면 `GameState.AvailableCards` 입력 순서를 유지합니다.
+- `MaximumCardsPerTurn`까지 반복하며, 이미 선택한 카드는 같은 결정 루프에서 다시 선택하지 않습니다.
+
+P3에서는 카드 메타데이터 기반 선택 흐름과 ELO 프로파일 임계값만 제공합니다. 카드 적용 전후 상태를 실제로 재평가하는 가상 적용, 카드 효과 시뮬레이션, 이동 선택, Unity DTO 매핑은 후속 단계에서 담당합니다.
 
 ## 로컬 검증
 
