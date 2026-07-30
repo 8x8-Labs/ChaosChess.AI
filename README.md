@@ -2,7 +2,7 @@
 
 `ChaosChess.AI`는 Chaos Chess의 AI 의사결정 로직을 Unity에서 분리해 개발하고 테스트하기 위한 순수 C# 라이브러리입니다.
 
-이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273)), P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274))을 완료했고, 현재 P4 이동 후보 필터([`#275`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/275))를 구성하고 있습니다. 미래 상태 시뮬레이션과 Unity 연결은 후속 단계에서 구현합니다.
+이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273)), P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274)), P4 이동 후보 필터([`#275`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/275))를 완료했고, 현재 P5 미래 상태 시뮬레이터([`#276`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/276))를 구성하고 있습니다. Unity 연결은 후속 단계에서 구현합니다.
 
 ## 프로젝트 구성
 
@@ -14,7 +14,8 @@ ChaosChess.AI/
 │       ├── Decision/           # 카드 사용 결정
 │       ├── Domain/             # 순수 게임 상태 DTO
 │       ├── Evaluation/         # 결정론적 게임 상태 평가
-│       └── Fen/                # FEN 파서·직렬화
+│       ├── Fen/                # FEN 파서·직렬화
+│       └── Simulation/         # coarse 미래 상태 시뮬레이션
 ├── tests/
 │   └── ChaosChess.AI.Tests/    # net8.0 xUnit 테스트
 └── .github/workflows/ci.yml    # restore/build/test CI
@@ -29,7 +30,7 @@ ChaosChess.AI/
 - 렌더링, Unity 라이프사이클, 파일·네트워크 IO, 비동기 처리와 스레딩은 라이브러리 밖의 어댑터가 담당합니다.
 - AI 의사결정은 순수하고 동기적이며 결정론적으로 유지합니다.
 - 외부 체스 엔진은 동기식 `IChessEngine`, 무작위성은 `IRandom`으로만 접근합니다.
-- 라이브러리는 카드와 수를 **결정**하지만 실제 게임 상태에 **적용**하지 않습니다. 적용 책임은 Unity 어댑터에 있습니다.
+- 라이브러리는 카드와 수를 **결정**하고 P5부터 coarse 예측 상태를 만들지만, 정확한 게임 상태 적용 책임은 Unity 어댑터에 있습니다.
 
 ```text
 Unity / Console adapters
@@ -154,6 +155,40 @@ soft adjustment 규칙은 다음과 같습니다.
 포탈 평가를 위해 `TileEffectInfo`는 선택적 `DestinationSquare`, `SharedRemainingUses` 계약을 가집니다. 이 값이 없거나, owner가 없거나, 알 수 없는 효과 타입이면 MoveFilter는 해당 효과를 조정하지 않습니다.
 
 P4에서는 목 엔진 기반 후보 필터와 재정렬만 제공합니다. 실제 Fairy Stockfish UCI MultiPV 구현, Unity DTO 매핑, 포탈 사용 횟수 감소, 가호·불바다의 누적 체류 턴 처리, 2턴 이상 미래 상태 시뮬레이션 및 실제 이동 실행은 후속 단계에서 담당합니다.
+
+## P5 미래 상태 시뮬레이터
+
+`GameSimulator`는 현재 `GameState`에서 짧은 horizon 동안 양측의 평가, 카드 추천, 이동 추천, coarse 이동 적용 결과를 trace로 반환합니다. P5의 기본 horizon은 `2 ply`이며, 현재 `SideToMove`가 한 번 행동하고 다음 진영이 한 번 행동하는 범위입니다. 옵션으로 `0..8` ply를 지정할 수 있고, `0`은 상태 변경 없이 초기 상태를 그대로 반환합니다.
+
+- `SimulationOptions`: horizon ply, MultiPV 후보 수, RNG tie-break 사용 여부와 seed를 정의합니다.
+- `SimulationResult`: 초기 상태, 최종 coarse 상태, seed, horizon, 종료 사유, 전체 warning과 ply별 trace를 반환합니다.
+- `SimulationStep`: ply index, 행동 진영, 적용 전 평가, 카드 추천 결과, MoveFilter 결과, 선택 이동, 적용 전후 상태, warning을 보관합니다.
+
+각 ply는 다음 순서로 처리합니다.
+
+```text
+평가 → 카드 추천 trace 기록 → MoveFilter → 이동 선택
+→ UCI 이동 coarse 적용 → 지원 타일 효과 적용/소비
+→ remaining turn half-turn tick → 종료 판정 → 다음 진영
+```
+
+P5에서 카드 추천은 trace에만 남기고 실제 카드 상태 전이는 수행하지 않습니다. 현재 `CardInfo`에 target, effect parameter, 상태 변경 계약이 없기 때문입니다. 카드 대상과 실제 적용 결과를 표현하는 계약은 후속 Unity 매핑 단계에서 다룹니다.
+
+coarse 이동 적용은 일반 이동, 캡처, 프로모션, 캐슬링 룩 이동, 앙파상 캡처, side-to-move, castling rights, en passant target, halfmove/fullmove counter 갱신을 지원합니다. 전체 합법 수 생성은 하지 않고, `IChessEngine.GetTopMoves()`와 `MoveFilter`가 반환한 후보를 입력으로 사용합니다.
+
+타일 효과는 다음 범위만 상태에 적용합니다.
+
+- `Mine`: 이동 경로상 지뢰 통과 시 반경 1 기물을 제거하고 지뢰를 제거합니다.
+- `Peace`: 점유 칸 캡처 진입 후보가 차단되면 이동을 취소하고 효과를 제거합니다.
+- `Portal`: owner, destination, shared uses가 있는 경우 반대편으로 이동하고 공유 횟수를 감소시킵니다.
+- `Wall`: FEN 기물로 유지하며 타일 효과로 중복 적용하지 않습니다.
+- `Fire`, `Blessing`: 현재 DTO로 지연 제거 대상과 체류 상태를 보존할 수 없어 warning만 기록하고 임의 상태 변경은 하지 않습니다.
+
+기본 선택은 결정론적이며 동일 점수에서는 `MoveFilter` 입력 순서를 유지합니다. `UseRandomTieBreak`를 켜면 최상위 동점 후보 그룹에서 `IRandom.NextInt(0, count)`로 균등 선택합니다. 같은 seed, 같은 입력, 같은 fake engine에서는 2 ply trace와 최종 상태가 재현되어야 합니다.
+
+종료 사유는 horizon 도달, 추천 없음, 이동 차단, 킹 제거, 체크메이트, 스테일메이트, 지원하지 않는 효과 발견을 구분합니다. Stockfish 예측 mate 점수 `±90`은 P2와 동일하게 실제 종료 `±100`으로 승격하지 않습니다.
+
+P5에서는 Unity 파일 수정, 실제 Fairy Stockfish 프로세스/JNI 연결, Unity DTO 매핑, 실제 카드 52종 실행 복제, 헤드리스 대량 시뮬레이션, CSV 메트릭 및 DLL 배포를 수행하지 않습니다.
 
 ## 로컬 검증
 
