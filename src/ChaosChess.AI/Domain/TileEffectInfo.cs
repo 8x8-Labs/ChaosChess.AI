@@ -9,7 +9,9 @@ namespace ChaosChess.AI.Domain
             string effectType,
             Square square,
             PieceColor? owner,
-            int remainingTurns)
+            int remainingTurns,
+            Square? destinationSquare = null,
+            int? sharedRemainingUses = null)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -26,11 +28,18 @@ namespace ChaosChess.AI.Domain
                 throw new ArgumentOutOfRangeException(nameof(remainingTurns), remainingTurns, "Remaining turns cannot be negative.");
             }
 
+            if (sharedRemainingUses.HasValue && sharedRemainingUses.Value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sharedRemainingUses), sharedRemainingUses, "Shared remaining uses cannot be negative.");
+            }
+
             Id = id;
             EffectType = effectType;
             Square = square;
             Owner = owner;
             RemainingTurns = remainingTurns;
+            DestinationSquare = destinationSquare;
+            SharedRemainingUses = sharedRemainingUses;
         }
 
         public string Id { get; }
@@ -42,5 +51,9 @@ namespace ChaosChess.AI.Domain
         public PieceColor? Owner { get; }
 
         public int RemainingTurns { get; }
+
+        public Square? DestinationSquare { get; }
+
+        public int? SharedRemainingUses { get; }
     }
 }

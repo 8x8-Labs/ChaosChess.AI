@@ -2,7 +2,7 @@
 
 `ChaosChess.AI`는 Chaos Chess의 AI 의사결정 로직을 Unity에서 분리해 개발하고 테스트하기 위한 순수 C# 라이브러리입니다.
 
-이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273))를 완료했고, 현재 P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274))을 구성하고 있습니다. 이동 선택 로직은 후속 단계에서 구현합니다.
+이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273)), P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274))을 완료했고, 현재 P4 이동 후보 필터([`#275`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/275))를 구성하고 있습니다. 미래 상태 시뮬레이션과 Unity 연결은 후속 단계에서 구현합니다.
 
 ## 프로젝트 구성
 
@@ -123,6 +123,37 @@ effectiveGain = projectedScore - currentScore
 - `MaximumCardsPerTurn`까지 반복하며, 이미 선택한 카드는 같은 결정 루프에서 다시 선택하지 않습니다.
 
 P3에서는 카드 메타데이터 기반 선택 흐름과 ELO 프로파일 임계값만 제공합니다. 카드 적용 전후 상태를 실제로 재평가하는 가상 적용, 카드 효과 시뮬레이션, 이동 선택, Unity DTO 매핑은 후속 단계에서 담당합니다.
+
+## P4 이동 후보 필터
+
+`MoveFilter`는 주입된 `IChessEngine.GetTopMoves()`로 Fairy Stockfish MultiPV 후보를 받고, Chaos Chess 타일 효과 기준으로 실행 불가능한 후보를 제거하거나 점수를 조정해 재정렬합니다. 실제 이동 실행, 타일 효과 소비, 게임 상태 변경은 수행하지 않고 추천 결과만 반환합니다.
+
+- `MoveFilterOptions`: 점수 정규화, 불바다 위험 가중치, 평화 협정·포탈 진입 보너스를 정의합니다.
+- `MoveFilterResult`: 추천 후보와 hard filter로 제거된 후보를 분리해 반환합니다.
+- `MoveRecommendation`: 엔진 점수, 조정 점수, 최종 점수와 적용 사유를 보관합니다.
+- `FilteredMoveCandidate`: 제거된 후보와 제거 사유를 보관합니다.
+
+기본 점수 정규화는 P2와 같은 centipawn `13`분의 1 스케일을 사용합니다. centipawn 후보는 `-89..89`, mate 후보는 `±90`, 조정 후 최종 점수는 비종료 범위인 `-99..99`로 제한합니다. 동일 최종 점수에서는 엔진 MultiPV 입력 순서를 유지합니다.
+
+hard filter 규칙은 다음과 같습니다.
+
+- 잘못된 UCI 후보를 제거합니다.
+- 출발 칸에 기물이 없는 후보를 제거합니다.
+- 출발 기물 색이 현재 차례와 다른 후보를 제거합니다.
+- 점유된 `Peace` 타일로 들어가는 캡처 후보를 제거합니다.
+- `Wall`은 FEN 기물 `a/A`로 엔진이 이미 반영한다고 보고 중복 필터하지 않습니다.
+
+soft adjustment 규칙은 다음과 같습니다.
+
+- `Mine`: 룩, 퀸, Amazon, Chancellor, KnightRider가 이동 경로상 지뢰를 통과하면 폭발 반경 1의 기물 손익을 계산합니다.
+- `Fire`: 불바다 칸으로 들어가는 기물 가치에 위험 가중치를 적용해 패널티를 줍니다.
+- `Blessing`: 승격 가능한 기물이 가호 칸에 들어가면 예상 승격 이득을 보너스로 줍니다.
+- `Peace`: 빈 평화 협정 칸 진입은 방어 이득으로 보너스를 줍니다.
+- `Portal`: `TileEffectInfo`에 도착지와 공유 사용 횟수가 있을 때만 도착지 기물 가치와 기본 유틸리티를 반영합니다.
+
+포탈 평가를 위해 `TileEffectInfo`는 선택적 `DestinationSquare`, `SharedRemainingUses` 계약을 가집니다. 이 값이 없거나, owner가 없거나, 알 수 없는 효과 타입이면 MoveFilter는 해당 효과를 조정하지 않습니다.
+
+P4에서는 목 엔진 기반 후보 필터와 재정렬만 제공합니다. 실제 Fairy Stockfish UCI MultiPV 구현, Unity DTO 매핑, 포탈 사용 횟수 감소, 가호·불바다의 누적 체류 턴 처리, 2턴 이상 미래 상태 시뮬레이션 및 실제 이동 실행은 후속 단계에서 담당합니다.
 
 ## 로컬 검증
 
