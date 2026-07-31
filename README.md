@@ -2,22 +2,25 @@
 
 `ChaosChess.AI`는 Chaos Chess의 AI 의사결정 로직을 Unity에서 분리해 개발하고 테스트하기 위한 순수 C# 라이브러리입니다.
 
-이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273)), P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274)), P4 이동 후보 필터([`#275`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/275))를 완료했고, 현재 P5 미래 상태 시뮬레이터([`#276`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/276))를 구성하고 있습니다. Unity 연결은 후속 단계에서 구현합니다.
+이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273)), P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274)), P4 이동 후보 필터([`#275`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/275)), P5 미래 상태 시뮬레이터([`#276`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/276))를 완료했고, 현재 P7 헤드리스 밸런싱 시뮬레이터([`#279`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/279))를 구성하고 있습니다. Unity 연결 코드는 Unity 저장소에서 별도 단계로 관리합니다.
 
 ## 프로젝트 구성
 
 ```text
 ChaosChess.AI/
 ├── src/
-│   └── ChaosChess.AI/
-│       ├── Abstractions/       # 외부 엔진·난수 경계
-│       ├── Decision/           # 카드 사용 결정
-│       ├── Domain/             # 순수 게임 상태 DTO
-│       ├── Evaluation/         # 결정론적 게임 상태 평가
-│       ├── Fen/                # FEN 파서·직렬화
-│       └── Simulation/         # coarse 미래 상태 시뮬레이션
+│   ├── ChaosChess.AI/
+│   │   ├── Abstractions/       # 외부 엔진·난수 경계
+│   │   ├── Decision/           # 카드 사용 결정
+│   │   ├── Domain/             # 순수 게임 상태 DTO
+│   │   ├── Evaluation/         # 결정론적 게임 상태 평가
+│   │   ├── Fen/                # FEN 파서·직렬화
+│   │   └── Simulation/         # coarse 미래 상태 시뮬레이션
+│   └── ChaosChess.AI.Stockfish/ # Fairy Stockfish UCI 프로세스 어댑터
 ├── tests/
 │   └── ChaosChess.AI.Tests/    # net8.0 xUnit 테스트
+├── tools/
+│   └── ChaosChess.AI.Simulator/ # 헤드리스 배치 실행·CSV 출력 도구
 └── .github/workflows/ci.yml    # restore/build/test CI
 ```
 
@@ -190,10 +193,60 @@ coarse 이동 적용은 일반 이동, 캡처, 프로모션, 캐슬링 룩 이�
 
 P5에서는 Unity 파일 수정, 실제 Fairy Stockfish 프로세스/JNI 연결, Unity DTO 매핑, 실제 카드 52종 실행 복제, 헤드리스 대량 시뮬레이션, CSV 메트릭 및 DLL 배포를 수행하지 않습니다.
 
+## P7 헤드리스 밸런싱 시뮬레이터
+
+P7은 Unity 없이 `ChaosChess.AI` 의사결정 모듈과 선택적으로 Fairy Stockfish UCI 프로세스를 사용해 AI-vs-AI 배치를 실행하고, 동일 설정과 시드에서 재현 가능한 logical CSV를 생성합니다.
+
+- `ChaosChess.AI.Stockfish`: `IChessEngine` 구현체인 `StockfishProcessEngine`과 UCI `info`/`bestmove` parser를 제공합니다.
+- `ChaosChess.AI.Simulator`: console host, batch runner, complete-game runner, player profile, seed derivation, CSV writer를 제공합니다.
+- 기본 fake 모드는 외부 엔진 없이 CI와 로컬에서 deterministic CSV를 검증합니다.
+- 실엔진 모드는 `--engine`과 `--variant-config`를 명시적으로 받아 실행하며, 두 파일의 SHA-256을 CSV에 기록합니다.
+
+기본 실행 예시:
+
+```shell
+dotnet run --project tools/ChaosChess.AI.Simulator -- \
+  --games 2 \
+  --seed 12345 \
+  --max-ply 1 \
+  --multipv 1 \
+  --output ./artifacts/p7-smoke.csv \
+  --overwrite
+```
+
+로컬 Unity 프로젝트의 Fairy Stockfish를 사용하는 smoke 예시:
+
+```shell
+dotnet run --project tools/ChaosChess.AI.Simulator -- \
+  --engine "C:/unity/Chaos-Chess-v2/ChaosChess_v2/Assets/StreamingAssets/fairy-stockfish.exe" \
+  --variant-config "C:/unity/Chaos-Chess-v2/ChaosChess_v2/Assets/StreamingAssets/variants.ini" \
+  --games 1 \
+  --seed 12345 \
+  --depth 1 \
+  --max-ply 1 \
+  --multipv 1 \
+  --output ./artifacts/p7-real-smoke.csv \
+  --overwrite
+```
+
+주요 CLI exit code:
+
+- `0`: 성공
+- `2`: 잘못된 CLI 인자 또는 구성 파일 누락
+- `3`: output 파일이 이미 있고 `--overwrite`가 없음
+- `4`: 엔진 시작, handshake, timeout, invalid output 등 엔진 실패
+- `130`: 사용자 취소
+
+CSV는 `p7.logical.v1` 스키마를 사용합니다. 행 순서, game ID, game seed, scenario/profile pairing은 같은 입력에서 재현되어야 하며, wall-clock duration 같은 비결정적 필드는 logical CSV에 포함하지 않습니다.
+
+P7에서도 P5의 카드 계약 공백을 보존합니다. `CardDecisionModule`의 추천 수는 기록하지만 실제 카드 효과 적용과 `RemainingUses` 감소는 수행하지 않으며, CSV에서 `cards_recommended`와 `cards_applied`를 분리합니다. 실제 52종 카드 효과 catalog, target planner, coarse applier는 후속 작업 범위입니다.
+
 ## 로컬 검증
 
 ```shell
 dotnet restore ChaosChess.AI.sln
 dotnet build ChaosChess.AI.sln --configuration Release --no-restore
 dotnet test ChaosChess.AI.sln --configuration Release --no-build
+rg -n "UnityEngine|DOTween|FairyStockfishBridge" src tests tools
+git diff --check
 ```

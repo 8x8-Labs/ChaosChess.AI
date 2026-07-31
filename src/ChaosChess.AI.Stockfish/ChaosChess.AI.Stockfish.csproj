@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ChaosChess.AI.Stockfish</RootNamespace>
+    <AssemblyName>ChaosChess.AI.Stockfish</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChaosChess.AI\ChaosChess.AI.csproj" />
+  </ItemGroup>
+
+</Project>
