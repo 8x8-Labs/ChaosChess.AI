@@ -28,3 +28,16 @@ jobs:
 
       - name: Test
         run: dotnet test ChaosChess.AI.sln --configuration Release --no-build --verbosity normal
+
+      - name: Package Unity artifact dry-run
+        shell: pwsh
+        run: ./scripts/package-unity.ps1 -Version 0.1.0 -CommitSha ${{ github.sha }} -OutputRoot ./artifacts/release -NoBuild
+
+      - name: Upload Unity package dry-run artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaoschess-ai-unity-package-dry-run
+          path: |
+            artifacts/release/ChaosChess.AI-v0.1.0-unity.zip
+            artifacts/release/ChaosChess.AI-v0.1.0-unity/manifest.json
+            artifacts/release/ChaosChess.AI-v0.1.0-unity/SHA256SUMS.txt

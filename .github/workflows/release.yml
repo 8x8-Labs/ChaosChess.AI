@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validate release tag
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          if [[ "${tag}" == "${version}" ]]; then
+            echo "::error::Release tag must start with v."
+            exit 1
+          fi
+          if [[ ! "${version}" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Release tag must be SemVer, such as v0.1.0 or v0.1.0-rc.1."
+            exit 1
+          fi
+          target_sha="$(git rev-list -n 1 "${tag}")"
+          git fetch origin main
+          if ! git merge-base --is-ancestor "${target_sha}" origin/main; then
+            echo "::error::Release tags must point to a commit reachable from origin/main."
+            exit 1
+          fi
+          if [[ ! -f LICENSE ]]; then
+            echo "::error::LICENSE is required before publishing a GitHub Release."
+            exit 1
+          fi
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "target_sha=${target_sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Stop if release already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "::error::Release ${TAG} already exists. Do not overwrite published release assets."
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore ChaosChess.AI.sln
+
+      - name: Build
+        run: >
+          dotnet build ChaosChess.AI.sln
+          --configuration Release
+          --no-restore
+          /p:Version=${{ steps.version.outputs.version }}
+          /p:InformationalVersion=${{ steps.version.outputs.version }}+${{ steps.version.outputs.target_sha }}
+
+      - name: Test
+        run: dotnet test ChaosChess.AI.sln --configuration Release --no-build --verbosity normal
+
+      - name: Package Unity artifact
+        shell: pwsh
+        run: >
+          ./scripts/package-unity.ps1
+          -Version ${{ steps.version.outputs.version }}
+          -CommitSha ${{ steps.version.outputs.target_sha }}
+          -OutputRoot ./artifacts/release
+          -NoBuild
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_dir="artifacts/release/ChaosChess.AI-${TAG}-unity"
+          gh release create "${TAG}" \
+            "artifacts/release/ChaosChess.AI-${TAG}-unity.zip" \
+            "${package_dir}/manifest.json" \
+            "${package_dir}/SHA256SUMS.txt" \
+            --verify-tag \
+            --title "ChaosChess.AI ${TAG}" \
+            --notes "ChaosChess.AI ${VERSION} Unity DLL artifact. Verify SHA256SUMS.txt and manifest.json before pinning in Unity."

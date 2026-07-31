@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <RootNamespace>ChaosChess.AI</RootNamespace>
     <AssemblyName>ChaosChess.AI</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <Description>Unity-independent pure C# decision-making library for Chaos Chess AI.</Description>
   </PropertyGroup>
 
 </Project>
