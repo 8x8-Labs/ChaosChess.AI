@@ -11,7 +11,7 @@
 - release build에서는 `InformationalVersion`을 `<version>+<40-char commit sha>`로 주입한다.
 - 공유된 tag는 이동하거나 덮어쓰지 않는다. 잘못된 release는 새 patch 또는 새 RC로 정정한다.
 
-현재 repository에는 license가 확정되어 있지 않다. release workflow는 `LICENSE` 파일이 없으면 GitHub Release 생성을 중단한다. 라이선스 문구는 저장소 소유자 승인 없이 임의로 추가하지 않는다.
+현재 repository license는 MIT License로 둔다. release workflow는 `LICENSE` 파일이 없으면 GitHub Release 생성을 중단한다.
 
 ## 기준 브랜치
 
