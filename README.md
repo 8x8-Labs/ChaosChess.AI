@@ -2,7 +2,7 @@
 
 `ChaosChess.AI`는 Chaos Chess의 AI 의사결정 로직을 Unity에서 분리해 개발하고 테스트하기 위한 순수 C# 라이브러리입니다.
 
-이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273)), P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274)), P4 이동 후보 필터([`#275`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/275)), P5 미래 상태 시뮬레이터([`#276`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/276))를 완료했고, 현재 P7 헤드리스 밸런싱 시뮬레이터([`#279`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/279))를 구성하고 있습니다. Unity 연결 코드는 Unity 저장소에서 별도 단계로 관리합니다.
+이 저장소는 [`Chaos-Chess-v2` #268](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/268)의 단계별 로드맵을 따릅니다. P0 스캐폴딩([`#271`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/271)), P1 경계·도메인([`#272`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/272)), P2 게임 상태 평가기([`#273`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/273)), P3 카드 결정 모듈([`#274`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/274)), P4 이동 후보 필터([`#275`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/275)), P5 미래 상태 시뮬레이터([`#276`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/276)), P6 Unity 통합([`#277`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/277)), P7 헤드리스 밸런싱 시뮬레이터([`#279`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/279))를 완료했고, 현재 P8 릴리스 하드닝([`#280`](https://github.com/8x8-Labs/Chaos-Chess-v2/issues/280))을 구성하고 있습니다.
 
 ## 프로젝트 구성
 
@@ -21,6 +21,9 @@ ChaosChess.AI/
 │   └── ChaosChess.AI.Tests/    # net8.0 xUnit 테스트
 ├── tools/
 │   └── ChaosChess.AI.Simulator/ # 헤드리스 배치 실행·CSV 출력 도구
+├── scripts/
+│   └── package-unity.ps1       # Unity DLL release bundle 생성
+├── docs/                       # release와 Unity 소비 절차
 └── .github/workflows/ci.yml    # restore/build/test CI
 ```
 
@@ -241,12 +244,27 @@ CSV는 `p7.logical.v1` 스키마를 사용합니다. 행 순서, game ID, game s
 
 P7에서도 P5의 카드 계약 공백을 보존합니다. `CardDecisionModule`의 추천 수는 기록하지만 실제 카드 효과 적용과 `RemainingUses` 감소는 수행하지 않으며, CSV에서 `cards_recommended`와 `cards_applied`를 분리합니다. 실제 52종 카드 효과 catalog, target planner, coarse applier는 후속 작업 범위입니다.
 
+## P8 릴리스 하드닝
+
+P8은 AI 판단 점수나 카드 로직을 변경하지 않고, Unity가 소비하는 core DLL의 버전·출처·무결성을 확인할 수 있게 만드는 단계입니다.
+
+- `Directory.Build.props`에서 기본 assembly version metadata를 관리합니다.
+- `scripts/package-unity.ps1`로 `ChaosChess.AI-vX.Y.Z-unity.zip`을 생성합니다.
+- Unity bundle에는 `ChaosChess.AI.dll`, `ChaosChess.AI.pdb`, `ChaosChess.AI.xml`, `manifest.json`, `SHA256SUMS.txt`만 포함합니다.
+- `ChaosChess.AI.Stockfish`, Simulator, Fairy Stockfish binary와 `variants.ini`는 Unity bundle에 포함하지 않습니다.
+- CI는 restore/build/test 뒤 package dry-run을 실행합니다.
+- tag 기반 release workflow는 `v*` tag에서만 실행되며, `LICENSE`가 없으면 publish를 중단합니다.
+- Unity 소비 API는 contract/package smoke test로 보호합니다.
+
+자세한 절차는 [`docs/RELEASING.md`](docs/RELEASING.md)와 [`docs/UNITY-CONSUMPTION.md`](docs/UNITY-CONSUMPTION.md)를 참고합니다.
+
 ## 로컬 검증
 
 ```shell
 dotnet restore ChaosChess.AI.sln
 dotnet build ChaosChess.AI.sln --configuration Release --no-restore
 dotnet test ChaosChess.AI.sln --configuration Release --no-build
+pwsh ./scripts/package-unity.ps1 -Version 0.1.0 -OutputRoot ./artifacts/release -NoBuild
 rg -n "UnityEngine|DOTween|FairyStockfishBridge" src tests tools
 git diff --check
 ```
