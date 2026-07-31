@@ -258,7 +258,24 @@ namespace ChaosChess.AI.Stockfish
 
         private static string GetVariantDirectory(string variantConfigPath)
         {
-            return Path.GetDirectoryName(variantConfigPath) ?? ".";
+            int separatorIndex = variantConfigPath.LastIndexOfAny(new[] { '\\', '/' });
+
+            if (separatorIndex < 0)
+            {
+                return ".";
+            }
+
+            if (separatorIndex == 0)
+            {
+                return variantConfigPath.Substring(0, 1);
+            }
+
+            if (separatorIndex == 2 && variantConfigPath.Length > 1 && variantConfigPath[1] == ':')
+            {
+                return variantConfigPath.Substring(0, 3);
+            }
+
+            return variantConfigPath.Substring(0, separatorIndex);
         }
 
         private static void ThrowIfExited(IStockfishProcess process)

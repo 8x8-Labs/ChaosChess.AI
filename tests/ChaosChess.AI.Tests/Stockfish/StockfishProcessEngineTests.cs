@@ -43,6 +43,20 @@ namespace ChaosChess.AI.Tests.Stockfish
         }
 
         [Fact]
+        public void GetTopMoves_InitializesEngineWithUnixVariantPath()
+        {
+            var process = new FakeStockfishProcess();
+            process.EnqueueAnalysis(
+                "info depth 8 multipv 1 score cp 31 pv e2e4 e7e5",
+                "bestmove e2e4");
+            var engine = new StockfishProcessEngine(Options("/opt/chaos/variants.ini"), _ => process);
+
+            engine.GetTopMoves(Board(), variationCount: 1);
+
+            Assert.Contains("setoption name VariantPath value /opt/chaos", process.Commands);
+        }
+
+        [Fact]
         public void GetTopMoves_ConvertsAnalysisInfosToMoveCandidates()
         {
             var process = new FakeStockfishProcess();
@@ -139,9 +153,14 @@ namespace ChaosChess.AI.Tests.Stockfish
 
         private static StockfishEngineOptions Options()
         {
+            return Options("C:\\variant\\variants.ini");
+        }
+
+        private static StockfishEngineOptions Options(string variantConfigPath)
+        {
             return new StockfishEngineOptions(
                 enginePath: "C:\\engine\\fairy-stockfish.exe",
-                variantConfigPath: "C:\\variant\\variants.ini",
+                variantConfigPath: variantConfigPath,
                 depth: 8,
                 variationCount: 3,
                 timeoutMilliseconds: 1,
