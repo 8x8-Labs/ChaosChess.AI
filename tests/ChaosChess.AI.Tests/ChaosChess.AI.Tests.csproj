@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ChaosChess.AI\ChaosChess.AI.csproj" />
+    <ProjectReference Include="..\..\src\ChaosChess.AI.Stockfish\ChaosChess.AI.Stockfish.csproj" />
   </ItemGroup>
 
 </Project>
