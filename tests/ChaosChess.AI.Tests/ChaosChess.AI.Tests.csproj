@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ChaosChess.AI\ChaosChess.AI.csproj" />
     <ProjectReference Include="..\..\src\ChaosChess.AI.Stockfish\ChaosChess.AI.Stockfish.csproj" />
+    <ProjectReference Include="..\..\tools\ChaosChess.AI.Simulator\ChaosChess.AI.Simulator.csproj" />
   </ItemGroup>
 
 </Project>
