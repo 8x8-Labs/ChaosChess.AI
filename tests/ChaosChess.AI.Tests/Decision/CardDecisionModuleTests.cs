@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChaosChess.AI.Decision;
+using ChaosChess.AI.Decision.CardTargeting;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Evaluation;
 using Xunit;
@@ -170,6 +171,81 @@ public sealed class CardDecisionModuleTests
     }
 
     [Fact]
+    public void Decide_WithTargeting_SelectsLowerBaseCardWhenPlanOpportunityIsHigher()
+    {
+        CardInfo charge = Card("charge", "Mobility");
+        CardInfo agile = Card("agile", "Mobility");
+        GameState state = CreateState(
+            PieceColor.White,
+            new[] { charge, agile },
+            new[] { Piece(PieceKind.Pawn, PieceColor.White, new Square(4, 1)) });
+        var module = new CardDecisionModule(
+            new ConfiguredCardScorer(
+                cardScores: CardScores(
+                    ("charge", 5),
+                    ("agile", 1))));
+
+        CardDecisionResult result = module.Decide(
+            state,
+            Evaluation(totalScore: 0),
+            PieceColor.White,
+            new CardTargetingModule(),
+            engineTopMoves: new[] { Move("e2e4") });
+
+        CardUseRecommendation recommendation = Assert.Single(result.Recommendations);
+        Assert.Same(agile, recommendation.Card);
+        Assert.NotNull(recommendation.Plan);
+        Assert.Equal("agile", recommendation.Plan!.CardId);
+        Assert.NotNull(recommendation.PlanScore);
+        Assert.Equal(9, recommendation.PlanScore!.Total);
+        Assert.Equal(10, recommendation.EffectiveGain);
+        Assert.Equal(10, recommendation.ProjectedScore);
+    }
+
+    [Fact]
+    public void Decide_WithTargeting_ExcludesCardWithoutLegalPlan()
+    {
+        CardInfo fire = Card("fire", "BoardControl");
+        GameState state = CreateState(
+            PieceColor.White,
+            new[] { fire },
+            CreateFullBoard());
+        var module = new CardDecisionModule(
+            new ConfiguredCardScorer(
+                cardScores: CardScores(("fire", 20))));
+
+        CardDecisionResult result = module.Decide(
+            state,
+            Evaluation(totalScore: 0),
+            PieceColor.White,
+            new CardTargetingModule());
+
+        Assert.False(result.ShouldUseCards);
+        Assert.Empty(result.Recommendations);
+        Assert.Equal(0, result.FinalProjectedScore);
+    }
+
+    [Fact]
+    public void Decide_WithoutTargeting_KeepsRecommendationPlanEmpty()
+    {
+        CardInfo card = Card("card.high", "Tactical");
+        GameState state = CreateState(card);
+        var module = new CardDecisionModule(
+            new ConfiguredCardScorer(CategoryScores(("Tactical", 8))));
+
+        CardDecisionResult result = module.Decide(
+            state,
+            Evaluation(totalScore: 0),
+            PieceColor.White);
+
+        CardUseRecommendation recommendation = Assert.Single(result.Recommendations);
+        Assert.Null(recommendation.Plan);
+        Assert.Null(recommendation.PlanScore);
+        Assert.Equal(CardPlanSkipCode.None, recommendation.PlanSkipCode);
+        Assert.Null(recommendation.PlanSkipReason);
+    }
+
+    [Fact]
     public void ConfiguredCardScorer_ClampsProjectedScoreBelowTerminalValues()
     {
         CardInfo card = Card("card.large", "Burst");
@@ -230,6 +306,25 @@ public sealed class CardDecisionModuleTests
             Array.Empty<TileEffectInfo>());
     }
 
+    private static GameState CreateState(
+        PieceColor sideToMove,
+        CardInfo[] cards,
+        PieceInfo[] pieces)
+    {
+        var boardState = new BoardState(
+            pieces,
+            sideToMove,
+            CastlingRights.None,
+            null,
+            0,
+            1);
+
+        return new GameState(
+            boardState,
+            cards,
+            Array.Empty<TileEffectInfo>());
+    }
+
     private static CardInfo Card(
         string id,
         string category,
@@ -246,6 +341,39 @@ public sealed class CardDecisionModuleTests
             threat: 0,
             advantage: 0,
             totalScore: totalScore);
+    }
+
+    private static PieceInfo Piece(
+        PieceKind kind,
+        PieceColor color,
+        Square square)
+    {
+        return new PieceInfo(kind, color, square, "p");
+    }
+
+    private static MoveCandidate Move(string uciMove)
+    {
+        return new MoveCandidate(uciMove, scoreCentipawns: 10, mateIn: null);
+    }
+
+    private static PieceInfo[] CreateFullBoard()
+    {
+        var pieces = new PieceInfo[Square.BoardSize * Square.BoardSize];
+        int index = 0;
+
+        for (int rank = 0; rank < Square.BoardSize; rank++)
+        {
+            for (int file = 0; file < Square.BoardSize; file++)
+            {
+                pieces[index] = Piece(
+                    PieceKind.Pawn,
+                    PieceColor.White,
+                    new Square(file, rank));
+                index++;
+            }
+        }
+
+        return pieces;
     }
 
     private static IReadOnlyDictionary<string, int> CategoryScores(
