@@ -18,7 +18,21 @@ public sealed class CardPlanDecisionResultTests
         Assert.True(result.HasSelection);
         Assert.Same(candidate, result.SelectedCandidate);
         Assert.Equal(CardPlanSkipCode.None, result.SkipCode);
+        Assert.Equal(1, result.LegalCandidateCount);
         Assert.False(string.IsNullOrWhiteSpace(result.Reason));
+    }
+
+    [Fact]
+    public void Selected_WithLegalCandidateCount_PreservesCount()
+    {
+        CardPlanCandidate candidate = Candidate("charge", 3, 0);
+
+        CardPlanDecisionResult result = CardPlanDecisionResult.Selected(
+            candidate,
+            legalCandidateCount: 4);
+
+        Assert.True(result.HasSelection);
+        Assert.Equal(4, result.LegalCandidateCount);
     }
 
     [Fact]
@@ -31,6 +45,7 @@ public sealed class CardPlanDecisionResultTests
         Assert.False(result.HasSelection);
         Assert.Null(result.SelectedCandidate);
         Assert.Equal(CardPlanSkipCode.NoLegalCandidate, result.SkipCode);
+        Assert.Equal(0, result.LegalCandidateCount);
         Assert.Equal("No legal candidate.", result.Reason);
     }
 
@@ -39,6 +54,8 @@ public sealed class CardPlanDecisionResultTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(
             () => CardPlanDecisionResult.Skipped(CardPlanSkipCode.None, "No skip."));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => CardPlanDecisionResult.Selected(Candidate("charge", 3, 0), legalCandidateCount: -1));
     }
 
     [Fact]

@@ -31,7 +31,73 @@ namespace ChaosChess.AI.Tests.Simulator
             string csv = File.ReadAllText(temp.Path);
             Assert.Contains("schema_version,batch_id", csv);
             Assert.Equal(3, csv.Split('\n').Length);
+            AssertFakeRowsHaveNoCardRecommendations(csv);
             Assert.Contains("Wrote 2 game row", stderr.ToString());
+        }
+
+        [Fact]
+        public void Run_BalanceScenario_WritesCsvWithBaselineCardRecommendation()
+        {
+            using TempFile output = TempFile.Create();
+            using TempFile scenario = TempFile.Create();
+            using TempDirectory metrics = TempDirectory.Create();
+            File.WriteAllText(scenario.Path, @"
+{
+  ""scenarioId"": ""charge-strong"",
+  ""schemaVersion"": 1,
+  ""startingFen"": ""4k3/8/8/8/8/8/4P3/4K3 w - - 0 1"",
+  ""actor"": ""White"",
+  ""cards"": [
+    { ""cardId"": ""charge"", ""category"": ""Mobility"", ""remainingUses"": 1 }
+  ],
+  ""scenarioGroup"": ""strong"",
+  ""expectedBehavior"": ""ShouldUse""
+}");
+
+            int exitCode = new SimulatorHost().Run(new[]
+            {
+                "--games", "1",
+                "--seed", "12345",
+                "--max-ply", "1",
+                "--multipv", "1",
+                "--output", output.Path,
+                "--overwrite",
+                "--balance-scenario", scenario.Path,
+                "--balance-metrics-output", metrics.Path
+            }, new StringWriter(), new StringWriter());
+
+            Assert.Equal(0, exitCode);
+            string csv = File.ReadAllText(output.Path);
+            string[] columns = csv.TrimEnd().Split('\n')[1].TrimEnd('\r').Split(',');
+            Assert.Equal("balance-charge-strong", columns[1]);
+            Assert.Equal("charge-strong", columns[6]);
+            Assert.Equal("1", columns[22]);
+            Assert.Equal("0", columns[23]);
+            Assert.Equal("not_applied_contract_missing", columns[24]);
+
+            string decisionMetrics = File.ReadAllText(System.IO.Path.Combine(metrics.Path, "decision_metrics.csv"));
+            string componentMetrics = File.ReadAllText(System.IO.Path.Combine(metrics.Path, "component_metrics.csv"));
+            Assert.Contains("event_id,ply_index,actor,card_id", decisionMetrics);
+            Assert.Contains("ply-0:card-0:charge,0,White,charge", decisionMetrics);
+            Assert.Contains("event_id,card_id,candidate_rank,component_code", componentMetrics);
+            Assert.Contains("charge.movable_pawns", componentMetrics);
+        }
+
+        [Fact]
+        public void Run_BalanceMetricsOutputWithoutScenario_ReturnsExitCode2()
+        {
+            using TempFile output = TempFile.Create();
+            using TempDirectory metrics = TempDirectory.Create();
+
+            int exitCode = new SimulatorHost().Run(new[]
+            {
+                "--games", "1",
+                "--output", output.Path,
+                "--overwrite",
+                "--balance-metrics-output", metrics.Path
+            }, new StringWriter(), new StringWriter());
+
+            Assert.Equal(2, exitCode);
         }
 
         [Fact]
@@ -225,6 +291,45 @@ namespace ChaosChess.AI.Tests.Simulator
                 {
                     File.Delete(Path);
                 }
+            }
+        }
+
+        private sealed class TempDirectory : IDisposable
+        {
+            private TempDirectory(string path)
+            {
+                Path = path;
+            }
+
+            public string Path { get; }
+
+            public static TempDirectory Create()
+            {
+                string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "ChaosChess.AI.Tests", Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(directory);
+                return new TempDirectory(directory);
+            }
+
+            public void Dispose()
+            {
+                if (Directory.Exists(Path))
+                {
+                    Directory.Delete(Path, recursive: true);
+                }
+            }
+        }
+
+        private static void AssertFakeRowsHaveNoCardRecommendations(string csv)
+        {
+            string[] rows = csv.TrimEnd().Split('\n');
+
+            for (int rowIndex = 1; rowIndex < rows.Length; rowIndex++)
+            {
+                string[] columns = rows[rowIndex].TrimEnd('\r').Split(',');
+
+                Assert.Equal("0", columns[22]);
+                Assert.Equal("0", columns[23]);
+                Assert.Equal(string.Empty, columns[24]);
             }
         }
 

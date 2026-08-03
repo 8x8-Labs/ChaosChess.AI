@@ -36,6 +36,7 @@ namespace ChaosChess.AI.Tests.Simulator
             Assert.Equal(GameResult.Aborted, result.Result);
             Assert.Equal(GameTerminationReason.MaxPly, result.TerminationReason);
             Assert.Equal(2, result.PlyCount);
+            Assert.Equal(2, result.SimulationResults.Count);
             Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("e4")));
             Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("e5")));
         }

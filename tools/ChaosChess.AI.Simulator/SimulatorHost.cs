@@ -8,7 +8,9 @@ using ChaosChess.AI.Decision;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Evaluation;
 using ChaosChess.AI.Simulation;
+using ChaosChess.AI.Simulation.Metrics;
 using ChaosChess.AI.Simulator.Csv;
+using ChaosChess.AI.Simulator.Balance;
 using ChaosChess.AI.Stockfish;
 
 namespace ChaosChess.AI.Simulator
@@ -68,6 +70,12 @@ namespace ChaosChess.AI.Simulator
                 return 2;
             }
 
+            if (options.BalanceMetricsOutputPath != null && options.BalanceScenarioPath == null)
+            {
+                stderr.WriteLine("--balance-metrics-output requires --balance-scenario.");
+                return 2;
+            }
+
             if (File.Exists(options.OutputPath) && !options.Overwrite)
             {
                 stderr.WriteLine("Output file already exists. Pass --overwrite to replace it.");
@@ -108,6 +116,7 @@ namespace ChaosChess.AI.Simulator
                 BatchSimulationResult result = CreateBatch(options, engineLease.Engine, engineSha256, variantSha256);
                 string csv = SimulationCsvExporter.Export(result);
                 File.WriteAllText(options.OutputPath, csv);
+                WriteBalanceMetricsIfRequested(options, result);
                 stderr.WriteLine("Wrote " + result.Games.Count + " game row(s) to " + options.OutputPath);
                 return 0;
             }
@@ -134,6 +143,11 @@ namespace ChaosChess.AI.Simulator
             string? engineSha256,
             string? variantSha256)
         {
+            if (options.BalanceScenarioPath != null)
+            {
+                return CreateBalanceBatch(options, engine, engineSha256, variantSha256);
+            }
+
             var simulator = new GameSimulator(
                 engine,
                 new GameStateEvaluator(engine),
@@ -164,6 +178,85 @@ namespace ChaosChess.AI.Simulator
             return runner.Run(batchOptions);
         }
 
+        private static void WriteBalanceMetricsIfRequested(
+            SimulatorCliOptions options,
+            BatchSimulationResult result)
+        {
+            if (options.BalanceMetricsOutputPath == null)
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(options.BalanceMetricsOutputPath);
+            CardBalanceProfile profile = CardBalanceProfileCatalog.CreateP10Baseline();
+            var decisionEvents = new List<CardDecisionMetricEvent>();
+            var componentEvents = new List<CardScoreComponentMetricEvent>();
+
+            foreach (BatchGameResult game in result.Games)
+            {
+                foreach (SimulationResult simulation in game.GameResult.SimulationResults)
+                {
+                    BalanceCardDecisionMetricCollection metrics = BalanceCardDecisionMetricCollector.Collect(
+                        simulation,
+                        profile);
+                    decisionEvents.AddRange(metrics.DecisionEvents);
+                    componentEvents.AddRange(metrics.ComponentEvents);
+                }
+            }
+
+            BalanceMetricCsvExportResult export = BalanceMetricCsvExporter.Export(
+                new BalanceCardDecisionMetricCollection(decisionEvents, componentEvents));
+            File.WriteAllText(
+                Path.Combine(options.BalanceMetricsOutputPath, "decision_metrics.csv"),
+                export.DecisionCsv);
+            File.WriteAllText(
+                Path.Combine(options.BalanceMetricsOutputPath, "component_metrics.csv"),
+                export.ComponentCsv);
+        }
+
+        private static BatchSimulationResult CreateBalanceBatch(
+            SimulatorCliOptions options,
+            IChessEngine engine,
+            string? engineSha256,
+            string? variantSha256)
+        {
+            BalanceSimulationScenario scenario = BalanceSimulationScenarioJsonLoader.LoadFromFile(
+                options.BalanceScenarioPath ?? throw new InvalidOperationException("balance scenario path is required."));
+            var runner = new BatchSimulationRunner(new HeadlessGameRunner(
+                BalanceSimulatorFactory.CreateBaselineSimulator(engine)));
+            var matchup = new MatchupDefinition(
+                "balance-baseline-white-vs-balance-baseline-black",
+                new PlayerSimulationProfile(
+                    "balance-baseline-white",
+                    CardBalanceProfileCatalog.P10BaselineProfileId,
+                    maxCardsPerTurn: 1,
+                    useRandomTieBreak: false),
+                new PlayerSimulationProfile(
+                    "balance-baseline-black",
+                    CardBalanceProfileCatalog.P10BaselineProfileId,
+                    maxCardsPerTurn: 1,
+                    useRandomTieBreak: false),
+                colorSwap: false);
+            var batchOptions = new BatchSimulationOptions(
+                "balance-" + scenario.ScenarioId,
+                options.Seed,
+                options.Games,
+                scenario.ScenarioId,
+                scenario.StartingFen,
+                new[] { matchup },
+                new HeadlessGameOptions(
+                    options.MaxPly,
+                    options.MultiPv,
+                    simulationHorizonPly: 1,
+                    useRandomTieBreak: false),
+                engineSha256,
+                variantSha256,
+                options.IsEngineMode ? options.Depth : null,
+                scenario);
+
+            return runner.Run(batchOptions);
+        }
+
         private EngineLease CreateEngine(SimulatorCliOptions options)
         {
             if (!options.IsEngineMode)
@@ -188,6 +281,8 @@ namespace ChaosChess.AI.Simulator
             output.WriteLine("Usage:");
             output.WriteLine("  --games <N> --seed <S> --max-ply <N> --multipv <N> --output <path> [--overwrite]");
             output.WriteLine("  [--engine <path> --variant-config <path> --depth <N>]");
+            output.WriteLine("  [--balance-scenario <path>]");
+            output.WriteLine("  [--balance-metrics-output <dir>]");
         }
 
         private static string ComputeFileSha256Hex(string path)

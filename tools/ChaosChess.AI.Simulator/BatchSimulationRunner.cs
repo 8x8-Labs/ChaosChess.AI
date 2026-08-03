@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Fen;
+using ChaosChess.AI.Simulator.Balance;
 
 namespace ChaosChess.AI.Simulator
 {
@@ -40,10 +41,10 @@ namespace ChaosChess.AI.Simulator
                         gameIndex,
                         gameSeed);
                     HeadlessGameOptions gameOptions = WithSeed(options.HeadlessGameOptions, gameSeed);
-                    GameState initialState = CreateInitialState(options.StartingFen);
+                    GameState initialState = CreateInitialState(options);
                     HeadlessGameResult result = _gameRunner.Run(
                         initialState,
-                        PieceColor.White,
+                        GetPerspective(options),
                         gameOptions);
 
                     games.Add(new BatchGameResult(
@@ -61,12 +62,22 @@ namespace ChaosChess.AI.Simulator
             return new BatchSimulationResult(options, games);
         }
 
-        private static GameState CreateInitialState(string startingFen)
+        private static GameState CreateInitialState(BatchSimulationOptions options)
         {
+            if (options.Scenario != null)
+            {
+                return BalanceScenarioGameStateFactory.Create(options.Scenario);
+            }
+
             return new GameState(
-                FenParser.Parse(startingFen),
+                FenParser.Parse(options.StartingFen),
                 Array.Empty<CardInfo>(),
                 Array.Empty<TileEffectInfo>());
+        }
+
+        private static PieceColor GetPerspective(BatchSimulationOptions options)
+        {
+            return options.Scenario?.Actor ?? PieceColor.White;
         }
 
         private static HeadlessGameOptions WithSeed(HeadlessGameOptions options, int gameSeed)

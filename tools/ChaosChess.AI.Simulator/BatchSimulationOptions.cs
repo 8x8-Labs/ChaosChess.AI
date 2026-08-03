@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using ChaosChess.AI.Simulator.Balance;
 
 namespace ChaosChess.AI.Simulator
 {
@@ -18,7 +19,8 @@ namespace ChaosChess.AI.Simulator
             HeadlessGameOptions? headlessGameOptions = null,
             string? engineSha256 = null,
             string? variantSha256 = null,
-            int? depth = null)
+            int? depth = null,
+            BalanceSimulationScenario? scenario = null)
         {
             if (string.IsNullOrWhiteSpace(batchId))
             {
@@ -45,6 +47,12 @@ namespace ChaosChess.AI.Simulator
                 throw new ArgumentOutOfRangeException(nameof(depth), depth.Value, "Depth must be positive.");
             }
 
+            if (scenario != null &&
+                !string.Equals(scenarioId, scenario.ScenarioId, StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Scenario ID must match the supplied balance scenario.", nameof(scenario));
+            }
+
             BatchId = batchId;
             BaseSeed = baseSeed;
             GameCount = gameCount;
@@ -55,6 +63,7 @@ namespace ChaosChess.AI.Simulator
             EngineSha256 = engineSha256;
             VariantSha256 = variantSha256;
             Depth = depth;
+            Scenario = scenario;
         }
 
         public string BatchId { get; }
@@ -76,6 +85,8 @@ namespace ChaosChess.AI.Simulator
         public string? VariantSha256 { get; }
 
         public int? Depth { get; }
+
+        public BalanceSimulationScenario? Scenario { get; }
 
         private static ReadOnlyCollection<MatchupDefinition> CopyMatchups(IEnumerable<MatchupDefinition> matchups)
         {

@@ -30,6 +30,7 @@ namespace ChaosChess.AI.Simulator
             int plyCount = 0;
             int cardsRecommended = 0;
             var warnings = new List<string>();
+            var simulations = new List<SimulationResult>();
 
             while (plyCount < effectiveOptions.MaxPly)
             {
@@ -43,6 +44,7 @@ namespace ChaosChess.AI.Simulator
                     perspective,
                     simulationOptions);
 
+                simulations.Add(simulation);
                 warnings.AddRange(simulation.Warnings);
                 cardsRecommended += CountRecommendedCards(simulation);
                 currentState = simulation.FinalState;
@@ -59,7 +61,8 @@ namespace ChaosChess.AI.Simulator
                             GameTerminationReason.InvalidTransition,
                             cardsRecommended,
                             warnings,
-                            "horizon_reached_without_step");
+                            "horizon_reached_without_step",
+                            simulations);
                     }
 
                     continue;
@@ -71,7 +74,8 @@ namespace ChaosChess.AI.Simulator
                     plyCount,
                     simulation.TerminationReason,
                     cardsRecommended,
-                    warnings);
+                    warnings,
+                    simulations);
             }
 
             return new HeadlessGameResult(
@@ -85,7 +89,8 @@ namespace ChaosChess.AI.Simulator
                 cardsApplied: 0,
                 cardsRecommended > 0 ? CardSkippedReason : null,
                 warnings,
-                errorCode: "max_ply");
+                errorCode: "max_ply",
+                simulations);
         }
 
         private static HeadlessGameResult Complete(
@@ -94,7 +99,8 @@ namespace ChaosChess.AI.Simulator
             int plyCount,
             SimulationTerminationReason reason,
             int cardsRecommended,
-            IEnumerable<string> warnings)
+            IEnumerable<string> warnings,
+            IEnumerable<SimulationResult> simulations)
         {
             PieceColor sideToMove = finalState.BoardState.SideToMove;
 
@@ -111,7 +117,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.Checkmate,
                         cardsRecommended,
                         warnings,
-                        errorCode: null);
+                        errorCode: null,
+                        simulations);
                 case SimulationTerminationReason.Stalemate:
                     return Result(
                         initialState,
@@ -122,7 +129,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.Stalemate,
                         cardsRecommended,
                         warnings,
-                        errorCode: null);
+                        errorCode: null,
+                        simulations);
                 case SimulationTerminationReason.KingRemoved:
                     PieceColor kingRemovedWinner = DetermineKingRemovedWinner(finalState) ?? Opposite(sideToMove);
                     return Result(
@@ -134,7 +142,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.KingRemoved,
                         cardsRecommended,
                         warnings,
-                        errorCode: null);
+                        errorCode: null,
+                        simulations);
                 case SimulationTerminationReason.NoEngineCandidates:
                     return Invalid(
                         initialState,
@@ -143,7 +152,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.NoEngineCandidates,
                         cardsRecommended,
                         warnings,
-                        "no_engine_candidates");
+                        "no_engine_candidates",
+                        simulations);
                 case SimulationTerminationReason.NoMoveRecommendations:
                     return Invalid(
                         initialState,
@@ -152,7 +162,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.NoRecommendations,
                         cardsRecommended,
                         warnings,
-                        "no_recommendations");
+                        "no_recommendations",
+                        simulations);
                 case SimulationTerminationReason.MoveBlocked:
                     return Invalid(
                         initialState,
@@ -161,7 +172,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.MoveBlocked,
                         cardsRecommended,
                         warnings,
-                        "move_blocked");
+                        "move_blocked",
+                        simulations);
                 case SimulationTerminationReason.UnsupportedEffectEncountered:
                     return Invalid(
                         initialState,
@@ -170,7 +182,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.UnsupportedEffect,
                         cardsRecommended,
                         warnings,
-                        "unsupported_effect");
+                        "unsupported_effect",
+                        simulations);
                 default:
                     return Invalid(
                         initialState,
@@ -179,7 +192,8 @@ namespace ChaosChess.AI.Simulator
                         GameTerminationReason.InvalidTransition,
                         cardsRecommended,
                         warnings,
-                        "invalid_transition");
+                        "invalid_transition",
+                        simulations);
             }
         }
 
@@ -192,7 +206,8 @@ namespace ChaosChess.AI.Simulator
             GameTerminationReason terminationReason,
             int cardsRecommended,
             IEnumerable<string> warnings,
-            string? errorCode)
+            string? errorCode,
+            IEnumerable<SimulationResult> simulations)
         {
             return new HeadlessGameResult(
                 initialState,
@@ -205,7 +220,8 @@ namespace ChaosChess.AI.Simulator
                 cardsApplied: 0,
                 cardsRecommended > 0 ? CardSkippedReason : null,
                 warnings,
-                errorCode);
+                errorCode,
+                simulations);
         }
 
         private static HeadlessGameResult Invalid(
@@ -215,7 +231,8 @@ namespace ChaosChess.AI.Simulator
             GameTerminationReason terminationReason,
             int cardsRecommended,
             IEnumerable<string> warnings,
-            string errorCode)
+            string errorCode,
+            IEnumerable<SimulationResult> simulations)
         {
             return Result(
                 initialState,
@@ -226,7 +243,8 @@ namespace ChaosChess.AI.Simulator
                 terminationReason,
                 cardsRecommended,
                 warnings,
-                errorCode);
+                errorCode,
+                simulations);
         }
 
         private static int CountRecommendedCards(SimulationResult simulation)

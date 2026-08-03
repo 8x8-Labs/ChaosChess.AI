@@ -68,7 +68,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 return CardPlanDecisionResult.Skipped(
                     CardPlanSkipCode.NoLegalCandidate,
-                    "Portal has fewer than two legal endpoint candidates after shortlisting.");
+                    "Portal has fewer than two legal endpoint candidates after shortlisting.",
+                    legalPairs.Count);
             }
 
             Dictionary<Square, EndpointScore> endpointScores = ToEndpointScoreMap(shortlistedEndpoints);
@@ -97,7 +98,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 return CardPlanDecisionResult.Skipped(
                     CardPlanSkipCode.NoLegalCandidate,
-                    "Portal has no legal ordered square pair after endpoint shortlisting.");
+                    "Portal has no legal ordered square pair after endpoint shortlisting.",
+                    legalPairs.Count);
             }
 
             scoredPairs.Sort(CardPlanCandidate.CompareByRank);
@@ -106,10 +108,11 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 return CardPlanDecisionResult.Skipped(
                     CardPlanSkipCode.NoBenefit,
-                    "Portal legal candidates are below the activation threshold.");
+                    "Portal legal candidates are below the activation threshold.",
+                    scoredPairs.Count);
             }
 
-            return CardPlanDecisionResult.Selected(bestCandidate);
+            return CardPlanDecisionResult.Selected(bestCandidate, scoredPairs.Count);
         }
 
         private static IReadOnlyList<EndpointScore> ShortlistEndpoints(
@@ -161,7 +164,10 @@ namespace ChaosChess.AI.Decision.CardTargeting
 
             return new EndpointScore(
                 square,
-                actorSourceAdjacency + actorDestinationAdjacency + centerAccess + enemyDestinationRisk,
+                (actorSourceAdjacency * 5) +
+                    (actorDestinationAdjacency * 5) +
+                    centerAccess +
+                    (enemyDestinationRisk * -3),
                 actorSourceAdjacency,
                 actorDestinationAdjacency,
                 centerAccess,
@@ -179,23 +185,28 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 new CardPlanScoreComponent(
                     "portal.endpoint_actor_source",
-                    first.ActorSourceAdjacency + second.ActorSourceAdjacency,
+                    rawValue: first.ActorSourceAdjacency + second.ActorSourceAdjacency,
+                    weight: 5,
                     "Portal endpoints are adjacent to the actor engine move source."),
                 new CardPlanScoreComponent(
                     "portal.endpoint_actor_destination",
-                    first.ActorDestinationAdjacency + second.ActorDestinationAdjacency,
+                    rawValue: first.ActorDestinationAdjacency + second.ActorDestinationAdjacency,
+                    weight: 5,
                     "Portal endpoints are adjacent to the actor engine move destination."),
                 new CardPlanScoreComponent(
                     "portal.endpoint_center_access",
-                    first.CenterAccess + second.CenterAccess,
+                    rawValue: first.CenterAccess + second.CenterAccess,
+                    weight: 1,
                     "Portal endpoints improve central access."),
                 new CardPlanScoreComponent(
                     "portal.endpoint_enemy_destination_risk",
-                    first.EnemyDestinationRisk + second.EnemyDestinationRisk,
+                    rawValue: first.EnemyDestinationRisk + second.EnemyDestinationRisk,
+                    weight: -3,
                     "Portal endpoints avoid the opponent engine move destination."),
                 new CardPlanScoreComponent(
                     "portal.endpoint_distance",
-                    Math.Min(6, ManhattanDistance(firstSquare, secondSquare)),
+                    rawValue: Math.Min(6, ManhattanDistance(firstSquare, secondSquare)),
+                    weight: 1,
                     "Portal endpoints connect distant squares.")
             };
 
@@ -233,7 +244,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color == actor ? 5 : 0;
+            return movingPiece != null && movingPiece.Color == actor ? 1 : 0;
         }
 
         private static int ScoreActorDestinationAdjacency(
@@ -248,7 +259,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color == actor ? 5 : 0;
+            return movingPiece != null && movingPiece.Color == actor ? 1 : 0;
         }
 
         private static int ScoreEnemyDestinationRisk(
@@ -263,7 +274,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color != actor ? -3 : 0;
+            return movingPiece != null && movingPiece.Color != actor ? 1 : 0;
         }
 
         private static int ScoreCenterAccess(Square square)
