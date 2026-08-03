@@ -1,0 +1,25 @@
+{
+  "scenarioId": "charge-strong",
+  "schemaVersion": 1,
+  "startingFen": "4k3/8/8/8/8/8/4P3/4K3 w - - 0 1",
+  "actor": "White",
+  "cards": [
+    {
+      "cardId": "charge",
+      "category": "Mobility",
+      "remainingUses": 1
+    }
+  ],
+  "tileEffects": [],
+  "engineObservation": {
+    "moves": [
+      {
+        "uciMove": "e2e4",
+        "scoreCentipawns": 10,
+        "mateIn": null
+      }
+    ]
+  },
+  "scenarioGroup": "strong",
+  "expectedBehavior": "ShouldUse"
+}

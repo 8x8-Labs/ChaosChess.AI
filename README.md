@@ -244,6 +244,30 @@ CSV는 `p7.logical.v1` 스키마를 사용합니다. 행 순서, game ID, game s
 
 P7에서도 P5의 카드 계약 공백을 보존합니다. `CardDecisionModule`의 추천 수는 기록하지만 실제 카드 효과 적용과 `RemainingUses` 감소는 수행하지 않으며, CSV에서 `cards_recommended`와 `cards_applied`를 분리합니다. 실제 52종 카드 효과 catalog, target planner, coarse applier는 후속 작업 범위입니다.
 
+### 밸런스 시나리오 메트릭
+
+`--balance-scenario`를 지정하면 JSON 시나리오의 시작 FEN, actor, 카드, 타일 효과를 사용해 baseline 카드 타겟팅 추천을 실행합니다. `--balance-metrics-output`은 일반 game CSV와 별도로 추천 결정 이벤트와 점수 컴포넌트 CSV를 출력합니다.
+
+```shell
+dotnet run --project tools/ChaosChess.AI.Simulator -- \
+  --games 1 \
+  --seed 12345 \
+  --max-ply 1 \
+  --multipv 1 \
+  --output ./artifacts/balance-charge-game.csv \
+  --overwrite \
+  --balance-scenario ./tools/ChaosChess.AI.Simulator/Balance/Samples/charge-strong.balance-scenario.json \
+  --balance-metrics-output ./artifacts/balance-charge-metrics
+```
+
+생성 파일:
+
+- `./artifacts/balance-charge-game.csv`: 기존 logical game CSV
+- `./artifacts/balance-charge-metrics/decision_metrics.csv`: 카드 추천 결정 이벤트
+- `./artifacts/balance-charge-metrics/component_metrics.csv`: 카드 plan score 컴포넌트
+
+현재 balance 메트릭은 recommendation calibration 범위입니다. 실제 카드 적용 결과, `cards_applied`, 승패 outcome 기반 튜닝은 아직 기록하지 않습니다.
+
 ## P8 릴리스 하드닝
 
 P8은 AI 판단 점수나 카드 로직을 변경하지 않고, Unity가 소비하는 core DLL의 버전·출처·무결성을 확인할 수 있게 만드는 단계입니다.
