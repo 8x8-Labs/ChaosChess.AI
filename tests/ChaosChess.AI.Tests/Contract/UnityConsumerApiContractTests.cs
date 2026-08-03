@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using ChaosChess.AI.Abstractions;
 using ChaosChess.AI.Decision;
 using ChaosChess.AI.Decision.CardTargeting;
+using ChaosChess.AI.Decision.TurnPlanning;
 using ChaosChess.AI.Domain;
+using ChaosChess.AI.Domain.CardEffects;
 using ChaosChess.AI.Evaluation;
 using ChaosChess.AI.Fen;
 using ChaosChess.AI.Simulation;
@@ -180,6 +182,53 @@ public sealed class UnityConsumerApiContractTests
         Assert.NotNull(recommendation.Plan);
         Assert.NotNull(recommendation.PlanScore);
         Assert.Equal(CardPlanSkipCode.None, recommendation.PlanSkipCode);
+    }
+
+    [Fact]
+    public void UnityConsumerSurface_CompilesWithUnifiedTurnPlannerContracts()
+    {
+        BoardState boardState = FenParser.Parse("8/8/8/8/8/8/4P3/4K3 w - - 0 1");
+        var gameState = new GameState(
+            boardState,
+            Array.Empty<CardInfo>(),
+            Array.Empty<TileEffectInfo>());
+        var planner = new UnifiedTurnPlanner(
+            new MoveFilter(new StaticChessEngine()),
+            new TurnPlannerOptions(
+                noCardMoveCandidateCount: 1,
+                opponentReplyCandidateCount: 0,
+                beamWidth: 1));
+
+        TurnPlannerResult result = planner.PlanTurn(gameState);
+
+        Assert.True(result.HasPlan);
+        TurnPlan plan = result.SelectedPlan!;
+        Assert.False(plan.UsesCard);
+        Assert.True(plan.HasMove);
+        Assert.Equal(PieceColor.White, plan.Actor);
+        Assert.Equal(CardEffectApplicationStatus.Exact, plan.CardApplicationStatus);
+        Assert.Equal(CardEffectApplicationCode.Success, plan.CardApplicationCode);
+        Assert.Equal("e2e4", plan.MovePlan!.UciMove);
+        Assert.Equal(new Square(4, 1), plan.MovePlan.Source);
+        Assert.Equal(new Square(4, 3), plan.MovePlan.Destination);
+        Assert.Null(plan.MovePlan.Promotion);
+        Assert.Equal("no-card|e2e4", plan.DeterministicRankKey);
+        Assert.NotEmpty(plan.OriginStateFingerprint);
+
+        TurnPlannerTraceSummary trace = result.TraceSummary;
+        Assert.Equal(1, trace.NoCardMoveCandidateLimit);
+        Assert.Equal(1, trace.BeamWidth);
+        Assert.Equal(1, trace.RootNoCardMoveCandidateCount);
+        Assert.Equal(1, trace.SelectedCandidateCount);
+        Assert.Equal(0, trace.SkippedCandidateCount);
+        Assert.Equal(1, trace.EngineCallCount);
+        Assert.False(trace.OpponentReplyEvaluationRequested);
+        Assert.False(trace.BeamPruningApplied);
+
+        TurnPlanCandidate candidate = Assert.Single(result.Candidates);
+        Assert.True(candidate.HasPlan);
+        Assert.Equal(TurnPlanSkipCode.None, candidate.SkipCode);
+        Assert.Same(plan, candidate.Plan);
     }
 
     private sealed class StaticChessEngine : IChessEngine
