@@ -14,7 +14,9 @@ namespace ChaosChess.AI.Simulator
             bool overwrite,
             string? enginePath,
             string? variantConfigPath,
-            int depth)
+            int depth,
+            string? balanceScenarioPath = null,
+            string? balanceMetricsOutputPath = null)
         {
             if (games <= 0)
             {
@@ -46,6 +48,8 @@ namespace ChaosChess.AI.Simulator
             EnginePath = enginePath;
             VariantConfigPath = variantConfigPath;
             Depth = depth;
+            BalanceScenarioPath = balanceScenarioPath;
+            BalanceMetricsOutputPath = balanceMetricsOutputPath;
         }
 
         public bool ShowHelp { get; }
@@ -67,6 +71,10 @@ namespace ChaosChess.AI.Simulator
         public string? VariantConfigPath { get; }
 
         public int Depth { get; }
+
+        public string? BalanceScenarioPath { get; }
+
+        public string? BalanceMetricsOutputPath { get; }
 
         public bool IsEngineMode => EnginePath != null || VariantConfigPath != null;
     }

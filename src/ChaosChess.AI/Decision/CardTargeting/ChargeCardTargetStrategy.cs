@@ -61,7 +61,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 return CardPlanDecisionResult.Skipped(
                     CardPlanSkipCode.NoBenefit,
-                    "Charge activation is below the activation threshold.");
+                    "Charge activation is below the activation threshold.",
+                    legalCandidates.Count);
             }
 
             CardPlanCandidate neutralCandidate = legalCandidates[0];
@@ -70,7 +71,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     neutralCandidate.Card,
                     neutralCandidate.Plan,
                     score,
-                    neutralCandidate.EnumerationIndex));
+                    neutralCandidate.EnumerationIndex),
+                legalCandidates.Count);
         }
 
         private static CardPlanScore ScoreActivation(
@@ -115,15 +117,18 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 new CardPlanScoreComponent(
                     "charge.movable_pawns",
-                    movablePawns * 2,
+                    rawValue: movablePawns,
+                    weight: 2,
                     "Actor pawns can advance one square."),
                 new CardPlanScoreComponent(
                     "charge.promotion_reach",
-                    promotionPawns * 8,
+                    rawValue: promotionPawns,
+                    weight: 8,
                     "Actor pawns can reach promotion row."),
                 new CardPlanScoreComponent(
                     "charge.blocked_pawns",
-                    blockedPawns * -1,
+                    rawValue: blockedPawns,
+                    weight: -1,
                     "Actor pawns are blocked from advancing.")
             };
 

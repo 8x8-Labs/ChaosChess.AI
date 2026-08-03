@@ -76,10 +76,11 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 return CardPlanDecisionResult.Skipped(
                     CardPlanSkipCode.NoBenefit,
-                    "Peace Zone legal candidates are below the activation threshold.");
+                    "Peace Zone legal candidates are below the activation threshold.",
+                    legalCandidates.Count);
             }
 
-            return CardPlanDecisionResult.Selected(bestCandidate);
+            return CardPlanDecisionResult.Selected(bestCandidate, legalCandidates.Count);
         }
 
         private static CardPlanScore ScoreCandidate(
@@ -92,19 +93,23 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 new CardPlanScoreComponent(
                     "peace.actor_engine_destination",
-                    ScoreActorEngineDestination(board, actor, square, topMove),
+                    rawValue: ScoreActorEngineDestination(board, actor, square, topMove),
+                    weight: 8,
                     "Peace Zone target matches the actor engine move destination."),
                 new CardPlanScoreComponent(
                     "peace.actor_engine_adjacent",
-                    ScoreActorEngineAdjacent(board, actor, square, topMove),
+                    rawValue: ScoreActorEngineAdjacent(board, actor, square, topMove),
+                    weight: 3,
                     "Peace Zone target is adjacent to the actor engine move destination."),
                 new CardPlanScoreComponent(
                     "peace.enemy_capture_buffer",
-                    ScoreEnemyCaptureBuffer(board, actor, square, topMove),
+                    rawValue: ScoreEnemyCaptureBuffer(board, actor, square, topMove),
+                    weight: 6,
                     "Peace Zone target buffers a threatened actor piece from a nearby empty square."),
                 new CardPlanScoreComponent(
                     "peace.center_control",
-                    ScoreCenterControl(square),
+                    rawValue: ScoreCenterControl(square),
+                    weight: 1,
                     "Peace Zone target is closer to the board center.")
             };
 
@@ -129,7 +134,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color == actor ? 8 : 0;
+            return movingPiece != null && movingPiece.Color == actor ? 1 : 0;
         }
 
         private static int ScoreActorEngineAdjacent(
@@ -144,7 +149,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color == actor ? 3 : 0;
+            return movingPiece != null && movingPiece.Color == actor ? 1 : 0;
         }
 
         private static int ScoreEnemyCaptureBuffer(
@@ -164,7 +169,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                 targetPiece != null &&
                 movingPiece.Color != actor &&
                 targetPiece.Color == actor
-                    ? 6
+                    ? 1
                     : 0;
         }
 

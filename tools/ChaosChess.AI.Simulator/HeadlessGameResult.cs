@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ChaosChess.AI.Domain;
+using ChaosChess.AI.Simulation;
 
 namespace ChaosChess.AI.Simulator
 {
     public sealed class HeadlessGameResult
     {
         private readonly ReadOnlyCollection<string> _warnings;
+        private readonly ReadOnlyCollection<SimulationResult> _simulationResults;
 
         public HeadlessGameResult(
             GameState initialState,
@@ -20,7 +22,8 @@ namespace ChaosChess.AI.Simulator
             int cardsApplied,
             string? cardsSkippedReason,
             IEnumerable<string> warnings,
-            string? errorCode)
+            string? errorCode,
+            IEnumerable<SimulationResult>? simulationResults = null)
         {
             if (plyCount < 0)
             {
@@ -48,6 +51,7 @@ namespace ChaosChess.AI.Simulator
             CardsSkippedReason = cardsSkippedReason;
             _warnings = CopyWarnings(warnings);
             ErrorCode = errorCode;
+            _simulationResults = CopySimulationResults(simulationResults);
         }
 
         public GameState InitialState { get; }
@@ -72,6 +76,8 @@ namespace ChaosChess.AI.Simulator
 
         public string? ErrorCode { get; }
 
+        public IReadOnlyList<SimulationResult> SimulationResults => _simulationResults;
+
         private static ReadOnlyCollection<string> CopyWarnings(IEnumerable<string> warnings)
         {
             if (warnings == null)
@@ -89,6 +95,29 @@ namespace ChaosChess.AI.Simulator
                 }
 
                 copy.Add(warning);
+            }
+
+            return copy.AsReadOnly();
+        }
+
+        private static ReadOnlyCollection<SimulationResult> CopySimulationResults(
+            IEnumerable<SimulationResult>? simulationResults)
+        {
+            var copy = new List<SimulationResult>();
+
+            if (simulationResults == null)
+            {
+                return copy.AsReadOnly();
+            }
+
+            foreach (SimulationResult simulationResult in simulationResults)
+            {
+                if (simulationResult == null)
+                {
+                    throw new ArgumentException("Simulation result collection cannot contain null.", nameof(simulationResults));
+                }
+
+                copy.Add(simulationResult);
             }
 
             return copy.AsReadOnly();

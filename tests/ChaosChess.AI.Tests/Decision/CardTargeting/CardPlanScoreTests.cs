@@ -23,6 +23,61 @@ public sealed class CardPlanScoreTests
     }
 
     [Fact]
+    public void ScoreComponent_LegacyConstructor_UsesValueAsContribution()
+    {
+        var component = new CardPlanScoreComponent(
+            "legacy.penalty",
+            -2,
+            "Legacy penalty.");
+
+        Assert.Equal(-2, component.RawValue);
+        Assert.Equal(1, component.Weight);
+        Assert.Equal(-2, component.Contribution);
+        Assert.Equal(component.Contribution, component.Value);
+    }
+
+    [Fact]
+    public void ScoreComponent_WeightedConstructor_ComputesContribution()
+    {
+        var component = new CardPlanScoreComponent(
+            "charge.movable_pawns",
+            rawValue: 3,
+            weight: 2,
+            "Actor pawns can advance one square.");
+
+        Assert.Equal(3, component.RawValue);
+        Assert.Equal(2, component.Weight);
+        Assert.Equal(6, component.Contribution);
+        Assert.Equal(component.Contribution, component.Value);
+    }
+
+    [Fact]
+    public void ScoreComponent_WeightedConstructor_AllowsNegativeWeight()
+    {
+        var component = new CardPlanScoreComponent(
+            "fire.own_engine_destination_penalty",
+            rawValue: 1,
+            weight: -8,
+            "Fire target overlaps the actor engine move destination.");
+
+        Assert.Equal(1, component.RawValue);
+        Assert.Equal(-8, component.Weight);
+        Assert.Equal(-8, component.Contribution);
+        Assert.Equal(component.Contribution, component.Value);
+    }
+
+    [Fact]
+    public void ScoreComponent_WeightedConstructor_RejectsNegativeRawValue()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new CardPlanScoreComponent(
+                "invalid.raw",
+                rawValue: -1,
+                weight: 1,
+                "Invalid raw value."));
+    }
+
+    [Fact]
     public void Constructor_ComponentSumDiffersFromTotal_Throws()
     {
         ArgumentException exception = Assert.Throws<ArgumentException>(
@@ -62,6 +117,10 @@ public sealed class CardPlanScoreTests
             () => new CardPlanScoreComponent(string.Empty, 1, "description"));
         Assert.Throws<ArgumentException>(
             () => new CardPlanScoreComponent("code", 1, string.Empty));
+        Assert.Throws<ArgumentException>(
+            () => new CardPlanScoreComponent(string.Empty, 1, 1, "description"));
+        Assert.Throws<ArgumentException>(
+            () => new CardPlanScoreComponent("code", 1, 1, string.Empty));
     }
 
     private static CardPlanScoreComponent Component(string code, int value)

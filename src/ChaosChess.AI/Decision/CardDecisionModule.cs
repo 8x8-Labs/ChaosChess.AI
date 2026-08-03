@@ -131,7 +131,8 @@ namespace ChaosChess.AI.Decision
                     bestScore.PlanDecision.SelectedCandidate!.Plan,
                     bestScore.PlanDecision.SelectedCandidate.Score,
                     CardPlanSkipCode.None,
-                    planSkipReason: null));
+                    planSkipReason: null,
+                    planLegalCandidateCount: bestScore.PlanDecision.LegalCandidateCount));
                 currentScore = bestScore.ProjectedScore;
             }
 

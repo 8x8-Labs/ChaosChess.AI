@@ -76,10 +76,11 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 return CardPlanDecisionResult.Skipped(
                     CardPlanSkipCode.NoBenefit,
-                    "Fire legal candidates are below the activation threshold.");
+                    "Fire legal candidates are below the activation threshold.",
+                    legalCandidates.Count);
             }
 
-            return CardPlanDecisionResult.Selected(bestCandidate);
+            return CardPlanDecisionResult.Selected(bestCandidate, legalCandidates.Count);
         }
 
         private static CardPlanScore ScoreCandidate(
@@ -92,19 +93,23 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 new CardPlanScoreComponent(
                     "fire.enemy_engine_destination",
-                    ScoreEnemyEngineDestination(board, actor, square, topMove),
+                    rawValue: ScoreEnemyEngineDestination(board, actor, square, topMove),
+                    weight: 10,
                     "Fire target matches the opponent engine move destination."),
                 new CardPlanScoreComponent(
                     "fire.enemy_engine_adjacent",
-                    ScoreEnemyEngineAdjacent(board, actor, square, topMove),
+                    rawValue: ScoreEnemyEngineAdjacent(board, actor, square, topMove),
+                    weight: 3,
                     "Fire target is adjacent to the opponent engine move destination."),
                 new CardPlanScoreComponent(
                     "fire.center_control",
-                    ScoreCenterControl(square),
+                    rawValue: ScoreCenterControl(square),
+                    weight: 1,
                     "Fire target is closer to the board center."),
                 new CardPlanScoreComponent(
                     "fire.own_engine_destination_penalty",
-                    ScoreOwnEngineDestinationPenalty(board, actor, square, topMove),
+                    rawValue: ScoreOwnEngineDestinationPenalty(board, actor, square, topMove),
+                    weight: -8,
                     "Fire target overlaps the actor engine move destination.")
             };
 
@@ -129,7 +134,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color != actor ? 10 : 0;
+            return movingPiece != null && movingPiece.Color != actor ? 1 : 0;
         }
 
         private static int ScoreEnemyEngineAdjacent(
@@ -144,7 +149,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color != actor ? 3 : 0;
+            return movingPiece != null && movingPiece.Color != actor ? 1 : 0;
         }
 
         private static int ScoreOwnEngineDestinationPenalty(
@@ -159,7 +164,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             PieceInfo? movingPiece = board.FindPiece(topMove.Value.From);
-            return movingPiece != null && movingPiece.Color == actor ? -8 : 0;
+            return movingPiece != null && movingPiece.Color == actor ? 1 : 0;
         }
 
         private static int ScoreCenterControl(Square square)

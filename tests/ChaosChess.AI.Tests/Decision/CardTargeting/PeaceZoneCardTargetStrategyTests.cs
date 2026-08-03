@@ -25,7 +25,11 @@ public sealed class PeaceZoneCardTargetStrategyTests
 
         Assert.True(result.HasSelection);
         Assert.Equal(new Square(4, 3), result.SelectedCandidate!.Plan.Target.Squares[0]);
-        Assert.Equal(8, ComponentValue(result.SelectedCandidate.Score, "peace.actor_engine_destination"));
+        CardPlanScoreComponent actorDestination = Component(result.SelectedCandidate.Score, "peace.actor_engine_destination");
+        Assert.Equal(1, actorDestination.RawValue);
+        Assert.Equal(8, actorDestination.Weight);
+        Assert.Equal(8, actorDestination.Contribution);
+        Assert.Equal(actorDestination.Contribution, actorDestination.Value);
     }
 
     [Fact]
@@ -143,11 +147,16 @@ public sealed class PeaceZoneCardTargetStrategyTests
 
     private static int ComponentValue(CardPlanScore score, string code)
     {
+        return Component(score, code).Value;
+    }
+
+    private static CardPlanScoreComponent Component(CardPlanScore score, string code)
+    {
         foreach (CardPlanScoreComponent component in score.Components)
         {
             if (component.Code == code)
             {
-                return component.Value;
+                return component;
             }
         }
 

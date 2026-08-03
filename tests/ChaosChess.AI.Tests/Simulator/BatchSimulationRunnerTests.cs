@@ -6,6 +6,7 @@ using ChaosChess.AI.Domain;
 using ChaosChess.AI.Evaluation;
 using ChaosChess.AI.Simulation;
 using ChaosChess.AI.Simulator;
+using ChaosChess.AI.Simulator.Balance;
 using Xunit;
 
 namespace ChaosChess.AI.Tests.Simulator
@@ -73,6 +74,37 @@ namespace ChaosChess.AI.Tests.Simulator
         }
 
         [Fact]
+        public void Run_UsesBalanceScenarioInitialCardsAndActorPerspective()
+        {
+            var engine = new StubChessEngine(new[] { Move("e7e5", 10) });
+            var scenario = new BalanceSimulationScenario(
+                "black-charge",
+                schemaVersion: 1,
+                "4k3/4p3/8/8/8/8/8/4K3 b - - 0 1",
+                PieceColor.Black,
+                new[] { new BalanceScenarioCard("charge", "Mobility", remainingUses: 1) },
+                tileEffects: null,
+                engineObservation: null,
+                "strong",
+                BalanceExpectedBehavior.ShouldUse);
+            var options = new BatchSimulationOptions(
+                "batch-1",
+                baseSeed: 12345,
+                gameCount: 1,
+                "black-charge",
+                scenario.StartingFen,
+                new[] { Matchup("black-profile", "white-profile") },
+                new HeadlessGameOptions(maxPly: 1, variationCount: 1),
+                scenario: scenario);
+
+            BatchSimulationResult result = RunnerWithTargeting(engine).Run(options);
+
+            BatchGameResult game = Assert.Single(result.Games);
+            Assert.Equal(1, game.GameResult.CardsRecommended);
+            Assert.Equal("not_applied_contract_missing", game.GameResult.CardsSkippedReason);
+        }
+
+        [Fact]
         public void Run_KeepsInvalidGamesInResultList()
         {
             var engine = new StubChessEngine(
@@ -129,6 +161,23 @@ namespace ChaosChess.AI.Tests.Simulator
                 () => new BatchSimulationOptions("batch", 1, 1, "scenario", StartingFen, Array.Empty<MatchupDefinition>()));
             Assert.Throws<ArgumentException>(
                 () => new BatchSimulationOptions("batch", 1, 1, "scenario", StartingFen, NullMatchups()));
+            Assert.Throws<ArgumentException>(
+                () => new BatchSimulationOptions(
+                    "batch",
+                    1,
+                    1,
+                    "other-scenario",
+                    StartingFen,
+                    new[] { Matchup("a", "b") },
+                    scenario: new BalanceSimulationScenario(
+                        "scenario",
+                        schemaVersion: 1,
+                        StartingFen,
+                        PieceColor.White,
+                        cards: null,
+                        tileEffects: null,
+                        engineObservation: null,
+                        "strong")));
             Assert.NotNull(profile);
         }
 
@@ -140,6 +189,12 @@ namespace ChaosChess.AI.Tests.Simulator
                 new CardDecisionModule(new ConfiguredCardScorer()),
                 new MoveFilter(engine));
             return new BatchSimulationRunner(new HeadlessGameRunner(simulator));
+        }
+
+        private static BatchSimulationRunner RunnerWithTargeting(StubChessEngine engine)
+        {
+            return new BatchSimulationRunner(new HeadlessGameRunner(
+                BalanceSimulatorFactory.CreateBaselineSimulator(engine)));
         }
 
         private static BatchSimulationOptions Options(
