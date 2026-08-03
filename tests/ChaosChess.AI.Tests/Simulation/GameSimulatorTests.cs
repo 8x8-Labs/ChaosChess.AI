@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChaosChess.AI.Abstractions;
 using ChaosChess.AI.Decision;
+using ChaosChess.AI.Decision.CardTargeting;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Evaluation;
 using ChaosChess.AI.Simulation;
@@ -329,6 +330,42 @@ public sealed class GameSimulatorTests
             SortedSquares(second.FinalState.BoardState.Pieces));
     }
 
+    [Fact]
+    public void SimulateFuture_WithCardTargeting_RecordsSelectedPlanWithoutApplyingCard()
+    {
+        GameState state = new GameState(
+            new BoardState(
+                new[]
+                {
+                    Piece(PieceKind.King, PieceColor.White, "e1", "k"),
+                    Piece(PieceKind.King, PieceColor.Black, "e8", "k"),
+                    Piece(PieceKind.Pawn, PieceColor.White, "e2", "p")
+                },
+                PieceColor.White,
+                CastlingRights.None,
+                enPassantTarget: null,
+                halfmoveClock: 0,
+                fullmoveNumber: 1),
+            new[] { new CardInfo("agile", "Mobility", 1) },
+            Array.Empty<TileEffectInfo>());
+        GameSimulator simulator = Simulator(
+            new StubChessEngine(new[] { Move("e2e4", 13) }),
+            new CardTargetingModule());
+
+        SimulationResult result = simulator.SimulateFuture(
+            state,
+            PieceColor.White,
+            new SimulationOptions(horizonPly: 1, variationCount: 1));
+
+        CardUseRecommendation recommendation = Assert.Single(result.Steps[0].CardDecision.Recommendations);
+        Assert.NotNull(recommendation.Plan);
+        Assert.Equal("agile", recommendation.Plan!.CardId);
+        Assert.NotNull(recommendation.PlanScore);
+        Assert.Equal(9, recommendation.PlanScore!.Total);
+        Assert.NotNull(state.BoardState.FindPiece(Square.Parse("e2")));
+        Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("e4")));
+    }
+
     private static GameSimulator Simulator(StubChessEngine engine)
     {
         return new GameSimulator(
@@ -336,6 +373,19 @@ public sealed class GameSimulatorTests
             new GameStateEvaluator(engine),
             new CardDecisionModule(new ConfiguredCardScorer()),
             new MoveFilter(engine));
+    }
+
+    private static GameSimulator Simulator(
+        StubChessEngine engine,
+        CardTargetingModule cardTargetingModule)
+    {
+        return new GameSimulator(
+            engine,
+            new GameStateEvaluator(engine),
+            new CardDecisionModule(new ConfiguredCardScorer()),
+            new MoveFilter(engine),
+            random: null,
+            cardTargetingModule);
     }
 
     private static MoveCandidate Move(string uciMove, int scoreCentipawns)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChaosChess.AI.Abstractions;
 using ChaosChess.AI.Decision;
+using ChaosChess.AI.Decision.CardTargeting;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Evaluation;
 
@@ -15,6 +16,7 @@ namespace ChaosChess.AI.Simulation
         private readonly IChessEngine _chessEngine;
         private readonly GameStateEvaluator _evaluator;
         private readonly CardDecisionModule _cardDecisionModule;
+        private readonly CardTargetingModule? _cardTargetingModule;
         private readonly MoveFilter _moveFilter;
         private readonly IRandom? _random;
 
@@ -23,13 +25,15 @@ namespace ChaosChess.AI.Simulation
             GameStateEvaluator evaluator,
             CardDecisionModule cardDecisionModule,
             MoveFilter moveFilter,
-            IRandom? random = null)
+            IRandom? random = null,
+            CardTargetingModule? cardTargetingModule = null)
         {
             _chessEngine = chessEngine ?? throw new ArgumentNullException(nameof(chessEngine));
             _evaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
             _cardDecisionModule = cardDecisionModule ?? throw new ArgumentNullException(nameof(cardDecisionModule));
             _moveFilter = moveFilter ?? throw new ArgumentNullException(nameof(moveFilter));
             _random = random;
+            _cardTargetingModule = cardTargetingModule;
         }
 
         public SimulationResult SimulateFuture(
@@ -65,13 +69,14 @@ namespace ChaosChess.AI.Simulation
                 EvaluationResult actorEvaluation = sideToMove == perspective
                     ? evaluation
                     : _evaluator.Evaluate(currentState, sideToMove);
-                CardDecisionResult cardDecision = _cardDecisionModule.Decide(
-                    currentState,
-                    actorEvaluation,
-                    sideToMove);
                 MoveFilterResult moveFilterResult = _moveFilter.GetFilteredMoves(
                     currentState,
                     effectiveOptions.VariationCount);
+                CardDecisionResult cardDecision = DecideCards(
+                    currentState,
+                    actorEvaluation,
+                    sideToMove,
+                    moveFilterResult);
 
                 if (!moveFilterResult.HasRecommendations)
                 {
@@ -187,6 +192,42 @@ namespace ChaosChess.AI.Simulation
             }
 
             return recommendations[tieBreakRandom.NextInt(0, tiedCount)];
+        }
+
+        private CardDecisionResult DecideCards(
+            GameState currentState,
+            EvaluationResult actorEvaluation,
+            PieceColor sideToMove,
+            MoveFilterResult moveFilterResult)
+        {
+            if (_cardTargetingModule == null)
+            {
+                return _cardDecisionModule.Decide(
+                    currentState,
+                    actorEvaluation,
+                    sideToMove);
+            }
+
+            return _cardDecisionModule.Decide(
+                currentState,
+                actorEvaluation,
+                sideToMove,
+                _cardTargetingModule,
+                targetingOptions: null,
+                engineTopMoves: ToMoveCandidates(moveFilterResult.Recommendations));
+        }
+
+        private static IReadOnlyList<MoveCandidate> ToMoveCandidates(
+            IEnumerable<MoveRecommendation> recommendations)
+        {
+            var candidates = new List<MoveCandidate>();
+
+            foreach (MoveRecommendation recommendation in recommendations)
+            {
+                candidates.Add(recommendation.Candidate);
+            }
+
+            return candidates;
         }
 
         private SimulationTerminationReason ClassifyNoMoveTermination(

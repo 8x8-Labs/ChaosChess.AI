@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChaosChess.AI.Abstractions;
 using ChaosChess.AI.Decision;
+using ChaosChess.AI.Decision.CardTargeting;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Evaluation;
 using ChaosChess.AI.Fen;
@@ -132,6 +133,53 @@ public sealed class UnityConsumerApiContractTests
         Assert.False(rejectedTrace.Accepted);
         Assert.Equal(rejected.Code, rejectedTrace.Code);
         Assert.Same(invalidPlan, rejectedTrace.Plan);
+    }
+
+    [Fact]
+    public void UnityConsumerSurface_CompilesWithCardTargetingContracts()
+    {
+        BoardState boardState = FenParser.Parse("4k3/8/8/8/8/8/4P3/4K3 w - - 0 1");
+        var agile = new CardInfo("agile", "Mobility", remainingUses: 1);
+        var gameState = new GameState(
+            boardState,
+            new[] { agile },
+            Array.Empty<TileEffectInfo>());
+        var targetingModule = new CardTargetingModule();
+
+        CardPlanDecisionResult planDecision = targetingModule.DecideBestPlan(
+            gameState,
+            agile,
+            PieceColor.White,
+            new CardTargetingOptions(activationThreshold: 1),
+            new[] { new MoveCandidate("e2e4", scoreCentipawns: 30, mateIn: null) });
+
+        Assert.True(planDecision.HasSelection);
+        Assert.Equal("agile", planDecision.SelectedCandidate!.Plan.CardId);
+        Assert.NotNull(planDecision.SelectedCandidate.Score);
+        Assert.Contains(
+            planDecision.SelectedCandidate.Score.Components,
+            component => component.Code == "agile.engine_source");
+
+        var evaluator = new GameStateEvaluator(new StaticChessEngine());
+        EvaluationResult evaluation = evaluator.Evaluate(gameState, PieceColor.White);
+        var decisionModule = new CardDecisionModule(
+            new ConfiguredCardScorer(
+                cardScores: new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["agile"] = 1
+                }));
+
+        CardDecisionResult cardDecision = decisionModule.Decide(
+            gameState,
+            evaluation,
+            PieceColor.White,
+            targetingModule,
+            engineTopMoves: new[] { new MoveCandidate("e2e4", scoreCentipawns: 30, mateIn: null) });
+
+        CardUseRecommendation recommendation = Assert.Single(cardDecision.Recommendations);
+        Assert.NotNull(recommendation.Plan);
+        Assert.NotNull(recommendation.PlanScore);
+        Assert.Equal(CardPlanSkipCode.None, recommendation.PlanSkipCode);
     }
 
     private sealed class StaticChessEngine : IChessEngine

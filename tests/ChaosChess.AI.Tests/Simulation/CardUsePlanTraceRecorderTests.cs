@@ -1,4 +1,6 @@
 using System;
+using ChaosChess.AI.Decision;
+using ChaosChess.AI.Decision.CardTargeting;
 using ChaosChess.AI.Domain;
 using ChaosChess.AI.Simulation;
 using Xunit;
@@ -67,7 +69,7 @@ public sealed class CardUsePlanTraceRecorderTests
         var recorder = new CardUsePlanTraceRecorder();
         GameState state = CreateState(PieceColor.White, Card("charge"));
 
-        CardUsePlanTrace trace = recorder.Record(state, null);
+        CardUsePlanTrace trace = recorder.Record(state, (CardUsePlan?)null);
 
         Assert.False(trace.Accepted);
         Assert.Equal(CardPlanValidationCode.NullPlan, trace.Code);
@@ -100,6 +102,37 @@ public sealed class CardUsePlanTraceRecorderTests
     }
 
     [Fact]
+    public void Record_Recommendation_PreservesPlanScoreAndSkipCode()
+    {
+        var recorder = new CardUsePlanTraceRecorder();
+        GameState state = CreateState(PieceColor.White, Card("charge"));
+        var plan = new CardUsePlan(
+            "charge",
+            PieceColor.White,
+            CardTargetSelection.None());
+        var planScore = new CardPlanScore(
+            3,
+            new[] { new CardPlanScoreComponent("charge.test", 3, "Test.") });
+        var recommendation = new CardUseRecommendation(
+            state.AvailableCards[0],
+            baseScore: 1,
+            projectedScore: 4,
+            effectiveGain: 4,
+            plan,
+            planScore,
+            CardPlanSkipCode.None,
+            planSkipReason: null);
+
+        CardUsePlanTrace trace = recorder.Record(state, recommendation);
+
+        Assert.True(trace.Accepted);
+        Assert.Same(plan, trace.Plan);
+        Assert.Same(planScore, trace.PlanScore);
+        Assert.Equal(CardPlanSkipCode.None, trace.PlanSkipCode);
+        Assert.Null(trace.PlanSkipReason);
+    }
+
+    [Fact]
     public void Constructor_RejectsNullValidator()
     {
         Assert.Throws<ArgumentNullException>(
@@ -111,6 +144,27 @@ public sealed class CardUsePlanTraceRecorderTests
     {
         Assert.Throws<ArgumentNullException>(
             () => new CardUsePlanTrace(null, null!));
+    }
+
+    [Fact]
+    public void TraceConstructor_RejectsInconsistentSkipReason()
+    {
+        CardPlanValidationResult validation = CardPlanValidationResult.Valid();
+
+        Assert.Throws<ArgumentException>(
+            () => new CardUsePlanTrace(
+                null,
+                validation,
+                null,
+                CardPlanSkipCode.None,
+                "skip"));
+        Assert.Throws<ArgumentException>(
+            () => new CardUsePlanTrace(
+                null,
+                validation,
+                null,
+                CardPlanSkipCode.NoBenefit,
+                null));
     }
 
     private static CardInfo Card(string id, int remainingUses = 1)

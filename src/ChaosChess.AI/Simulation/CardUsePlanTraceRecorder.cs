@@ -1,4 +1,6 @@
 using System;
+using ChaosChess.AI.Decision;
+using ChaosChess.AI.Decision.CardTargeting;
 using ChaosChess.AI.Domain;
 
 namespace ChaosChess.AI.Simulation
@@ -23,6 +25,24 @@ namespace ChaosChess.AI.Simulation
         {
             CardPlanValidationResult validation = _validator.Validate(gameState, plan);
             return new CardUsePlanTrace(plan, validation);
+        }
+
+        public CardUsePlanTrace Record(
+            GameState? gameState,
+            CardUseRecommendation recommendation)
+        {
+            if (recommendation == null)
+            {
+                throw new ArgumentNullException(nameof(recommendation));
+            }
+
+            CardPlanValidationResult validation = _validator.Validate(gameState, recommendation.Plan);
+            return new CardUsePlanTrace(
+                recommendation.Plan,
+                validation,
+                recommendation.PlanScore,
+                recommendation.PlanSkipCode,
+                recommendation.PlanSkipReason);
         }
     }
 }
