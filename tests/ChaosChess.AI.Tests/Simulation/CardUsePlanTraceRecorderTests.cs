@@ -121,7 +121,8 @@ public sealed class CardUsePlanTraceRecorderTests
             plan,
             planScore,
             CardPlanSkipCode.None,
-            planSkipReason: null);
+            planSkipReason: null,
+            planLegalCandidateCount: 2);
 
         CardUsePlanTrace trace = recorder.Record(state, recommendation);
 
@@ -129,6 +130,7 @@ public sealed class CardUsePlanTraceRecorderTests
         Assert.Same(plan, trace.Plan);
         Assert.Same(planScore, trace.PlanScore);
         Assert.Equal(CardPlanSkipCode.None, trace.PlanSkipCode);
+        Assert.Equal(2, recommendation.PlanLegalCandidateCount);
         Assert.Null(trace.PlanSkipReason);
     }
 

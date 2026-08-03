@@ -22,6 +22,8 @@ namespace ChaosChess.AI.Simulator
             string? enginePath = null;
             string? variantConfigPath = null;
             int depth = 8;
+            string? balanceScenarioPath = null;
+            string? balanceMetricsOutputPath = null;
             var seenOptions = new HashSet<string>(StringComparer.Ordinal);
 
             for (int i = 0; i < args.Length; i++)
@@ -118,6 +120,22 @@ namespace ChaosChess.AI.Simulator
                         }
 
                         break;
+                    case "--balance-scenario":
+                        if (string.IsNullOrWhiteSpace(value))
+                        {
+                            return SimulatorCliParseResult.Error("--balance-scenario cannot be empty.");
+                        }
+
+                        balanceScenarioPath = value;
+                        break;
+                    case "--balance-metrics-output":
+                        if (string.IsNullOrWhiteSpace(value))
+                        {
+                            return SimulatorCliParseResult.Error("--balance-metrics-output cannot be empty.");
+                        }
+
+                        balanceMetricsOutputPath = value;
+                        break;
                     default:
                         return SimulatorCliParseResult.Error("Unknown option: " + option);
                 }
@@ -133,7 +151,9 @@ namespace ChaosChess.AI.Simulator
                 overwrite,
                 enginePath,
                 variantConfigPath,
-                depth));
+                depth,
+                balanceScenarioPath,
+                balanceMetricsOutputPath));
         }
 
         private static bool TryParsePositiveInt(string value, out int result)

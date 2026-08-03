@@ -19,7 +19,8 @@ namespace ChaosChess.AI.Decision
                 plan: null,
                 planScore: null,
                 CardPlanSkipCode.None,
-                planSkipReason: null)
+                planSkipReason: null,
+                planLegalCandidateCount: null)
         {
         }
 
@@ -31,7 +32,8 @@ namespace ChaosChess.AI.Decision
             CardUsePlan? plan,
             CardPlanScore? planScore,
             CardPlanSkipCode planSkipCode,
-            string? planSkipReason)
+            string? planSkipReason,
+            int? planLegalCandidateCount = null)
         {
             Card = card ?? throw new ArgumentNullException(nameof(card));
 
@@ -50,6 +52,11 @@ namespace ChaosChess.AI.Decision
                 throw new ArgumentException("Plan skip reason cannot be empty when skip code is present.", nameof(planSkipReason));
             }
 
+            if (planLegalCandidateCount.HasValue && planLegalCandidateCount.Value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(planLegalCandidateCount), planLegalCandidateCount.Value, "Plan legal candidate count cannot be negative.");
+            }
+
             BaseScore = baseScore;
             ProjectedScore = projectedScore;
             EffectiveGain = effectiveGain;
@@ -57,6 +64,7 @@ namespace ChaosChess.AI.Decision
             PlanScore = planScore;
             PlanSkipCode = planSkipCode;
             PlanSkipReason = planSkipReason;
+            PlanLegalCandidateCount = planLegalCandidateCount;
         }
 
         public CardInfo Card { get; }
@@ -74,5 +82,7 @@ namespace ChaosChess.AI.Decision
         public CardPlanSkipCode PlanSkipCode { get; }
 
         public string? PlanSkipReason { get; }
+
+        public int? PlanLegalCandidateCount { get; }
     }
 }

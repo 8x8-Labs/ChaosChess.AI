@@ -26,7 +26,11 @@ public sealed class ChargeCardTargetStrategyTests
 
         Assert.True(result.HasSelection);
         Assert.Equal(CardTargetKind.None, result.SelectedCandidate!.Plan.Target.Kind);
-        Assert.Equal(4, ComponentValue(result.SelectedCandidate.Score, "charge.movable_pawns"));
+        CardPlanScoreComponent movablePawns = Component(result.SelectedCandidate.Score, "charge.movable_pawns");
+        Assert.Equal(2, movablePawns.RawValue);
+        Assert.Equal(2, movablePawns.Weight);
+        Assert.Equal(4, movablePawns.Contribution);
+        Assert.Equal(movablePawns.Contribution, movablePawns.Value);
         Assert.Equal(4, result.SelectedCandidate.Score.Total);
     }
 
@@ -148,11 +152,16 @@ public sealed class ChargeCardTargetStrategyTests
 
     private static int ComponentValue(CardPlanScore score, string code)
     {
+        return Component(score, code).Value;
+    }
+
+    private static CardPlanScoreComponent Component(CardPlanScore score, string code)
+    {
         foreach (CardPlanScoreComponent component in score.Components)
         {
             if (component.Code == code)
             {
-                return component.Value;
+                return component;
             }
         }
 

@@ -76,10 +76,11 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 return CardPlanDecisionResult.Skipped(
                     CardPlanSkipCode.NoBenefit,
-                    "Agile legal candidates are below the activation threshold.");
+                    "Agile legal candidates are below the activation threshold.",
+                    legalCandidates.Count);
             }
 
-            return CardPlanDecisionResult.Selected(bestCandidate);
+            return CardPlanDecisionResult.Selected(bestCandidate, legalCandidates.Count);
         }
 
         private static CardPlanScore ScoreCandidate(
@@ -91,11 +92,13 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 new CardPlanScoreComponent(
                     "agile.actor_pawn",
-                    1,
+                    rawValue: 1,
+                    weight: 1,
                     "Agile can target one actor pawn."),
                 new CardPlanScoreComponent(
                     "agile.promotion_pressure",
-                    ScorePromotionPressure(actor, pawnSquare),
+                    rawValue: ScorePromotionPressure(actor, pawnSquare),
+                    weight: 1,
                     "Pawn has nearby promotion pressure that can benefit from expanded capture lanes.")
             };
 
@@ -103,7 +106,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 components.Add(new CardPlanScoreComponent(
                     "agile.engine_source",
-                    8,
+                    rawValue: 1,
+                    weight: 8,
                     "Current engine top move starts from this pawn."));
             }
 
@@ -111,7 +115,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
             {
                 components.Add(new CardPlanScoreComponent(
                     "agile.engine_destination_relation",
-                    4,
+                    rawValue: 1,
+                    weight: 4,
                     "Current engine top move destination is adjacent to this pawn's agile capture lane."));
             }
 

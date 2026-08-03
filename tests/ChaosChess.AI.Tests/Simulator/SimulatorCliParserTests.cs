@@ -29,6 +29,22 @@ namespace ChaosChess.AI.Tests.Simulator
         }
 
         [Fact]
+        public void Parse_BalanceScenarioOption_ReturnsScenarioPath()
+        {
+            SimulatorCliParseResult result = SimulatorCliParser.Parse(new[]
+            {
+                "--output", "out.csv",
+                "--balance-scenario", "scenario.json",
+                "--balance-metrics-output", "metrics"
+            });
+
+            Assert.True(result.Success);
+            Assert.NotNull(result.Options);
+            Assert.Equal("scenario.json", result.Options.BalanceScenarioPath);
+            Assert.Equal("metrics", result.Options.BalanceMetricsOutputPath);
+        }
+
+        [Fact]
         public void Parse_EngineOptions_AreStoredButNotRequiredForFakeMode()
         {
             SimulatorCliParseResult result = SimulatorCliParser.Parse(new[]

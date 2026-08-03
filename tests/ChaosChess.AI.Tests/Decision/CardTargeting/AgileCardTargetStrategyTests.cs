@@ -32,9 +32,11 @@ public sealed class AgileCardTargetStrategyTests
         CardPlanCandidate selected = result.SelectedCandidate!;
         Assert.Equal(enginePawn.Square, selected.Plan.Target.Piece!.Square);
         Assert.Equal(9, selected.Score.Total);
-        Assert.Contains(
-            selected.Score.Components,
-            component => component.Code == "agile.engine_source" && component.Value == 8);
+        CardPlanScoreComponent engineSource = Component(selected.Score, "agile.engine_source");
+        Assert.Equal(1, engineSource.RawValue);
+        Assert.Equal(8, engineSource.Weight);
+        Assert.Equal(8, engineSource.Contribution);
+        Assert.Equal(engineSource.Contribution, engineSource.Value);
     }
 
     [Fact]
@@ -196,6 +198,19 @@ public sealed class AgileCardTargetStrategyTests
             card,
             actor,
             engineTopMoves: moves);
+    }
+
+    private static CardPlanScoreComponent Component(CardPlanScore score, string code)
+    {
+        foreach (CardPlanScoreComponent component in score.Components)
+        {
+            if (component.Code == code)
+            {
+                return component;
+            }
+        }
+
+        throw new InvalidOperationException("Component was not found.");
     }
 
     private static GameState State(

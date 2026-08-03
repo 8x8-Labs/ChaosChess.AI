@@ -42,7 +42,11 @@ public sealed class PortalCardTargetStrategyTests
 
         Assert.True(result.HasSelection);
         Assert.Equal(new[] { new Square(0, 0), new Square(3, 3) }, result.SelectedCandidate!.Plan.Target.Squares);
-        Assert.Equal(6, ComponentValue(result.SelectedCandidate.Score, "portal.endpoint_distance"));
+        CardPlanScoreComponent distance = Component(result.SelectedCandidate.Score, "portal.endpoint_distance");
+        Assert.Equal(6, distance.RawValue);
+        Assert.Equal(1, distance.Weight);
+        Assert.Equal(6, distance.Contribution);
+        Assert.Equal(distance.Contribution, distance.Value);
     }
 
     [Fact]
@@ -142,11 +146,16 @@ public sealed class PortalCardTargetStrategyTests
 
     private static int ComponentValue(CardPlanScore score, string code)
     {
+        return Component(score, code).Value;
+    }
+
+    private static CardPlanScoreComponent Component(CardPlanScore score, string code)
+    {
         foreach (CardPlanScoreComponent component in score.Components)
         {
             if (component.Code == code)
             {
-                return component.Value;
+                return component;
             }
         }
 

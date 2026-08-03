@@ -25,7 +25,11 @@ public sealed class FireCardTargetStrategyTests
 
         Assert.True(result.HasSelection);
         Assert.Equal(new Square(4, 4), result.SelectedCandidate!.Plan.Target.Squares[0]);
-        Assert.Equal(10, ComponentValue(result.SelectedCandidate.Score, "fire.enemy_engine_destination"));
+        CardPlanScoreComponent enemyDestination = Component(result.SelectedCandidate.Score, "fire.enemy_engine_destination");
+        Assert.Equal(1, enemyDestination.RawValue);
+        Assert.Equal(10, enemyDestination.Weight);
+        Assert.Equal(10, enemyDestination.Contribution);
+        Assert.Equal(enemyDestination.Contribution, enemyDestination.Value);
     }
 
     [Fact]
@@ -141,11 +145,16 @@ public sealed class FireCardTargetStrategyTests
 
     private static int ComponentValue(CardPlanScore score, string code)
     {
+        return Component(score, code).Value;
+    }
+
+    private static CardPlanScoreComponent Component(CardPlanScore score, string code)
+    {
         foreach (CardPlanScoreComponent component in score.Components)
         {
             if (component.Code == code)
             {
-                return component.Value;
+                return component;
             }
         }
 
