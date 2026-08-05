@@ -123,6 +123,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                 return failure;
             }
 
+            if (!TryResolveDestinationSquare(context.Plan, primitive, out Square? destination, out failure))
+            {
+                return failure;
+            }
+
             if (FindPiece(pieces, square) != null || HasTileEffect(tileEffects, square))
             {
                 return CardEffectApplicationResult.Failed(
@@ -136,8 +141,9 @@ namespace ChaosChess.AI.Domain.CardEffects
                 square,
                 primitive.Owner ?? context.Owner,
                 primitive.DurationTurns.Value,
-                primitive.DestinationSquare,
-                primitive.SharedRemainingUses));
+                destination,
+                primitive.SharedRemainingUses,
+                primitive.TileEffectLifetimeKind));
             return null;
         }
 
@@ -312,6 +318,40 @@ namespace ChaosChess.AI.Domain.CardEffects
             failure = CardEffectApplicationResult.Failed(
                 CardEffectApplicationCode.InvalidDefinition,
                 new[] { "Primitive target binding cannot be resolved from the card use plan." });
+            return false;
+        }
+
+        private static bool TryResolveDestinationSquare(
+            CardUsePlan plan,
+            CardEffectPrimitive primitive,
+            out Square? destination,
+            out CardEffectApplicationResult? failure)
+        {
+            failure = null;
+
+            if (primitive.DestinationSquare.HasValue)
+            {
+                destination = primitive.DestinationSquare.Value;
+                return true;
+            }
+
+            if (!primitive.DestinationTargetIndex.HasValue)
+            {
+                destination = null;
+                return true;
+            }
+
+            int index = primitive.DestinationTargetIndex.Value;
+            if (index < plan.Target.Squares.Count)
+            {
+                destination = plan.Target.Squares[index];
+                return true;
+            }
+
+            destination = null;
+            failure = CardEffectApplicationResult.Failed(
+                CardEffectApplicationCode.InvalidDefinition,
+                new[] { "Primitive destination target binding cannot be resolved from the card use plan." });
             return false;
         }
 

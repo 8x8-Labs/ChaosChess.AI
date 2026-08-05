@@ -34,6 +34,8 @@ namespace ChaosChess.AI.Domain.CardEffects
                     new CardEffectPrimitive(
                         CardEffectPrimitiveKind.AddTileEffect,
                         effectType: "Fire",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
@@ -44,6 +46,8 @@ namespace ChaosChess.AI.Domain.CardEffects
                     new CardEffectPrimitive(
                         CardEffectPrimitiveKind.AddTileEffect,
                         effectType: "Peace",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
@@ -54,15 +58,21 @@ namespace ChaosChess.AI.Domain.CardEffects
                     new CardEffectPrimitive(
                         CardEffectPrimitiveKind.AddTileEffect,
                         effectType: "Portal",
+                        durationTurns: -1,
                         sharedRemainingUses: 2,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
-                        targetIndex: 0),
+                        targetIndex: 0,
+                        destinationTargetIndex: 1),
                     new CardEffectPrimitive(
                         CardEffectPrimitiveKind.AddTileEffect,
                         effectType: "Portal",
+                        durationTurns: -1,
                         sharedRemainingUses: 2,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
-                        targetIndex: 1)
+                        targetIndex: 1,
+                        destinationTargetIndex: 0)
                 })
         };
 

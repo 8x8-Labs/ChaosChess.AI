@@ -11,7 +11,8 @@ namespace ChaosChess.AI.Domain
             PieceColor? owner,
             int remainingTurns,
             Square? destinationSquare = null,
-            int? sharedRemainingUses = null)
+            int? sharedRemainingUses = null,
+            TileEffectLifetimeKind lifetimeKind = TileEffectLifetimeKind.TurnLimited)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -23,7 +24,9 @@ namespace ChaosChess.AI.Domain
                 throw new ArgumentException("Tile effect type cannot be empty.", nameof(effectType));
             }
 
-            if (remainingTurns < 0)
+            TileEffectLifetimeKindGuard.EnsureValid(lifetimeKind, nameof(lifetimeKind));
+
+            if (remainingTurns < 0 && lifetimeKind != TileEffectLifetimeKind.PersistentUntilTriggered)
             {
                 throw new ArgumentOutOfRangeException(nameof(remainingTurns), remainingTurns, "Remaining turns cannot be negative.");
             }
@@ -40,6 +43,7 @@ namespace ChaosChess.AI.Domain
             RemainingTurns = remainingTurns;
             DestinationSquare = destinationSquare;
             SharedRemainingUses = sharedRemainingUses;
+            LifetimeKind = lifetimeKind;
         }
 
         public string Id { get; }
@@ -55,5 +59,7 @@ namespace ChaosChess.AI.Domain
         public Square? DestinationSquare { get; }
 
         public int? SharedRemainingUses { get; }
+
+        public TileEffectLifetimeKind LifetimeKind { get; }
     }
 }

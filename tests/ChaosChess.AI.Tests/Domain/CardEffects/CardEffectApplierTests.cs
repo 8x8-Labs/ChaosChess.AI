@@ -41,10 +41,12 @@ public sealed class CardEffectApplierTests
     }
 
     [Fact]
-    public void Apply_DefaultFirePeaceAndPortalDefinitionsReturnUnsupportedWithoutFakeDuration()
+    public void Apply_DefaultFirePeaceAndPortalDefinitionsCreatePersistentTileEffects()
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
         var applier = new CardEffectApplier();
+        var firstPortal = new Square(2, 2);
+        var secondPortal = new Square(5, 5);
 
         CardEffectApplicationResult fire = applier.Apply(
             catalog.FindDefinition("fire")!,
@@ -63,15 +65,41 @@ public sealed class CardEffectApplierTests
                 new CardUsePlan(
                     "portal",
                     PieceColor.White,
-                    CardTargetSelection.OrderedSquares(new[] { new Square(2, 2), new Square(5, 5) }))));
+                    CardTargetSelection.OrderedSquares(new[] { firstPortal, secondPortal }))));
 
-        Assert.Equal(CardEffectApplicationStatus.Unsupported, fire.Status);
-        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, fire.Code);
-        Assert.Null(fire.State);
-        Assert.Equal(CardEffectApplicationStatus.Unsupported, peace.Status);
-        Assert.Null(peace.State);
-        Assert.Equal(CardEffectApplicationStatus.Unsupported, portal.Status);
-        Assert.Null(portal.State);
+        Assert.Equal(CardEffectApplicationStatus.Exact, fire.Status);
+        TileEffectInfo fireEffect = Assert.Single(fire.State!.TileEffects);
+        Assert.Equal("Fire", fireEffect.EffectType);
+        Assert.Equal(-1, fireEffect.RemainingTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, fireEffect.LifetimeKind);
+
+        Assert.Equal(CardEffectApplicationStatus.Exact, peace.Status);
+        TileEffectInfo peaceEffect = Assert.Single(peace.State!.TileEffects);
+        Assert.Equal("Peace", peaceEffect.EffectType);
+        Assert.Equal(-1, peaceEffect.RemainingTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, peaceEffect.LifetimeKind);
+
+        Assert.Equal(CardEffectApplicationStatus.Exact, portal.Status);
+        Assert.Collection(
+            portal.State!.TileEffects,
+            first =>
+            {
+                Assert.Equal("Portal", first.EffectType);
+                Assert.Equal(firstPortal, first.Square);
+                Assert.Equal(secondPortal, first.DestinationSquare);
+                Assert.Equal(2, first.SharedRemainingUses);
+                Assert.Equal(-1, first.RemainingTurns);
+                Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, first.LifetimeKind);
+            },
+            second =>
+            {
+                Assert.Equal("Portal", second.EffectType);
+                Assert.Equal(secondPortal, second.Square);
+                Assert.Equal(firstPortal, second.DestinationSquare);
+                Assert.Equal(2, second.SharedRemainingUses);
+                Assert.Equal(-1, second.RemainingTurns);
+                Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, second.LifetimeKind);
+            });
     }
 
     [Fact]
@@ -229,6 +257,38 @@ public sealed class CardEffectApplierTests
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, agile.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, charge.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, charge.Code);
+    }
+
+    [Fact]
+    public void Apply_RejectsUnresolvableDestinationTargetIndex()
+    {
+        var state = CreateState();
+        var plan = new CardUsePlan(
+            "broken_portal",
+            PieceColor.White,
+            CardTargetSelection.OrderedSquares(new[] { new Square(2, 2), new Square(5, 5) }));
+        var definition = new CardEffectDefinition(
+            "broken_portal",
+            CardTargetQuery.OrderedEmptySquares(2),
+            new[]
+            {
+                new CardEffectPrimitive(
+                    CardEffectPrimitiveKind.AddTileEffect,
+                    effectType: "Portal",
+                    durationTurns: -1,
+                    tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                    targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
+                    targetIndex: 0,
+                    destinationTargetIndex: 2)
+            });
+
+        CardEffectApplicationResult result = new CardEffectApplier().Apply(
+            definition,
+            CreateContext(state, plan));
+
+        Assert.Equal(CardEffectApplicationStatus.Failed, result.Status);
+        Assert.Equal(CardEffectApplicationCode.InvalidDefinition, result.Code);
+        Assert.Null(result.State);
     }
 
     [Fact]

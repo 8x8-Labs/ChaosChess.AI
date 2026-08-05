@@ -89,6 +89,18 @@ public sealed class DefaultCardCatalogTests
     }
 
     [Fact]
+    public void DefaultCatalog_TileWaveZeroCardsAreExactCommon()
+    {
+        var catalog = new DefaultCardCatalog();
+
+        Assert.Equal(CardCatalogSupportGrade.NeedsCommonPrimitive, catalog.FindEntry("agile")!.SupportGrade);
+        Assert.Equal(CardCatalogSupportGrade.NeedsCommonPrimitive, catalog.FindEntry("charge")!.SupportGrade);
+        Assert.Equal(CardCatalogSupportGrade.ExactCommon, catalog.FindEntry("fire")!.SupportGrade);
+        Assert.Equal(CardCatalogSupportGrade.ExactCommon, catalog.FindEntry("peace_zone")!.SupportGrade);
+        Assert.Equal(CardCatalogSupportGrade.ExactCommon, catalog.FindEntry("portal")!.SupportGrade);
+    }
+
+    [Fact]
     public void Lookup_IsCaseInsensitiveAndUnknownReturnsNullOrFalse()
     {
         var catalog = new DefaultCardCatalog();

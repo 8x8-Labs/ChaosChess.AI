@@ -34,7 +34,7 @@ public sealed class CardEffectCompatibilityContractTests
         var effectCatalog = new DefaultCardEffectDefinitionCatalog();
         var applier = new CardEffectApplier();
 
-        AssertValidButUnsupported(
+        AssertValidWithStatus(
             state,
             validator,
             effectCatalog,
@@ -43,26 +43,30 @@ public sealed class CardEffectCompatibilityContractTests
                 "agile",
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
-                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))));
-        AssertValidButUnsupported(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
             state,
             validator,
             effectCatalog,
             applier,
-            new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None()));
-        AssertValidButUnsupported(
+            new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
             state,
             validator,
             effectCatalog,
             applier,
-            new CardUsePlan("fire", PieceColor.White, CardTargetSelection.BoardSquare(new Square(3, 3))));
-        AssertValidButUnsupported(
+            new CardUsePlan("fire", PieceColor.White, CardTargetSelection.BoardSquare(new Square(3, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
             state,
             validator,
             effectCatalog,
             applier,
-            new CardUsePlan("peace_zone", PieceColor.White, CardTargetSelection.BoardSquare(new Square(4, 3))));
-        AssertValidButUnsupported(
+            new CardUsePlan("peace_zone", PieceColor.White, CardTargetSelection.BoardSquare(new Square(4, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
             state,
             validator,
             effectCatalog,
@@ -70,15 +74,17 @@ public sealed class CardEffectCompatibilityContractTests
             new CardUsePlan(
                 "portal",
                 PieceColor.White,
-                CardTargetSelection.OrderedSquares(new[] { new Square(2, 2), new Square(5, 5) })));
+                CardTargetSelection.OrderedSquares(new[] { new Square(2, 2), new Square(5, 5) })),
+            CardEffectApplicationStatus.Exact);
     }
 
-    private static void AssertValidButUnsupported(
+    private static void AssertValidWithStatus(
         GameState state,
         CardUsePlanValidator validator,
         DefaultCardEffectDefinitionCatalog effectCatalog,
         CardEffectApplier applier,
-        CardUsePlan plan)
+        CardUsePlan plan,
+        CardEffectApplicationStatus expectedStatus)
     {
         CardPlanValidationResult validation = validator.Validate(state, plan);
         Assert.True(validation.IsValid);
@@ -87,11 +93,9 @@ public sealed class CardEffectCompatibilityContractTests
             effectCatalog.FindDefinition(plan.CardId)!,
             new CardEffectApplicationContext(state, plan, plan.Actor, plan.Actor, plan.Actor));
 
-        Assert.Equal(CardEffectApplicationStatus.Unsupported, result.Status);
-        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, result.Code);
+        Assert.Equal(expectedStatus, result.Status);
         Assert.NotEqual(CardEffectApplicationCode.InvalidContext, result.Code);
         Assert.NotEqual(CardEffectApplicationCode.IllegalTarget, result.Code);
-        Assert.Null(result.State);
     }
 
     private static GameState CreateState()
