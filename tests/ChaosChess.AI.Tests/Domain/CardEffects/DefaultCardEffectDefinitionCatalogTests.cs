@@ -11,17 +11,21 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [Theory]
     [InlineData("agile", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("aim", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("at_mine", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("cobweb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("gods_move", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("jumping_platform", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
+    [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
@@ -73,17 +77,25 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
 
+        CardEffectPrimitive atMine = Assert.Single(catalog.FindDefinition("at_mine")!.Primitives);
+        CardEffectPrimitive cobweb = Assert.Single(catalog.FindDefinition("cobweb")!.Primitives);
         CardEffectPrimitive fire = Assert.Single(catalog.FindDefinition("fire")!.Primitives);
+        CardEffectPrimitive jumpingPlatform = Assert.Single(catalog.FindDefinition("jumping_platform")!.Primitives);
         CardEffectPrimitive peace = Assert.Single(catalog.FindDefinition("peace_zone")!.Primitives);
+        CardEffectPrimitive psilocybinMushroom = Assert.Single(catalog.FindDefinition("psilocybin_mushroom")!.Primitives);
 
+        AssertTileEffect(atMine, "ATMine");
+        AssertTileEffect(cobweb, "Cobweb");
         Assert.Equal("Fire", fire.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, fire.TargetBinding);
         Assert.Equal(-1, fire.DurationTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, fire.TileEffectLifetimeKind);
+        AssertTileEffect(jumpingPlatform, "JumpingPlatform");
         Assert.Equal("Peace", peace.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, peace.TargetBinding);
         Assert.Equal(-1, peace.DurationTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, peace.TileEffectLifetimeKind);
+        AssertTileEffect(psilocybinMushroom, "PsilocybinMushroom");
     }
 
     [Fact]
@@ -189,5 +201,14 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
             cardId,
             CardTargetQuery.None(),
             new[] { new CardEffectPrimitive(CardEffectPrimitiveKind.RemoveTileEffect) });
+    }
+
+    private static void AssertTileEffect(CardEffectPrimitive primitive, string expectedType)
+    {
+        Assert.Equal(CardEffectPrimitiveKind.AddTileEffect, primitive.Kind);
+        Assert.Equal(expectedType, primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+        Assert.Equal(-1, primitive.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, primitive.TileEffectLifetimeKind);
     }
 }

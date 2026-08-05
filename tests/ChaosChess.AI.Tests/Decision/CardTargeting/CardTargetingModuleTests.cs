@@ -15,36 +15,44 @@ public sealed class CardTargetingModuleTests
 
         Assert.True(registry.TryGetStrategy("agile", out _));
         Assert.True(registry.TryGetStrategy("aim", out _));
+        Assert.True(registry.TryGetStrategy("at_mine", out _));
         Assert.True(registry.TryGetStrategy("caterpillar", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
+        Assert.True(registry.TryGetStrategy("cobweb", out _));
         Assert.True(registry.TryGetStrategy("concentration", out _));
         Assert.True(registry.TryGetStrategy("dark_hand", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
         Assert.True(registry.TryGetStrategy("gods_move", out _));
+        Assert.True(registry.TryGetStrategy("jumping_platform", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
         Assert.True(registry.TryGetStrategy("missing_promotion", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
+        Assert.True(registry.TryGetStrategy("psilocybin_mushroom", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(15, registry.Strategies.Count);
+        Assert.Equal(19, registry.Strategies.Count);
     }
 
     [Theory]
     [InlineData("agile")]
     [InlineData("aim")]
+    [InlineData("at_mine")]
     [InlineData("caterpillar")]
     [InlineData("charge")]
+    [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("gods_move")]
+    [InlineData("jumping_platform")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
+    [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
     [InlineData("thunderclap_flash")]
     public void DecideBestPlan_DefaultStrategiesReturnPlanForSupportedCards(

@@ -72,16 +72,20 @@ public sealed class UnityConsumerApiContractTests
         BoardState boardState = FenParser.Parse("4k3/r7/8/8/8/8/4P3/RN1QK3 w - - 0 1");
         var agile = new CardInfo("agile", "Mobility", remainingUses: 1);
         var aim = new CardInfo("aim", "Mobility", remainingUses: 1);
+        var atMine = new CardInfo("at_mine", "BoardControl", remainingUses: 1);
         var caterpillar = new CardInfo("caterpillar", "Mobility", remainingUses: 1);
         var charge = new CardInfo("charge", "Mobility", remainingUses: 1);
+        var cobweb = new CardInfo("cobweb", "BoardControl", remainingUses: 1);
         var concentration = new CardInfo("concentration", "Mobility", remainingUses: 1);
         var darkHand = new CardInfo("dark_hand", "Tactical", remainingUses: 1);
         var fastMarch = new CardInfo("fast_march", "Mobility", remainingUses: 1);
         var fire = new CardInfo("fire", "BoardControl", remainingUses: 1);
         var godsMove = new CardInfo("gods_move", "Mobility", remainingUses: 1);
+        var jumpingPlatform = new CardInfo("jumping_platform", "BoardControl", remainingUses: 1);
         var limitless = new CardInfo("limitless", "Mobility", remainingUses: 1);
         var peaceZone = new CardInfo("peace_zone", "BoardControl", remainingUses: 1);
         var portal = new CardInfo("portal", "Mobility", remainingUses: 1);
+        var psilocybinMushroom = new CardInfo("psilocybin_mushroom", "BoardControl", remainingUses: 1);
         var sneakPawn = new CardInfo("sneak_pawn", "Mobility", remainingUses: 1);
         var thunderclapFlash = new CardInfo("thunderclap_flash", "Mobility", remainingUses: 1);
         var gameState = new GameState(
@@ -90,16 +94,20 @@ public sealed class UnityConsumerApiContractTests
             {
                 agile,
                 aim,
+                atMine,
                 caterpillar,
                 charge,
+                cobweb,
                 concentration,
                 darkHand,
                 fastMarch,
                 fire,
                 godsMove,
+                jumpingPlatform,
                 limitless,
                 peaceZone,
                 portal,
+                psilocybinMushroom,
                 sneakPawn,
                 thunderclapFlash
             },
@@ -108,8 +116,10 @@ public sealed class UnityConsumerApiContractTests
         var catalog = new DefaultCardPlanningCatalog();
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("agile").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("aim").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("at_mine").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("caterpillar").RequiredTargetKind);
         Assert.Equal(CardTargetKind.None, catalog.GetDefinition("charge").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("cobweb").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("concentration").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("dark_hand").RequiredTargetKind);
         Assert.Equal(CardTargetOwnerRelation.Opponent, catalog.GetDefinition("dark_hand").RequiredTargetOwnerRelation);
@@ -117,9 +127,11 @@ public sealed class UnityConsumerApiContractTests
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("fire").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("gods_move").RequiredTargetKind);
         Assert.Equal(CardTargetOwnerRelation.Self, catalog.GetDefinition("gods_move").RequiredTargetOwnerRelation);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("jumping_platform").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("limitless").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("peace_zone").RequiredTargetKind);
         Assert.Equal(2, catalog.GetDefinition("portal").RequiredTargetCount);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("psilocybin_mushroom").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("sneak_pawn").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("thunderclap_flash").RequiredTargetKind);
 
@@ -142,10 +154,18 @@ public sealed class UnityConsumerApiContractTests
                     new Square(4, 1),
                     PieceColor.White,
                     PieceKind.Pawn)));
+        CardUsePlan atMinePlan = new CardUsePlan(
+            "at_mine",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(3, 3)));
         CardUsePlan chargePlan = new CardUsePlan(
             "charge",
             PieceColor.White,
             CardTargetSelection.None());
+        CardUsePlan cobwebPlan = new CardUsePlan(
+            "cobweb",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(4, 3)));
         CardUsePlan caterpillarPlan = new CardUsePlan(
             "caterpillar",
             PieceColor.White,
@@ -190,6 +210,10 @@ public sealed class UnityConsumerApiContractTests
                     new Square(4, 1),
                     PieceColor.White,
                     PieceKind.Pawn)));
+        CardUsePlan jumpingPlatformPlan = new CardUsePlan(
+            "jumping_platform",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(5, 3)));
         CardUsePlan limitlessPlan = new CardUsePlan(
             "limitless",
             PieceColor.White,
@@ -207,6 +231,10 @@ public sealed class UnityConsumerApiContractTests
             PieceColor.White,
             CardTargetSelection.OrderedSquares(
                 new[] { new Square(2, 2), new Square(7, 7) }));
+        CardUsePlan psilocybinMushroomPlan = new CardUsePlan(
+            "psilocybin_mushroom",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(3, 4)));
         CardUsePlan sneakPawnPlan = new CardUsePlan(
             "sneak_pawn",
             PieceColor.White,
@@ -226,16 +254,20 @@ public sealed class UnityConsumerApiContractTests
 
         Assert.True(validator.Validate(gameState, agilePlan).IsValid);
         Assert.True(validator.Validate(gameState, aimPlan).IsValid);
+        Assert.True(validator.Validate(gameState, atMinePlan).IsValid);
         Assert.True(validator.Validate(gameState, caterpillarPlan).IsValid);
         Assert.True(validator.Validate(gameState, chargePlan).IsValid);
+        Assert.True(validator.Validate(gameState, cobwebPlan).IsValid);
         Assert.True(validator.Validate(gameState, concentrationPlan).IsValid);
         Assert.True(validator.Validate(gameState, darkHandPlan).IsValid);
         Assert.True(validator.Validate(gameState, fastMarchPlan).IsValid);
         Assert.True(validator.Validate(gameState, firePlan).IsValid);
         Assert.True(validator.Validate(gameState, godsMovePlan).IsValid);
+        Assert.True(validator.Validate(gameState, jumpingPlatformPlan).IsValid);
         Assert.True(validator.Validate(gameState, limitlessPlan).IsValid);
         Assert.True(validator.Validate(gameState, peaceZonePlan).IsValid);
         Assert.True(validator.Validate(gameState, portalPlan).IsValid);
+        Assert.True(validator.Validate(gameState, psilocybinMushroomPlan).IsValid);
         Assert.True(validator.Validate(gameState, sneakPawnPlan).IsValid);
         Assert.True(validator.Validate(gameState, thunderclapFlashPlan).IsValid);
         Assert.Equal(new[] { new Square(2, 2), new Square(7, 7) }, portalPlan.Target.Squares);

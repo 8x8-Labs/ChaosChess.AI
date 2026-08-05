@@ -10,17 +10,21 @@ public sealed class CardEffectCompatibilityContractTests
     [Theory]
     [InlineData("agile")]
     [InlineData("aim")]
+    [InlineData("at_mine")]
     [InlineData("caterpillar")]
     [InlineData("charge")]
+    [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("gods_move")]
+    [InlineData("jumping_platform")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
+    [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
     [InlineData("thunderclap_flash")]
     public void DefaultEffectDefinitions_PreservePlanningCatalogTargetShape(string cardId)
@@ -72,6 +76,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("at_mine", PieceColor.White, CardTargetSelection.BoardSquare(new Square(3, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan(
                 "caterpillar",
                 PieceColor.White,
@@ -85,6 +96,13 @@ public sealed class CardEffectCompatibilityContractTests
             applier,
             new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("cobweb", PieceColor.White, CardTargetSelection.BoardSquare(new Square(4, 3))),
+            CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
             state,
             validator,
@@ -163,6 +181,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("jumping_platform", PieceColor.White, CardTargetSelection.BoardSquare(new Square(5, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan("peace_zone", PieceColor.White, CardTargetSelection.BoardSquare(new Square(4, 3))),
             CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
@@ -174,6 +199,13 @@ public sealed class CardEffectCompatibilityContractTests
                 "portal",
                 PieceColor.White,
             CardTargetSelection.OrderedSquares(new[] { new Square(2, 2), new Square(5, 5) })),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("psilocybin_mushroom", PieceColor.White, CardTargetSelection.BoardSquare(new Square(3, 4))),
             CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
             state,
@@ -244,17 +276,21 @@ public sealed class CardEffectCompatibilityContractTests
             {
                 new CardInfo("agile", "Mobility", 1),
                 new CardInfo("aim", "Mobility", 1),
+                new CardInfo("at_mine", "BoardControl", 1),
                 new CardInfo("caterpillar", "Mobility", 1),
                 new CardInfo("charge", "Mobility", 1),
+                new CardInfo("cobweb", "BoardControl", 1),
                 new CardInfo("concentration", "Mobility", 1),
                 new CardInfo("dark_hand", "Tactical", 1),
                 new CardInfo("fast_march", "Mobility", 1),
                 new CardInfo("fire", "BoardControl", 1),
                 new CardInfo("gods_move", "Mobility", 1),
+                new CardInfo("jumping_platform", "BoardControl", 1),
                 new CardInfo("limitless", "Mobility", 1),
                 new CardInfo("missing_promotion", "Transformation", 1),
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1),
+                new CardInfo("psilocybin_mushroom", "BoardControl", 1),
                 new CardInfo("sneak_pawn", "Mobility", 1),
                 new CardInfo("thunderclap_flash", "Mobility", 1)
             },

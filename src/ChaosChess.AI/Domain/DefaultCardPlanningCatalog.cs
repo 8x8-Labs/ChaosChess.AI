@@ -74,17 +74,21 @@ namespace ChaosChess.AI.Domain
         {
             CardPlanningDefinition.Supported("agile", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("aim", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
+            CardPlanningDefinition.Supported("at_mine", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("caterpillar", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, KnightKinds)),
             CardPlanningDefinition.Supported("charge", CardTargetKind.None, 0),
+            CardPlanningDefinition.Supported("cobweb", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("concentration", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, StandardPromotableKinds)),
             CardPlanningDefinition.Supported("dark_hand", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, DarkHandTargetKinds)),
             CardPlanningDefinition.Supported("fast_march", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("fire", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("gods_move", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, GodsMoveTargetKinds)),
+            CardPlanningDefinition.Supported("jumping_platform", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("limitless", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, AllMobileKinds)),
             CardPlanningDefinition.Supported("missing_promotion", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, MissingPromotionTargetKinds)),
             CardPlanningDefinition.Supported("peace_zone", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("portal", CardTargetKind.OrderedSquares, 2),
+            CardPlanningDefinition.Supported("psilocybin_mushroom", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("sneak_pawn", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("thunderclap_flash", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, RookKinds))
         };

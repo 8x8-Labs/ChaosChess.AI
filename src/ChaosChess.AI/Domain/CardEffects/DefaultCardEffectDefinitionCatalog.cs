@@ -31,6 +31,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "at_mine",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddTileEffect,
+                        effectType: "ATMine",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
                 "caterpillar",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -47,6 +59,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                 new[]
                 {
                     new CardEffectPrimitive(CardEffectPrimitiveKind.MovePiece)
+                }),
+            new CardEffectDefinition(
+                "cobweb",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddTileEffect,
+                        effectType: "Cobweb",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
                 "concentration",
@@ -101,6 +125,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                     new CardEffectPrimitive(
                         CardEffectPrimitiveKind.ChangePieceKind,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "jumping_platform",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddTileEffect,
+                        effectType: "JumpingPlatform",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
                 "limitless",
@@ -158,6 +194,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
                         targetIndex: 1,
                         destinationTargetIndex: 0)
+                }),
+            new CardEffectDefinition(
+                "psilocybin_mushroom",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddTileEffect,
+                        effectType: "PsilocybinMushroom",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
                 "sneak_pawn",

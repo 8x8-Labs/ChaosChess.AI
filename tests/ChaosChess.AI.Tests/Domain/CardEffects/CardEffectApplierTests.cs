@@ -41,7 +41,7 @@ public sealed class CardEffectApplierTests
     }
 
     [Fact]
-    public void Apply_DefaultFirePeaceAndPortalDefinitionsCreatePersistentTileEffects()
+    public void Apply_DefaultTileDefinitionsCreatePersistentTileEffects()
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
         var applier = new CardEffectApplier();
@@ -63,9 +63,13 @@ public sealed class CardEffectApplierTests
             CreateContext(
                 CreateState(),
                 new CardUsePlan(
-                    "portal",
-                    PieceColor.White,
-                    CardTargetSelection.OrderedSquares(new[] { firstPortal, secondPortal }))));
+                "portal",
+                PieceColor.White,
+                CardTargetSelection.OrderedSquares(new[] { firstPortal, secondPortal }))));
+        CardEffectApplicationResult atMine = ApplyTile(catalog, applier, "at_mine", "ATMine", new Square(0, 2));
+        CardEffectApplicationResult cobweb = ApplyTile(catalog, applier, "cobweb", "Cobweb", new Square(1, 2));
+        CardEffectApplicationResult jumpingPlatform = ApplyTile(catalog, applier, "jumping_platform", "JumpingPlatform", new Square(2, 3));
+        CardEffectApplicationResult psilocybinMushroom = ApplyTile(catalog, applier, "psilocybin_mushroom", "PsilocybinMushroom", new Square(3, 4));
 
         Assert.Equal(CardEffectApplicationStatus.Exact, fire.Status);
         TileEffectInfo fireEffect = Assert.Single(fire.State!.TileEffects);
@@ -100,6 +104,10 @@ public sealed class CardEffectApplierTests
                 Assert.Equal(-1, second.RemainingTurns);
                 Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, second.LifetimeKind);
             });
+        AssertPersistentTileEffect(atMine, "ATMine", new Square(0, 2));
+        AssertPersistentTileEffect(cobweb, "Cobweb", new Square(1, 2));
+        AssertPersistentTileEffect(jumpingPlatform, "JumpingPlatform", new Square(2, 3));
+        AssertPersistentTileEffect(psilocybinMushroom, "PsilocybinMushroom", new Square(3, 4));
     }
 
     [Fact]
@@ -381,6 +389,36 @@ public sealed class CardEffectApplierTests
             plan.Actor,
             caster: plan.Actor,
             owner: plan.Actor);
+    }
+
+    private static CardEffectApplicationResult ApplyTile(
+        DefaultCardEffectDefinitionCatalog catalog,
+        CardEffectApplier applier,
+        string cardId,
+        string expectedEffectType,
+        Square square)
+    {
+        CardEffectApplicationResult result = applier.Apply(
+            catalog.FindDefinition(cardId)!,
+            CreateContext(
+                CreateState(),
+                new CardUsePlan(cardId, PieceColor.White, CardTargetSelection.BoardSquare(square))));
+
+        Assert.Equal(expectedEffectType, Assert.Single(result.State!.TileEffects).EffectType);
+        return result;
+    }
+
+    private static void AssertPersistentTileEffect(
+        CardEffectApplicationResult result,
+        string expectedEffectType,
+        Square expectedSquare)
+    {
+        Assert.Equal(CardEffectApplicationStatus.Exact, result.Status);
+        TileEffectInfo effect = Assert.Single(result.State!.TileEffects);
+        Assert.Equal(expectedEffectType, effect.EffectType);
+        Assert.Equal(expectedSquare, effect.Square);
+        Assert.Equal(-1, effect.RemainingTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, effect.LifetimeKind);
     }
 
     private static GameState CreateState(

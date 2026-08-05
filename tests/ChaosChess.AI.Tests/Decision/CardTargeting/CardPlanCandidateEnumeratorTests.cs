@@ -90,8 +90,12 @@ public sealed class CardPlanCandidateEnumeratorTests
     }
 
     [Theory]
+    [InlineData("at_mine")]
+    [InlineData("cobweb")]
     [InlineData("fire")]
+    [InlineData("jumping_platform")]
     [InlineData("peace_zone")]
+    [InlineData("psilocybin_mushroom")]
     public void EnumerateLegalCandidates_BoardSquareCards_ExcludeOccupiedAndEffectSquares(
         string cardId)
     {
