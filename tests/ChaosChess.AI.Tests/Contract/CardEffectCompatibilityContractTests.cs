@@ -9,7 +9,9 @@ public sealed class CardEffectCompatibilityContractTests
 {
     [Theory]
     [InlineData("agile")]
+    [InlineData("aim")]
     [InlineData("charge")]
+    [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
@@ -50,7 +52,29 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan(
+                "aim",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "fast_march",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
             state,
@@ -118,7 +142,9 @@ public sealed class CardEffectCompatibilityContractTests
             new[]
             {
                 new CardInfo("agile", "Mobility", 1),
+                new CardInfo("aim", "Mobility", 1),
                 new CardInfo("charge", "Mobility", 1),
+                new CardInfo("fast_march", "Mobility", 1),
                 new CardInfo("fire", "BoardControl", 1),
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1)

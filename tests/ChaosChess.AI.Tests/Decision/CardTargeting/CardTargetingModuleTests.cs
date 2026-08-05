@@ -9,25 +9,29 @@ namespace ChaosChess.AI.Tests.Decision.CardTargeting;
 public sealed class CardTargetingModuleTests
 {
     [Fact]
-    public void DefaultCatalog_ContainsRepresentativeFiveStrategies()
+    public void DefaultCatalog_ContainsSupportedStrategies()
     {
         CardTargetStrategyRegistry registry = DefaultCardTargetStrategyCatalog.CreateRegistry();
 
         Assert.True(registry.TryGetStrategy("agile", out _));
+        Assert.True(registry.TryGetStrategy("aim", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
+        Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
-        Assert.Equal(5, registry.Strategies.Count);
+        Assert.Equal(7, registry.Strategies.Count);
     }
 
     [Theory]
     [InlineData("agile")]
+    [InlineData("aim")]
     [InlineData("charge")]
+    [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
-    public void DecideBestPlan_DefaultStrategiesReturnPlanForRepresentativeCards(
+    public void DecideBestPlan_DefaultStrategiesReturnPlanForSupportedCards(
         string cardId)
     {
         GameState state = State(

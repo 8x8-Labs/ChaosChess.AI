@@ -9,11 +9,13 @@ public sealed class CardPlanningDefinitionTests
 {
     [Theory]
     [InlineData("agile", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("aim", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("charge", CardTargetKind.None, 0)]
+    [InlineData("fast_march", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, 2)]
-    public void DefaultCatalog_ReturnsRepresentativeFiveDefinitions(
+    public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
         CardTargetKind expectedKind,
         int expectedCount)

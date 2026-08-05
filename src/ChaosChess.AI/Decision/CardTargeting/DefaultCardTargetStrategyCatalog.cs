@@ -11,7 +11,9 @@ namespace ChaosChess.AI.Decision.CardTargeting
                 new ICardTargetStrategy[]
                 {
                     new AgileCardTargetStrategy(),
+                    new PawnMovementOverrideCardTargetStrategy("aim", "Aim"),
                     new ChargeCardTargetStrategy(),
+                    new PawnMovementOverrideCardTargetStrategy("fast_march", "Fast March"),
                     new FireCardTargetStrategy(),
                     new PeaceZoneCardTargetStrategy(),
                     new PortalCardTargetStrategy()

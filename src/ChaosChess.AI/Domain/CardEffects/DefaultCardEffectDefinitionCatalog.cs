@@ -20,11 +20,33 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "aim",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "t",
+                        durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
                 "charge",
                 CardTargetQuery.None(),
                 new[]
                 {
                     new CardEffectPrimitive(CardEffectPrimitiveKind.MovePiece)
+                }),
+            new CardEffectDefinition(
+                "fast_march",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "f",
+                        durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
                 "fire",

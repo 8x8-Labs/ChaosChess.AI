@@ -24,8 +24,12 @@ public sealed class CardPlanCandidateEnumeratorTests
         AssertValid(state, candidate);
     }
 
-    [Fact]
-    public void EnumerateLegalCandidates_Agile_ReturnsActorPawnCandidatesInBoardOrderOnly()
+    [Theory]
+    [InlineData("agile")]
+    [InlineData("aim")]
+    [InlineData("fast_march")]
+    public void EnumerateLegalCandidates_PawnMovementCards_ReturnActorPawnCandidatesInBoardOrderOnly(
+        string cardId)
     {
         var blackPawn = Piece(PieceKind.Pawn, PieceColor.Black, new Square(0, 6));
         var whiteKnight = Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n");
@@ -33,7 +37,7 @@ public sealed class CardPlanCandidateEnumeratorTests
         var secondPawn = Piece(PieceKind.Pawn, PieceColor.White, new Square(6, 1));
         GameState state = State(
             PieceColor.White,
-            Card("agile"),
+            Card(cardId),
             pieces: new[] { blackPawn, whiteKnight, firstPawn, secondPawn });
 
         CardPlanCandidate[] candidates = enumerator

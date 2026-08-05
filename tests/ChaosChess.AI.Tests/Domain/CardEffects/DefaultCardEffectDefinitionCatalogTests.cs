@@ -10,11 +10,13 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
 {
     [Theory]
     [InlineData("agile", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("aim", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
-    public void DefaultCatalog_ReturnsRepresentativeFiveDefinitions(
+    public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
         CardTargetKind expectedKind,
         CardTargetOwnerRelation expectedRelation,
@@ -32,17 +34,22 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.NotEmpty(definition.Primitives);
     }
 
-    [Fact]
-    public void AgileDefinition_UsesSelectedPieceMovementOverride()
+    [Theory]
+    [InlineData("agile", "u")]
+    [InlineData("aim", "t")]
+    [InlineData("fast_march", "f")]
+    public void PawnMovementDefinitions_UseSelectedPieceMovementOverride(
+        string cardId,
+        string expectedOverrideCode)
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
 
-        CardEffectDefinition definition = catalog.FindDefinition("agile")!;
+        CardEffectDefinition definition = catalog.FindDefinition(cardId)!;
         CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
 
         Assert.Equal(CardEffectPrimitiveKind.SetMovementOverride, primitive.Kind);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
-        Assert.Equal("u", primitive.MovementOverrideCode);
+        Assert.Equal(expectedOverrideCode, primitive.MovementOverrideCode);
         Assert.Equal(1, primitive.DurationTurns);
     }
 
