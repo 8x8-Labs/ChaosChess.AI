@@ -10,11 +10,19 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
 {
     [Theory]
     [InlineData("agile", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("aim", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
-    public void DefaultCatalog_ReturnsRepresentativeFiveDefinitions(
+    [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
         CardTargetKind expectedKind,
         CardTargetOwnerRelation expectedRelation,
@@ -32,18 +40,29 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.NotEmpty(definition.Primitives);
     }
 
-    [Fact]
-    public void AgileDefinition_UsesSelectedPieceMovementOverride()
+    [Theory]
+    [InlineData("agile", "u", 1)]
+    [InlineData("aim", "t", 1)]
+    [InlineData("caterpillar", "z", 2)]
+    [InlineData("concentration", "a", 5)]
+    [InlineData("fast_march", "f", 1)]
+    [InlineData("limitless", "a", null)]
+    [InlineData("sneak_pawn", "e", 1)]
+    [InlineData("thunderclap_flash", "m", 1)]
+    public void PawnMovementDefinitions_UseSelectedPieceMovementOverride(
+        string cardId,
+        string expectedOverrideCode,
+        int? expectedDurationTurns)
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
 
-        CardEffectDefinition definition = catalog.FindDefinition("agile")!;
+        CardEffectDefinition definition = catalog.FindDefinition(cardId)!;
         CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
 
         Assert.Equal(CardEffectPrimitiveKind.SetMovementOverride, primitive.Kind);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
-        Assert.Equal("u", primitive.MovementOverrideCode);
-        Assert.Equal(1, primitive.DurationTurns);
+        Assert.Equal(expectedOverrideCode, primitive.MovementOverrideCode);
+        Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
     }
 
     [Fact]
@@ -62,6 +81,19 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, peace.TargetBinding);
         Assert.Equal(-1, peace.DurationTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, peace.TileEffectLifetimeKind);
+    }
+
+    [Fact]
+    public void MissingPromotionDefinition_UsesSelectedOpponentPieceChangeKind()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("missing_promotion")!;
+        CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.ChangePieceKind, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+        Assert.Equal(PieceKind.Pawn, primitive.PieceKind);
     }
 
     [Fact]

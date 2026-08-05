@@ -1,5 +1,6 @@
 using System;
 using ChaosChess.AI.Domain;
+using ChaosChess.AI.Domain.CardEffects;
 using Xunit;
 
 namespace ChaosChess.AI.Tests.Domain;
@@ -194,6 +195,79 @@ public sealed class CardUsePlanValidatorTests
     }
 
     [Fact]
+    public void Validate_SelfPieceRequirementRejectsOpponentPiece()
+    {
+        var square = new Square(4, 1);
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("agile"),
+            pieces: new[] { Piece(PieceKind.Pawn, PieceColor.Black, square) });
+        CardUsePlan plan = Plan(
+            "agile",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(square, PieceColor.Black, PieceKind.Pawn)));
+
+        CardPlanValidationResult result = validator.Validate(state, plan);
+
+        AssertInvalid(result, CardPlanValidationCode.TargetPieceColorMismatch);
+    }
+
+    [Fact]
+    public void Validate_OpponentPieceRequirementAcceptsOpponentPiece()
+    {
+        var square = new Square(3, 6);
+        var customValidator = new CardUsePlanValidator(
+            new DefaultCardPlanningCatalog(
+                new[]
+                {
+                    CardPlanningDefinition.Supported(
+                        "missing_promotion",
+                        CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, PieceKind.Queen))
+                }));
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("missing_promotion"),
+            pieces: new[] { Piece(PieceKind.Queen, PieceColor.Black, square, "q") });
+        CardUsePlan plan = Plan(
+            "missing_promotion",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(square, PieceColor.Black, PieceKind.Queen)));
+
+        CardPlanValidationResult result = customValidator.Validate(state, plan);
+
+        AssertValid(result);
+    }
+
+    [Fact]
+    public void Validate_OpponentPieceRequirementRejectsActorPiece()
+    {
+        var square = new Square(3, 0);
+        var customValidator = new CardUsePlanValidator(
+            new DefaultCardPlanningCatalog(
+                new[]
+                {
+                    CardPlanningDefinition.Supported(
+                        "missing_promotion",
+                        CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, PieceKind.Queen))
+                }));
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("missing_promotion"),
+            pieces: new[] { Piece(PieceKind.Queen, PieceColor.White, square, "q") });
+        CardUsePlan plan = Plan(
+            "missing_promotion",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(square, PieceColor.White, PieceKind.Queen)));
+
+        CardPlanValidationResult result = customValidator.Validate(state, plan);
+
+        AssertInvalid(result, CardPlanValidationCode.TargetPieceColorMismatch);
+    }
+
+    [Fact]
     public void Validate_PieceKindMismatch_ReturnsTargetPieceKindMismatch()
     {
         var square = new Square(4, 1);
@@ -203,6 +277,25 @@ public sealed class CardUsePlanValidatorTests
             pieces: new[] { Piece(PieceKind.Knight, PieceColor.White, square, "n") });
         CardUsePlan plan = Plan(
             "agile",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(square, PieceColor.White, PieceKind.Pawn)));
+
+        CardPlanValidationResult result = validator.Validate(state, plan);
+
+        AssertInvalid(result, CardPlanValidationCode.TargetPieceKindMismatch);
+    }
+
+    [Fact]
+    public void Validate_DisallowedPieceKind_ReturnsTargetPieceKindMismatch()
+    {
+        var square = new Square(4, 1);
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("caterpillar"),
+            pieces: new[] { Piece(PieceKind.Pawn, PieceColor.White, square) });
+        CardUsePlan plan = Plan(
+            "caterpillar",
             PieceColor.White,
             CardTargetSelection.PieceAtSquare(
                 new PieceTargetSnapshot(square, PieceColor.White, PieceKind.Pawn)));

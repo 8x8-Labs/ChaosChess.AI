@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChaosChess.AI.Decision.CardTargeting;
 using ChaosChess.AI.Domain;
+using ChaosChess.AI.Domain.CardEffects;
 using Xunit;
 
 namespace ChaosChess.AI.Tests.Decision.CardTargeting;
@@ -24,8 +25,12 @@ public sealed class CardPlanCandidateEnumeratorTests
         AssertValid(state, candidate);
     }
 
-    [Fact]
-    public void EnumerateLegalCandidates_Agile_ReturnsActorPawnCandidatesInBoardOrderOnly()
+    [Theory]
+    [InlineData("agile")]
+    [InlineData("aim")]
+    [InlineData("fast_march")]
+    public void EnumerateLegalCandidates_PawnMovementCards_ReturnActorPawnCandidatesInBoardOrderOnly(
+        string cardId)
     {
         var blackPawn = Piece(PieceKind.Pawn, PieceColor.Black, new Square(0, 6));
         var whiteKnight = Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n");
@@ -33,7 +38,7 @@ public sealed class CardPlanCandidateEnumeratorTests
         var secondPawn = Piece(PieceKind.Pawn, PieceColor.White, new Square(6, 1));
         GameState state = State(
             PieceColor.White,
-            Card("agile"),
+            Card(cardId),
             pieces: new[] { blackPawn, whiteKnight, firstPawn, secondPawn });
 
         CardPlanCandidate[] candidates = enumerator
@@ -45,6 +50,43 @@ public sealed class CardPlanCandidateEnumeratorTests
         Assert.Equal(secondPawn.Square, candidates[1].Plan.Target.Piece!.Square);
         Assert.Equal(new[] { 0, 1 }, candidates.Select(candidate => candidate.EnumerationIndex));
         Assert.All(candidates, candidate => AssertValid(state, candidate));
+    }
+
+    [Fact]
+    public void EnumerateLegalCandidates_UsesAllowedPieceKindsFromPlanningDefinition()
+    {
+        var whitePawn = Piece(PieceKind.Pawn, PieceColor.White, new Square(4, 1));
+        var whiteKnight = Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n");
+        var blackKnight = Piece(PieceKind.Knight, PieceColor.Black, new Square(1, 7), "n");
+        GameState state = State(
+            PieceColor.White,
+            Card("caterpillar"),
+            pieces: new[] { whitePawn, whiteKnight, blackKnight });
+
+        CardPlanCandidate candidate = Assert.Single(
+            enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
+
+        Assert.Equal(whiteKnight.Square, candidate.Plan.Target.Piece!.Square);
+        Assert.Equal(PieceKind.Knight, candidate.Plan.Target.Piece.ExpectedKind);
+        AssertValid(state, candidate);
+    }
+
+    [Fact]
+    public void EnumerateLegalCandidates_UsesOpponentOwnerRelationFromPlanningDefinition()
+    {
+        var actorRook = Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r");
+        var opponentRook = Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r");
+        var opponentPawn = Piece(PieceKind.Pawn, PieceColor.Black, new Square(4, 6));
+        GameState state = State(
+            PieceColor.White,
+            Card("missing_promotion"),
+            pieces: new[] { actorRook, opponentRook, opponentPawn });
+
+        CardPlanCandidate candidate = Assert.Single(
+            enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
+
+        Assert.Equal(opponentRook.Square, candidate.Plan.Target.Piece!.Square);
+        Assert.Equal(PieceColor.Black, candidate.Plan.Target.Piece.ExpectedColor);
     }
 
     [Theory]
