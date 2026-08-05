@@ -15,6 +15,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new PawnMovementOverrideCardTargetStrategy("caterpillar", "Caterpillar"),
                     new ChargeCardTargetStrategy(),
                     new PawnMovementOverrideCardTargetStrategy("concentration", "Concentration"),
+                    new PieceValueCardTargetStrategy("dark_hand", "Dark Hand"),
                     new PawnMovementOverrideCardTargetStrategy("fast_march", "Fast March"),
                     new PawnMovementOverrideCardTargetStrategy("limitless", "Limitless"),
                     new PieceValueCardTargetStrategy("missing_promotion", "Missing Promotion"),

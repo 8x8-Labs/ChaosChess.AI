@@ -14,6 +14,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("dark_hand", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
@@ -45,11 +46,12 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("aim", "t", 1)]
     [InlineData("caterpillar", "z", 2)]
     [InlineData("concentration", "a", 5)]
+    [InlineData("dark_hand", "a", 2)]
     [InlineData("fast_march", "f", 1)]
     [InlineData("limitless", "a", null)]
     [InlineData("sneak_pawn", "e", 1)]
     [InlineData("thunderclap_flash", "m", 1)]
-    public void PawnMovementDefinitions_UseSelectedPieceMovementOverride(
+    public void MovementOverrideDefinitions_UseSelectedPieceMovementOverride(
         string cardId,
         string expectedOverrideCode,
         int? expectedDurationTurns)

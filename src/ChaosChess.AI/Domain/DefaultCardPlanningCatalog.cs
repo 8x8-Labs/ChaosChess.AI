@@ -22,6 +22,14 @@ namespace ChaosChess.AI.Domain
             PieceKind.Rook
         };
 
+        private static readonly PieceKind[] DarkHandTargetKinds =
+        {
+            PieceKind.Pawn,
+            PieceKind.Knight,
+            PieceKind.Bishop,
+            PieceKind.Rook
+        };
+
         private static readonly PieceKind[] StandardPromotableKinds =
         {
             PieceKind.Pawn,
@@ -61,6 +69,7 @@ namespace ChaosChess.AI.Domain
             CardPlanningDefinition.Supported("caterpillar", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, KnightKinds)),
             CardPlanningDefinition.Supported("charge", CardTargetKind.None, 0),
             CardPlanningDefinition.Supported("concentration", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, StandardPromotableKinds)),
+            CardPlanningDefinition.Supported("dark_hand", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, DarkHandTargetKinds)),
             CardPlanningDefinition.Supported("fast_march", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("fire", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("limitless", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, AllMobileKinds)),

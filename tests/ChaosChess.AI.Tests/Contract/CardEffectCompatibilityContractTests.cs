@@ -13,6 +13,7 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("caterpillar")]
     [InlineData("charge")]
     [InlineData("concentration")]
+    [InlineData("dark_hand")]
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("limitless")]
@@ -93,6 +94,17 @@ public sealed class CardEffectCompatibilityContractTests
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(3, 0), PieceColor.White, PieceKind.Queen))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "dark_hand",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(0, 7), PieceColor.Black, PieceKind.Rook))),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
             state,
@@ -223,6 +235,7 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("caterpillar", "Mobility", 1),
                 new CardInfo("charge", "Mobility", 1),
                 new CardInfo("concentration", "Mobility", 1),
+                new CardInfo("dark_hand", "Tactical", 1),
                 new CardInfo("fast_march", "Mobility", 1),
                 new CardInfo("fire", "BoardControl", 1),
                 new CardInfo("limitless", "Mobility", 1),

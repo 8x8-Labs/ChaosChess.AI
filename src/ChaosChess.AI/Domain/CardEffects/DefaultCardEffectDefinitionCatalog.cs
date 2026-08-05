@@ -60,6 +60,17 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "dark_hand",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Opponent, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "a",
+                        durationTurns: 2,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
                 "fast_march",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]

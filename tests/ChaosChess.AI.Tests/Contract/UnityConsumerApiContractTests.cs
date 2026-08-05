@@ -69,12 +69,13 @@ public sealed class UnityConsumerApiContractTests
     [Fact]
     public void UnityConsumerSurface_CompilesWithCardUsePlanContracts()
     {
-        BoardState boardState = FenParser.Parse("4k3/8/8/8/8/8/4P3/RN1QK3 w - - 0 1");
+        BoardState boardState = FenParser.Parse("4k3/r7/8/8/8/8/4P3/RN1QK3 w - - 0 1");
         var agile = new CardInfo("agile", "Mobility", remainingUses: 1);
         var aim = new CardInfo("aim", "Mobility", remainingUses: 1);
         var caterpillar = new CardInfo("caterpillar", "Mobility", remainingUses: 1);
         var charge = new CardInfo("charge", "Mobility", remainingUses: 1);
         var concentration = new CardInfo("concentration", "Mobility", remainingUses: 1);
+        var darkHand = new CardInfo("dark_hand", "Tactical", remainingUses: 1);
         var fastMarch = new CardInfo("fast_march", "Mobility", remainingUses: 1);
         var fire = new CardInfo("fire", "BoardControl", remainingUses: 1);
         var limitless = new CardInfo("limitless", "Mobility", remainingUses: 1);
@@ -91,6 +92,7 @@ public sealed class UnityConsumerApiContractTests
                 caterpillar,
                 charge,
                 concentration,
+                darkHand,
                 fastMarch,
                 fire,
                 limitless,
@@ -107,6 +109,8 @@ public sealed class UnityConsumerApiContractTests
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("caterpillar").RequiredTargetKind);
         Assert.Equal(CardTargetKind.None, catalog.GetDefinition("charge").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("concentration").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("dark_hand").RequiredTargetKind);
+        Assert.Equal(CardTargetOwnerRelation.Opponent, catalog.GetDefinition("dark_hand").RequiredTargetOwnerRelation);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("fast_march").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("fire").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("limitless").RequiredTargetKind);
@@ -154,6 +158,14 @@ public sealed class UnityConsumerApiContractTests
                     new Square(3, 0),
                     PieceColor.White,
                     PieceKind.Queen)));
+        CardUsePlan darkHandPlan = new CardUsePlan(
+            "dark_hand",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(0, 6),
+                    PieceColor.Black,
+                    PieceKind.Rook)));
         CardUsePlan fastMarchPlan = new CardUsePlan(
             "fast_march",
             PieceColor.White,
@@ -205,6 +217,7 @@ public sealed class UnityConsumerApiContractTests
         Assert.True(validator.Validate(gameState, caterpillarPlan).IsValid);
         Assert.True(validator.Validate(gameState, chargePlan).IsValid);
         Assert.True(validator.Validate(gameState, concentrationPlan).IsValid);
+        Assert.True(validator.Validate(gameState, darkHandPlan).IsValid);
         Assert.True(validator.Validate(gameState, fastMarchPlan).IsValid);
         Assert.True(validator.Validate(gameState, firePlan).IsValid);
         Assert.True(validator.Validate(gameState, limitlessPlan).IsValid);

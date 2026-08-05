@@ -18,6 +18,7 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("caterpillar", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
         Assert.True(registry.TryGetStrategy("concentration", out _));
+        Assert.True(registry.TryGetStrategy("dark_hand", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
@@ -26,7 +27,7 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("portal", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(13, registry.Strategies.Count);
+        Assert.Equal(14, registry.Strategies.Count);
     }
 
     [Theory]
@@ -35,6 +36,7 @@ public sealed class CardTargetingModuleTests
     [InlineData("caterpillar")]
     [InlineData("charge")]
     [InlineData("concentration")]
+    [InlineData("dark_hand")]
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("limitless")]
