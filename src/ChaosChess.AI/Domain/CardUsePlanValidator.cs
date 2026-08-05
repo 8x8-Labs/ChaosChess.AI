@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChaosChess.AI.Domain.CardEffects;
 
 namespace ChaosChess.AI.Domain
 {
@@ -86,7 +87,7 @@ namespace ChaosChess.AI.Domain
                     return CardPlanValidationResult.Valid();
 
                 case CardTargetKind.PieceAtSquare:
-                    return ValidatePieceAtSquare(gameState, plan);
+                    return ValidatePieceAtSquare(gameState, plan, definition);
 
                 case CardTargetKind.BoardSquare:
                     return ValidateBoardSquares(gameState, plan.Target.Squares);
@@ -135,7 +136,8 @@ namespace ChaosChess.AI.Domain
 
         private static CardPlanValidationResult ValidatePieceAtSquare(
             GameState gameState,
-            CardUsePlan plan)
+            CardUsePlan plan,
+            CardPlanningDefinition definition)
         {
             PieceTargetSnapshot pieceTarget = plan.Target.Piece
                 ?? throw new InvalidOperationException("Piece target selection contains no piece snapshot.");
@@ -149,7 +151,7 @@ namespace ChaosChess.AI.Domain
             }
 
             if (piece.Color != pieceTarget.ExpectedColor ||
-                piece.Color != plan.Actor)
+                !MatchesOwnerRelation(definition.RequiredTargetOwnerRelation, plan.Actor, piece.Color))
             {
                 return Invalid(
                     CardPlanValidationCode.TargetPieceColorMismatch,
@@ -163,7 +165,52 @@ namespace ChaosChess.AI.Domain
                     $"Piece at {pieceTarget.Square} has an unexpected kind.");
             }
 
+            if (!IsAllowedPieceKind(definition.AllowedTargetPieceKinds, piece.Kind))
+            {
+                return Invalid(
+                    CardPlanValidationCode.TargetPieceKindMismatch,
+                    $"Piece at {pieceTarget.Square} has a disallowed kind for card '{plan.CardId}'.");
+            }
+
             return CardPlanValidationResult.Valid();
+        }
+
+        private static bool MatchesOwnerRelation(
+            CardTargetOwnerRelation relation,
+            PieceColor actor,
+            PieceColor target)
+        {
+            switch (relation)
+            {
+                case CardTargetOwnerRelation.Self:
+                    return target == actor;
+                case CardTargetOwnerRelation.Opponent:
+                    return target != actor;
+                case CardTargetOwnerRelation.Any:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsAllowedPieceKind(
+            IReadOnlyList<PieceKind> allowedKinds,
+            PieceKind kind)
+        {
+            if (allowedKinds.Count == 0)
+            {
+                return true;
+            }
+
+            foreach (PieceKind allowedKind in allowedKinds)
+            {
+                if (allowedKind == kind)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static CardPlanValidationResult ValidateBoardSquares(

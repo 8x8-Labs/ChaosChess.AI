@@ -30,6 +30,7 @@ public sealed class CardEffectCompatibilityContractTests
 
         Assert.True(planning.IsSupported);
         Assert.Equal(planning.RequiredTargetKind, effect.TargetQuery.Kind);
+        Assert.Equal(planning.RequiredTargetOwnerRelation, effect.TargetQuery.OwnerRelation);
         Assert.Equal(planning.RequiredTargetCount, effect.TargetQuery.Count);
     }
 

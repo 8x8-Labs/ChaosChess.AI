@@ -72,10 +72,7 @@ public sealed class PawnMovementOverrideCardTargetStrategyTests
             PieceColor.White,
             "thunderclap_flash",
             new[] { pawn, rook });
-        var strategy = new PawnMovementOverrideCardTargetStrategy(
-            "thunderclap_flash",
-            "Thunderclap Flash",
-            new[] { PieceKind.Rook });
+        var strategy = new PawnMovementOverrideCardTargetStrategy("thunderclap_flash", "Thunderclap Flash");
 
         CardPlanDecisionResult result = strategy.Decide(
             Context(state, state.AvailableCards[0], PieceColor.White));
@@ -124,10 +121,6 @@ public sealed class PawnMovementOverrideCardTargetStrategyTests
             () => new PawnMovementOverrideCardTargetStrategy(string.Empty, "Aim"));
         Assert.Throws<ArgumentNullException>(
             () => new PawnMovementOverrideCardTargetStrategy("aim", "Aim", null!));
-        Assert.Throws<ArgumentException>(
-            () => new PawnMovementOverrideCardTargetStrategy("aim", "Aim", Array.Empty<PieceKind>()));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => new PawnMovementOverrideCardTargetStrategy("aim", "Aim", new[] { PieceKind.Unknown }));
     }
 
     private static CardTargetStrategyContext Context(

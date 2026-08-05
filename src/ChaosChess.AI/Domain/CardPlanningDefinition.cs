@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using ChaosChess.AI.Domain.CardEffects;
 
 namespace ChaosChess.AI.Domain
 {
@@ -29,6 +31,10 @@ namespace ChaosChess.AI.Domain
 
         public int RequiredTargetCount => TargetRequirement.Count;
 
+        public CardTargetOwnerRelation RequiredTargetOwnerRelation => TargetRequirement.OwnerRelation;
+
+        public IReadOnlyList<PieceKind> AllowedTargetPieceKinds => TargetRequirement.AllowedPieceKinds;
+
         public static CardPlanningDefinition Supported(
             string cardId,
             CardTargetKind targetKind,
@@ -38,6 +44,16 @@ namespace ChaosChess.AI.Domain
                 cardId,
                 isSupported: true,
                 new CardTargetRequirement(targetKind, targetCount));
+        }
+
+        public static CardPlanningDefinition Supported(
+            string cardId,
+            CardTargetRequirement targetRequirement)
+        {
+            return new CardPlanningDefinition(
+                cardId,
+                isSupported: true,
+                targetRequirement);
         }
 
         public static CardPlanningDefinition Unsupported(string cardId)

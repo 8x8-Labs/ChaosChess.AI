@@ -1,25 +1,63 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using ChaosChess.AI.Domain.CardEffects;
 
 namespace ChaosChess.AI.Domain
 {
     public sealed class DefaultCardPlanningCatalog
     {
+        private static readonly PieceKind[] PawnKinds =
+        {
+            PieceKind.Pawn
+        };
+
+        private static readonly PieceKind[] KnightKinds =
+        {
+            PieceKind.Knight
+        };
+
+        private static readonly PieceKind[] RookKinds =
+        {
+            PieceKind.Rook
+        };
+
+        private static readonly PieceKind[] StandardPromotableKinds =
+        {
+            PieceKind.Pawn,
+            PieceKind.Knight,
+            PieceKind.Bishop,
+            PieceKind.Rook,
+            PieceKind.Queen
+        };
+
+        private static readonly PieceKind[] AllMobileKinds =
+        {
+            PieceKind.Pawn,
+            PieceKind.Knight,
+            PieceKind.Bishop,
+            PieceKind.Rook,
+            PieceKind.Queen,
+            PieceKind.King,
+            PieceKind.Amazon,
+            PieceKind.Chancellor,
+            PieceKind.KnightRider
+        };
+
         private static readonly CardPlanningDefinition[] DefaultDefinitions =
         {
-            CardPlanningDefinition.Supported("agile", CardTargetKind.PieceAtSquare, 1),
-            CardPlanningDefinition.Supported("aim", CardTargetKind.PieceAtSquare, 1),
-            CardPlanningDefinition.Supported("caterpillar", CardTargetKind.PieceAtSquare, 1),
+            CardPlanningDefinition.Supported("agile", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
+            CardPlanningDefinition.Supported("aim", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
+            CardPlanningDefinition.Supported("caterpillar", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, KnightKinds)),
             CardPlanningDefinition.Supported("charge", CardTargetKind.None, 0),
-            CardPlanningDefinition.Supported("concentration", CardTargetKind.PieceAtSquare, 1),
-            CardPlanningDefinition.Supported("fast_march", CardTargetKind.PieceAtSquare, 1),
+            CardPlanningDefinition.Supported("concentration", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, StandardPromotableKinds)),
+            CardPlanningDefinition.Supported("fast_march", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("fire", CardTargetKind.BoardSquare, 1),
-            CardPlanningDefinition.Supported("limitless", CardTargetKind.PieceAtSquare, 1),
+            CardPlanningDefinition.Supported("limitless", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, AllMobileKinds)),
             CardPlanningDefinition.Supported("peace_zone", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("portal", CardTargetKind.OrderedSquares, 2),
-            CardPlanningDefinition.Supported("sneak_pawn", CardTargetKind.PieceAtSquare, 1),
-            CardPlanningDefinition.Supported("thunderclap_flash", CardTargetKind.PieceAtSquare, 1)
+            CardPlanningDefinition.Supported("sneak_pawn", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
+            CardPlanningDefinition.Supported("thunderclap_flash", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, RookKinds))
         };
 
         private readonly IReadOnlyDictionary<string, CardPlanningDefinition> _definitions;
