@@ -16,6 +16,7 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("agile", out _));
         Assert.True(registry.TryGetStrategy("aim", out _));
         Assert.True(registry.TryGetStrategy("at_mine", out _));
+        Assert.True(registry.TryGetStrategy("blessing", out _));
         Assert.True(registry.TryGetStrategy("caterpillar", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
         Assert.True(registry.TryGetStrategy("cobweb", out _));
@@ -27,18 +28,21 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("jumping_platform", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
         Assert.True(registry.TryGetStrategy("missing_promotion", out _));
+        Assert.True(registry.TryGetStrategy("obey_order", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
         Assert.True(registry.TryGetStrategy("psilocybin_mushroom", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
+        Assert.True(registry.TryGetStrategy("time_bomb", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(19, registry.Strategies.Count);
+        Assert.Equal(22, registry.Strategies.Count);
     }
 
     [Theory]
     [InlineData("agile")]
     [InlineData("aim")]
     [InlineData("at_mine")]
+    [InlineData("blessing")]
     [InlineData("caterpillar")]
     [InlineData("charge")]
     [InlineData("cobweb")]
@@ -50,10 +54,12 @@ public sealed class CardTargetingModuleTests
     [InlineData("jumping_platform")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
+    [InlineData("obey_order")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
+    [InlineData("time_bomb")]
     [InlineData("thunderclap_flash")]
     public void DecideBestPlan_DefaultStrategiesReturnPlanForSupportedCards(
         string cardId)

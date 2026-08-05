@@ -4,6 +4,12 @@ using ChaosChess.AI.Domain;
 
 namespace ChaosChess.AI.Decision.CardTargeting
 {
+    public enum TileEffectTargetProfile
+    {
+        Hazard = 0,
+        Beneficial = 1
+    }
+
     public sealed class TileEffectCardTargetStrategy : ICardTargetStrategy
     {
         private const int CenterAnchor = 3;
@@ -11,9 +17,18 @@ namespace ChaosChess.AI.Decision.CardTargeting
         private readonly CardPlanCandidateEnumerator _candidateEnumerator;
         private readonly string _componentPrefix;
         private readonly string _displayName;
+        private readonly TileEffectTargetProfile _profile;
 
         public TileEffectCardTargetStrategy(string cardId, string displayName)
-            : this(cardId, displayName, new CardPlanCandidateEnumerator())
+            : this(cardId, displayName, TileEffectTargetProfile.Hazard)
+        {
+        }
+
+        public TileEffectCardTargetStrategy(
+            string cardId,
+            string displayName,
+            TileEffectTargetProfile profile)
+            : this(cardId, displayName, profile, new CardPlanCandidateEnumerator())
         {
         }
 
@@ -21,15 +36,26 @@ namespace ChaosChess.AI.Decision.CardTargeting
             string cardId,
             string displayName,
             CardPlanCandidateEnumerator candidateEnumerator)
+            : this(cardId, displayName, TileEffectTargetProfile.Hazard, candidateEnumerator)
+        {
+        }
+
+        public TileEffectCardTargetStrategy(
+            string cardId,
+            string displayName,
+            TileEffectTargetProfile profile,
+            CardPlanCandidateEnumerator candidateEnumerator)
         {
             if (string.IsNullOrWhiteSpace(cardId))
             {
                 throw new ArgumentException("Card ID cannot be empty.", nameof(cardId));
             }
 
+            EnsureValidProfile(profile);
             CardId = cardId;
             _componentPrefix = cardId;
             _displayName = string.IsNullOrWhiteSpace(displayName) ? cardId : displayName;
+            _profile = profile;
             _candidateEnumerator = candidateEnumerator ?? throw new ArgumentNullException(nameof(candidateEnumerator));
         }
 
@@ -101,6 +127,17 @@ namespace ChaosChess.AI.Decision.CardTargeting
             Square square,
             ParsedMove? topMove)
         {
+            return _profile == TileEffectTargetProfile.Beneficial
+                ? ScoreBeneficialCandidate(board, actor, square, topMove)
+                : ScoreHazardCandidate(board, actor, square, topMove);
+        }
+
+        private CardPlanScore ScoreHazardCandidate(
+            BoardState board,
+            PieceColor actor,
+            Square square,
+            ParsedMove? topMove)
+        {
             var components = new List<CardPlanScoreComponent>
             {
                 new CardPlanScoreComponent(
@@ -132,6 +169,54 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             return new CardPlanScore(total, components);
+        }
+
+        private CardPlanScore ScoreBeneficialCandidate(
+            BoardState board,
+            PieceColor actor,
+            Square square,
+            ParsedMove? topMove)
+        {
+            var components = new List<CardPlanScoreComponent>
+            {
+                new CardPlanScoreComponent(
+                    _componentPrefix + ".own_engine_destination",
+                    rawValue: ScoreEngineDestination(board, actor, square, topMove, opponent: false),
+                    weight: 8,
+                    $"{_displayName} target matches the actor engine move destination."),
+                new CardPlanScoreComponent(
+                    _componentPrefix + ".own_engine_adjacent",
+                    rawValue: ScoreEngineAdjacent(board, actor, square, topMove, opponent: false),
+                    weight: 3,
+                    $"{_displayName} target is adjacent to the actor engine move destination."),
+                new CardPlanScoreComponent(
+                    _componentPrefix + ".center_control",
+                    rawValue: ScoreCenterControl(square),
+                    weight: 1,
+                    $"{_displayName} target is closer to the board center."),
+                new CardPlanScoreComponent(
+                    _componentPrefix + ".opponent_engine_destination_penalty",
+                    rawValue: ScoreEngineDestination(board, actor, square, topMove, opponent: true),
+                    weight: -8,
+                    $"{_displayName} target overlaps the opponent engine move destination.")
+            };
+
+            int total = 0;
+            foreach (CardPlanScoreComponent component in components)
+            {
+                total += component.Value;
+            }
+
+            return new CardPlanScore(total, components);
+        }
+
+        private static void EnsureValidProfile(TileEffectTargetProfile profile)
+        {
+            if (profile != TileEffectTargetProfile.Hazard &&
+                profile != TileEffectTargetProfile.Beneficial)
+            {
+                throw new ArgumentOutOfRangeException(nameof(profile), profile, "Unknown tile effect target profile.");
+            }
         }
 
         private static int ScoreEngineDestination(

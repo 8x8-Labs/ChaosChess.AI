@@ -67,9 +67,12 @@ public sealed class CardEffectApplierTests
                 PieceColor.White,
                 CardTargetSelection.OrderedSquares(new[] { firstPortal, secondPortal }))));
         CardEffectApplicationResult atMine = ApplyTile(catalog, applier, "at_mine", "ATMine", new Square(0, 2));
+        CardEffectApplicationResult blessing = ApplyTile(catalog, applier, "blessing", "Blessing", new Square(4, 2));
         CardEffectApplicationResult cobweb = ApplyTile(catalog, applier, "cobweb", "Cobweb", new Square(1, 2));
         CardEffectApplicationResult jumpingPlatform = ApplyTile(catalog, applier, "jumping_platform", "JumpingPlatform", new Square(2, 3));
+        CardEffectApplicationResult obeyOrder = ApplyTile(catalog, applier, "obey_order", "ObeyOrder", new Square(4, 4));
         CardEffectApplicationResult psilocybinMushroom = ApplyTile(catalog, applier, "psilocybin_mushroom", "PsilocybinMushroom", new Square(3, 4));
+        CardEffectApplicationResult timeBomb = ApplyTile(catalog, applier, "time_bomb", "TimeBomb", new Square(6, 3));
 
         Assert.Equal(CardEffectApplicationStatus.Exact, fire.Status);
         TileEffectInfo fireEffect = Assert.Single(fire.State!.TileEffects);
@@ -105,9 +108,12 @@ public sealed class CardEffectApplierTests
                 Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, second.LifetimeKind);
             });
         AssertPersistentTileEffect(atMine, "ATMine", new Square(0, 2));
+        AssertPersistentTileEffect(blessing, "Blessing", new Square(4, 2));
         AssertPersistentTileEffect(cobweb, "Cobweb", new Square(1, 2));
         AssertPersistentTileEffect(jumpingPlatform, "JumpingPlatform", new Square(2, 3));
+        AssertPersistentTileEffect(obeyOrder, "ObeyOrder", new Square(4, 4));
         AssertPersistentTileEffect(psilocybinMushroom, "PsilocybinMushroom", new Square(3, 4));
+        AssertDurationTileEffect(timeBomb, "TimeBomb", new Square(6, 3), 3);
     }
 
     [Fact]
@@ -419,6 +425,20 @@ public sealed class CardEffectApplierTests
         Assert.Equal(expectedSquare, effect.Square);
         Assert.Equal(-1, effect.RemainingTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, effect.LifetimeKind);
+    }
+
+    private static void AssertDurationTileEffect(
+        CardEffectApplicationResult result,
+        string expectedEffectType,
+        Square expectedSquare,
+        int expectedRemainingTurns)
+    {
+        Assert.Equal(CardEffectApplicationStatus.Exact, result.Status);
+        TileEffectInfo effect = Assert.Single(result.State!.TileEffects);
+        Assert.Equal(expectedEffectType, effect.EffectType);
+        Assert.Equal(expectedSquare, effect.Square);
+        Assert.Equal(expectedRemainingTurns, effect.RemainingTurns);
+        Assert.Equal(TileEffectLifetimeKind.TurnLimited, effect.LifetimeKind);
     }
 
     private static GameState CreateState(

@@ -66,14 +66,49 @@ public sealed class TileEffectCardTargetStrategyTests
         Assert.NotEqual(new Square(4, 3), result.SelectedCandidate!.Plan.Target.Squares[0]);
     }
 
+    [Fact]
+    public void Decide_BeneficialProfileSelectsOwnEngineDestination()
+    {
+        var beneficialStrategy = new TileEffectCardTargetStrategy(
+            "blessing",
+            "Blessing",
+            TileEffectTargetProfile.Beneficial);
+        var actorPawn = Piece(PieceKind.Pawn, PieceColor.White, new Square(4, 1));
+        GameState state = State(
+            PieceColor.White,
+            Card("blessing"),
+            pieces: new[] { actorPawn });
+
+        CardPlanDecisionResult result = beneficialStrategy.Decide(
+            Context(
+                state,
+                PieceColor.White,
+                new[] { Move("e2e4") }));
+
+        Assert.True(result.HasSelection);
+        Assert.Equal(new Square(4, 3), result.SelectedCandidate!.Plan.Target.Squares[0]);
+        CardPlanScoreComponent ownDestination = Component(
+            result.SelectedCandidate.Score,
+            "blessing.own_engine_destination");
+        Assert.Equal(1, ownDestination.RawValue);
+        Assert.Equal(8, ownDestination.Weight);
+        Assert.Equal(8, ownDestination.Contribution);
+    }
+
     [Theory]
     [InlineData("at_mine")]
+    [InlineData("blessing")]
     [InlineData("cobweb")]
     [InlineData("jumping_platform")]
+    [InlineData("obey_order")]
     [InlineData("psilocybin_mushroom")]
+    [InlineData("time_bomb")]
     public void Decide_GenericTileEffectCardsSelectLegalEmptySquare(string cardId)
     {
-        var genericStrategy = new TileEffectCardTargetStrategy(cardId, cardId);
+        TileEffectTargetProfile profile = cardId == "blessing"
+            ? TileEffectTargetProfile.Beneficial
+            : TileEffectTargetProfile.Hazard;
+        var genericStrategy = new TileEffectCardTargetStrategy(cardId, cardId, profile);
         GameState state = State(PieceColor.White, Card(cardId));
 
         CardPlanDecisionResult result = genericStrategy.Decide(
@@ -128,6 +163,8 @@ public sealed class TileEffectCardTargetStrategyTests
     {
         Assert.Throws<ArgumentNullException>(() => strategy.Decide(null!));
         Assert.Throws<ArgumentException>(() => new TileEffectCardTargetStrategy(string.Empty, "Tile"));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new TileEffectCardTargetStrategy("at_mine", "AT Mine", (TileEffectTargetProfile)99));
         Assert.Throws<ArgumentNullException>(() => new TileEffectCardTargetStrategy("at_mine", "AT Mine", null!));
     }
 

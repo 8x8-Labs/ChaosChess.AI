@@ -12,6 +12,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("agile", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("aim", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("at_mine", CardTargetKind.BoardSquare, 1)]
+    [InlineData("blessing", CardTargetKind.BoardSquare, 1)]
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("charge", CardTargetKind.None, 0)]
     [InlineData("cobweb", CardTargetKind.BoardSquare, 1)]
@@ -23,10 +24,12 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("jumping_platform", CardTargetKind.BoardSquare, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("obey_order", CardTargetKind.BoardSquare, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, 2)]
     [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, 1)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("time_bomb", CardTargetKind.BoardSquare, 1)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, 1)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
@@ -47,6 +50,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("agile", CardTargetOwnerRelation.Self)]
     [InlineData("aim", CardTargetOwnerRelation.Self)]
     [InlineData("at_mine", CardTargetOwnerRelation.Any)]
+    [InlineData("blessing", CardTargetOwnerRelation.Any)]
     [InlineData("caterpillar", CardTargetOwnerRelation.Self)]
     [InlineData("charge", CardTargetOwnerRelation.Any)]
     [InlineData("cobweb", CardTargetOwnerRelation.Any)]
@@ -58,10 +62,12 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("jumping_platform", CardTargetOwnerRelation.Any)]
     [InlineData("limitless", CardTargetOwnerRelation.Self)]
     [InlineData("missing_promotion", CardTargetOwnerRelation.Opponent)]
+    [InlineData("obey_order", CardTargetOwnerRelation.Any)]
     [InlineData("peace_zone", CardTargetOwnerRelation.Any)]
     [InlineData("portal", CardTargetOwnerRelation.Any)]
     [InlineData("psilocybin_mushroom", CardTargetOwnerRelation.Any)]
     [InlineData("sneak_pawn", CardTargetOwnerRelation.Self)]
+    [InlineData("time_bomb", CardTargetOwnerRelation.Any)]
     [InlineData("thunderclap_flash", CardTargetOwnerRelation.Self)]
     public void DefaultCatalog_ReturnsTargetOwnerRelations(
         string cardId,

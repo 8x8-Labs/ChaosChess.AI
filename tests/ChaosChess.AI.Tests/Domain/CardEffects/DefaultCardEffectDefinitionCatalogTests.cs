@@ -12,6 +12,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("agile", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("aim", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("at_mine", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("blessing", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("cobweb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
@@ -23,10 +24,12 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("jumping_platform", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("obey_order", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
     [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("time_bomb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
@@ -78,13 +81,16 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         var catalog = new DefaultCardEffectDefinitionCatalog();
 
         CardEffectPrimitive atMine = Assert.Single(catalog.FindDefinition("at_mine")!.Primitives);
+        CardEffectPrimitive blessing = Assert.Single(catalog.FindDefinition("blessing")!.Primitives);
         CardEffectPrimitive cobweb = Assert.Single(catalog.FindDefinition("cobweb")!.Primitives);
         CardEffectPrimitive fire = Assert.Single(catalog.FindDefinition("fire")!.Primitives);
         CardEffectPrimitive jumpingPlatform = Assert.Single(catalog.FindDefinition("jumping_platform")!.Primitives);
+        CardEffectPrimitive obeyOrder = Assert.Single(catalog.FindDefinition("obey_order")!.Primitives);
         CardEffectPrimitive peace = Assert.Single(catalog.FindDefinition("peace_zone")!.Primitives);
         CardEffectPrimitive psilocybinMushroom = Assert.Single(catalog.FindDefinition("psilocybin_mushroom")!.Primitives);
 
         AssertTileEffect(atMine, "ATMine");
+        AssertTileEffect(blessing, "Blessing");
         AssertTileEffect(cobweb, "Cobweb");
         Assert.Equal("Fire", fire.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, fire.TargetBinding);
@@ -95,7 +101,22 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, peace.TargetBinding);
         Assert.Equal(-1, peace.DurationTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, peace.TileEffectLifetimeKind);
+        AssertTileEffect(obeyOrder, "ObeyOrder");
         AssertTileEffect(psilocybinMushroom, "PsilocybinMushroom");
+    }
+
+    [Fact]
+    public void TimeBombDefinition_UsesSelectedSquareDurationTileEffect()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("time_bomb")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddTileEffect, primitive.Kind);
+        Assert.Equal("TimeBomb", primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+        Assert.Equal(3, primitive.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.TurnLimited, primitive.TileEffectLifetimeKind);
     }
 
     [Fact]

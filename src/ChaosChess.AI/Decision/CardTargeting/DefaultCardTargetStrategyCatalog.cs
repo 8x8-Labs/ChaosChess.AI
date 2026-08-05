@@ -13,6 +13,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new AgileCardTargetStrategy(),
                     new PawnMovementOverrideCardTargetStrategy("aim", "Aim"),
                     new TileEffectCardTargetStrategy("at_mine", "AT Mine"),
+                    new TileEffectCardTargetStrategy("blessing", "Blessing", TileEffectTargetProfile.Beneficial),
                     new PawnMovementOverrideCardTargetStrategy("caterpillar", "Caterpillar"),
                     new ChargeCardTargetStrategy(),
                     new TileEffectCardTargetStrategy("cobweb", "Cobweb"),
@@ -23,11 +24,13 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new TileEffectCardTargetStrategy("jumping_platform", "Jumping Platform"),
                     new PawnMovementOverrideCardTargetStrategy("limitless", "Limitless"),
                     new PieceValueCardTargetStrategy("missing_promotion", "Missing Promotion"),
+                    new TileEffectCardTargetStrategy("obey_order", "Obey Order"),
                     new FireCardTargetStrategy(),
                     new PeaceZoneCardTargetStrategy(),
                     new PortalCardTargetStrategy(),
                     new TileEffectCardTargetStrategy("psilocybin_mushroom", "Psilocybin Mushroom"),
                     new PawnMovementOverrideCardTargetStrategy("sneak_pawn", "Sneak Pawn"),
+                    new TileEffectCardTargetStrategy("time_bomb", "Time Bomb"),
                     new PawnMovementOverrideCardTargetStrategy("thunderclap_flash", "Thunderclap Flash")
                 });
         }

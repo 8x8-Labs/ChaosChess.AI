@@ -43,6 +43,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
+                "blessing",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddTileEffect,
+                        effectType: "Blessing",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
                 "caterpillar",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -160,6 +172,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "obey_order",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddTileEffect,
+                        effectType: "ObeyOrder",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
                 "peace_zone",
                 CardTargetQuery.EmptySquare(),
                 new[]
@@ -217,6 +241,17 @@ namespace ChaosChess.AI.Domain.CardEffects
                         movementOverrideCode: "e",
                         durationTurns: 1,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "time_bomb",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddTileEffect,
+                        effectType: "TimeBomb",
+                        durationTurns: 3,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
                 "thunderclap_flash",

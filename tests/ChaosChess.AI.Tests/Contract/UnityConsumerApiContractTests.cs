@@ -73,6 +73,7 @@ public sealed class UnityConsumerApiContractTests
         var agile = new CardInfo("agile", "Mobility", remainingUses: 1);
         var aim = new CardInfo("aim", "Mobility", remainingUses: 1);
         var atMine = new CardInfo("at_mine", "BoardControl", remainingUses: 1);
+        var blessing = new CardInfo("blessing", "Transformation", remainingUses: 1);
         var caterpillar = new CardInfo("caterpillar", "Mobility", remainingUses: 1);
         var charge = new CardInfo("charge", "Mobility", remainingUses: 1);
         var cobweb = new CardInfo("cobweb", "BoardControl", remainingUses: 1);
@@ -83,10 +84,12 @@ public sealed class UnityConsumerApiContractTests
         var godsMove = new CardInfo("gods_move", "Mobility", remainingUses: 1);
         var jumpingPlatform = new CardInfo("jumping_platform", "BoardControl", remainingUses: 1);
         var limitless = new CardInfo("limitless", "Mobility", remainingUses: 1);
+        var obeyOrder = new CardInfo("obey_order", "Utility", remainingUses: 1);
         var peaceZone = new CardInfo("peace_zone", "BoardControl", remainingUses: 1);
         var portal = new CardInfo("portal", "Mobility", remainingUses: 1);
         var psilocybinMushroom = new CardInfo("psilocybin_mushroom", "BoardControl", remainingUses: 1);
         var sneakPawn = new CardInfo("sneak_pawn", "Mobility", remainingUses: 1);
+        var timeBomb = new CardInfo("time_bomb", "BoardControl", remainingUses: 1);
         var thunderclapFlash = new CardInfo("thunderclap_flash", "Mobility", remainingUses: 1);
         var gameState = new GameState(
             boardState,
@@ -95,6 +98,7 @@ public sealed class UnityConsumerApiContractTests
                 agile,
                 aim,
                 atMine,
+                blessing,
                 caterpillar,
                 charge,
                 cobweb,
@@ -105,10 +109,12 @@ public sealed class UnityConsumerApiContractTests
                 godsMove,
                 jumpingPlatform,
                 limitless,
+                obeyOrder,
                 peaceZone,
                 portal,
                 psilocybinMushroom,
                 sneakPawn,
+                timeBomb,
                 thunderclapFlash
             },
             Array.Empty<TileEffectInfo>());
@@ -117,6 +123,7 @@ public sealed class UnityConsumerApiContractTests
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("agile").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("aim").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("at_mine").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("blessing").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("caterpillar").RequiredTargetKind);
         Assert.Equal(CardTargetKind.None, catalog.GetDefinition("charge").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("cobweb").RequiredTargetKind);
@@ -129,10 +136,12 @@ public sealed class UnityConsumerApiContractTests
         Assert.Equal(CardTargetOwnerRelation.Self, catalog.GetDefinition("gods_move").RequiredTargetOwnerRelation);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("jumping_platform").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("limitless").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("obey_order").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("peace_zone").RequiredTargetKind);
         Assert.Equal(2, catalog.GetDefinition("portal").RequiredTargetCount);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("psilocybin_mushroom").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("sneak_pawn").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("time_bomb").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("thunderclap_flash").RequiredTargetKind);
 
         var validator = new CardUsePlanValidator(catalog);
@@ -158,6 +167,10 @@ public sealed class UnityConsumerApiContractTests
             "at_mine",
             PieceColor.White,
             CardTargetSelection.BoardSquare(new Square(3, 3)));
+        CardUsePlan blessingPlan = new CardUsePlan(
+            "blessing",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(2, 3)));
         CardUsePlan chargePlan = new CardUsePlan(
             "charge",
             PieceColor.White,
@@ -222,6 +235,10 @@ public sealed class UnityConsumerApiContractTests
                     new Square(3, 0),
                     PieceColor.White,
                     PieceKind.Queen)));
+        CardUsePlan obeyOrderPlan = new CardUsePlan(
+            "obey_order",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(5, 3)));
         CardUsePlan peaceZonePlan = new CardUsePlan(
             "peace_zone",
             PieceColor.White,
@@ -243,6 +260,10 @@ public sealed class UnityConsumerApiContractTests
                     new Square(4, 1),
                     PieceColor.White,
                     PieceKind.Pawn)));
+        CardUsePlan timeBombPlan = new CardUsePlan(
+            "time_bomb",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(6, 3)));
         CardUsePlan thunderclapFlashPlan = new CardUsePlan(
             "thunderclap_flash",
             PieceColor.White,
@@ -255,6 +276,7 @@ public sealed class UnityConsumerApiContractTests
         Assert.True(validator.Validate(gameState, agilePlan).IsValid);
         Assert.True(validator.Validate(gameState, aimPlan).IsValid);
         Assert.True(validator.Validate(gameState, atMinePlan).IsValid);
+        Assert.True(validator.Validate(gameState, blessingPlan).IsValid);
         Assert.True(validator.Validate(gameState, caterpillarPlan).IsValid);
         Assert.True(validator.Validate(gameState, chargePlan).IsValid);
         Assert.True(validator.Validate(gameState, cobwebPlan).IsValid);
@@ -265,10 +287,12 @@ public sealed class UnityConsumerApiContractTests
         Assert.True(validator.Validate(gameState, godsMovePlan).IsValid);
         Assert.True(validator.Validate(gameState, jumpingPlatformPlan).IsValid);
         Assert.True(validator.Validate(gameState, limitlessPlan).IsValid);
+        Assert.True(validator.Validate(gameState, obeyOrderPlan).IsValid);
         Assert.True(validator.Validate(gameState, peaceZonePlan).IsValid);
         Assert.True(validator.Validate(gameState, portalPlan).IsValid);
         Assert.True(validator.Validate(gameState, psilocybinMushroomPlan).IsValid);
         Assert.True(validator.Validate(gameState, sneakPawnPlan).IsValid);
+        Assert.True(validator.Validate(gameState, timeBombPlan).IsValid);
         Assert.True(validator.Validate(gameState, thunderclapFlashPlan).IsValid);
         Assert.Equal(new[] { new Square(2, 2), new Square(7, 7) }, portalPlan.Target.Squares);
 

@@ -11,6 +11,7 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("agile")]
     [InlineData("aim")]
     [InlineData("at_mine")]
+    [InlineData("blessing")]
     [InlineData("caterpillar")]
     [InlineData("charge")]
     [InlineData("cobweb")]
@@ -22,10 +23,12 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("jumping_platform")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
+    [InlineData("obey_order")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
+    [InlineData("time_bomb")]
     [InlineData("thunderclap_flash")]
     public void DefaultEffectDefinitions_PreservePlanningCatalogTargetShape(string cardId)
     {
@@ -77,6 +80,13 @@ public sealed class CardEffectCompatibilityContractTests
             effectCatalog,
             applier,
             new CardUsePlan("at_mine", PieceColor.White, CardTargetSelection.BoardSquare(new Square(3, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("blessing", PieceColor.White, CardTargetSelection.BoardSquare(new Square(2, 3))),
             CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
             state,
@@ -136,6 +146,13 @@ public sealed class CardEffectCompatibilityContractTests
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(0, 7), PieceColor.Black, PieceKind.Rook))),
             CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("obey_order", PieceColor.White, CardTargetSelection.BoardSquare(new Square(5, 3))),
+            CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
             state,
             validator,
@@ -223,6 +240,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("time_bomb", PieceColor.White, CardTargetSelection.BoardSquare(new Square(6, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan(
                 "thunderclap_flash",
                 PieceColor.White,
@@ -277,6 +301,7 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("agile", "Mobility", 1),
                 new CardInfo("aim", "Mobility", 1),
                 new CardInfo("at_mine", "BoardControl", 1),
+                new CardInfo("blessing", "Transformation", 1),
                 new CardInfo("caterpillar", "Mobility", 1),
                 new CardInfo("charge", "Mobility", 1),
                 new CardInfo("cobweb", "BoardControl", 1),
@@ -288,10 +313,12 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("jumping_platform", "BoardControl", 1),
                 new CardInfo("limitless", "Mobility", 1),
                 new CardInfo("missing_promotion", "Transformation", 1),
+                new CardInfo("obey_order", "Utility", 1),
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1),
                 new CardInfo("psilocybin_mushroom", "BoardControl", 1),
                 new CardInfo("sneak_pawn", "Mobility", 1),
+                new CardInfo("time_bomb", "BoardControl", 1),
                 new CardInfo("thunderclap_flash", "Mobility", 1)
             },
             Array.Empty<TileEffectInfo>());
