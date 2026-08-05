@@ -15,29 +15,39 @@ public sealed class CardTargetingModuleTests
 
         Assert.True(registry.TryGetStrategy("agile", out _));
         Assert.True(registry.TryGetStrategy("aim", out _));
+        Assert.True(registry.TryGetStrategy("caterpillar", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
+        Assert.True(registry.TryGetStrategy("concentration", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
+        Assert.True(registry.TryGetStrategy("limitless", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
-        Assert.Equal(7, registry.Strategies.Count);
+        Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
+        Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
+        Assert.Equal(12, registry.Strategies.Count);
     }
 
     [Theory]
     [InlineData("agile")]
     [InlineData("aim")]
+    [InlineData("caterpillar")]
     [InlineData("charge")]
+    [InlineData("concentration")]
     [InlineData("fast_march")]
     [InlineData("fire")]
+    [InlineData("limitless")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
+    [InlineData("sneak_pawn")]
+    [InlineData("thunderclap_flash")]
     public void DecideBestPlan_DefaultStrategiesReturnPlanForSupportedCards(
         string cardId)
     {
         GameState state = State(
             PieceColor.White,
             Card(cardId),
-            pieces: new[] { Pawn(PieceColor.White, new Square(4, 1)) });
+            pieces: SupportedCardTargetPieces());
         var module = new CardTargetingModule();
 
         CardPlanDecisionResult result = module.DecideBestPlan(
@@ -163,6 +173,17 @@ public sealed class CardTargetingModuleTests
     private static PieceInfo Pawn(PieceColor color, Square square)
     {
         return Piece(PieceKind.Pawn, color, square, "p");
+    }
+
+    private static PieceInfo[] SupportedCardTargetPieces()
+    {
+        return new[]
+        {
+            Pawn(PieceColor.White, new Square(4, 1)),
+            Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n"),
+            Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r"),
+            Piece(PieceKind.Queen, PieceColor.White, new Square(3, 0), "q")
+        };
     }
 
     private static PieceInfo Piece(

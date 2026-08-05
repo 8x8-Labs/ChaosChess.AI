@@ -11,11 +11,16 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [Theory]
     [InlineData("agile", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("aim", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
+    [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
         CardTargetKind expectedKind,
@@ -35,12 +40,18 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     }
 
     [Theory]
-    [InlineData("agile", "u")]
-    [InlineData("aim", "t")]
-    [InlineData("fast_march", "f")]
+    [InlineData("agile", "u", 1)]
+    [InlineData("aim", "t", 1)]
+    [InlineData("caterpillar", "z", 2)]
+    [InlineData("concentration", "a", 5)]
+    [InlineData("fast_march", "f", 1)]
+    [InlineData("limitless", "a", null)]
+    [InlineData("sneak_pawn", "e", 1)]
+    [InlineData("thunderclap_flash", "m", 1)]
     public void PawnMovementDefinitions_UseSelectedPieceMovementOverride(
         string cardId,
-        string expectedOverrideCode)
+        string expectedOverrideCode,
+        int? expectedDurationTurns)
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
 
@@ -50,7 +61,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveKind.SetMovementOverride, primitive.Kind);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
         Assert.Equal(expectedOverrideCode, primitive.MovementOverrideCode);
-        Assert.Equal(1, primitive.DurationTurns);
+        Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
     }
 
     [Fact]

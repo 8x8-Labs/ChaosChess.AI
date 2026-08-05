@@ -1,24 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using ChaosChess.AI.Domain;
 
 namespace ChaosChess.AI.Decision.CardTargeting
 {
     public sealed class PawnMovementOverrideCardTargetStrategy : ICardTargetStrategy
     {
-        private readonly CardPlanCandidateEnumerator _candidateEnumerator;
+        private static readonly CardPlanScore NeutralScore = new CardPlanScore(
+            0,
+            new[]
+            {
+                new CardPlanScoreComponent(
+                    "enumeration.neutral",
+                    0,
+                    "Candidate was generated without card-specific scoring.")
+            });
+
+        private readonly IReadOnlyList<PieceKind> _allowedKinds;
+        private readonly CardUsePlanValidator _validator;
         private readonly string _componentPrefix;
         private readonly string _displayName;
 
         public PawnMovementOverrideCardTargetStrategy(string cardId, string displayName)
-            : this(cardId, displayName, new CardPlanCandidateEnumerator())
+            : this(cardId, displayName, new[] { PieceKind.Pawn })
         {
         }
 
         public PawnMovementOverrideCardTargetStrategy(
             string cardId,
             string displayName,
-            CardPlanCandidateEnumerator candidateEnumerator)
+            IEnumerable<PieceKind> allowedKinds)
         {
             if (string.IsNullOrWhiteSpace(cardId))
             {
@@ -28,7 +40,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
             CardId = cardId;
             _componentPrefix = cardId;
             _displayName = string.IsNullOrWhiteSpace(displayName) ? cardId : displayName;
-            _candidateEnumerator = candidateEnumerator ?? throw new ArgumentNullException(nameof(candidateEnumerator));
+            _allowedKinds = CopyAllowedKinds(allowedKinds);
+            _validator = new CardUsePlanValidator();
         }
 
         public string CardId { get; }
@@ -54,7 +67,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     "Plan actor does not match side to move.");
             }
 
-            IReadOnlyList<CardPlanCandidate> legalCandidates = _candidateEnumerator.EnumerateLegalCandidates(
+            IReadOnlyList<CardPlanCandidate> legalCandidates = EnumerateLegalCandidates(
                 context.GameState,
                 context.Card,
                 context.Actor);
@@ -92,6 +105,56 @@ namespace ChaosChess.AI.Decision.CardTargeting
             }
 
             return CardPlanDecisionResult.Selected(bestCandidate, legalCandidates.Count);
+        }
+
+        private IReadOnlyList<CardPlanCandidate> EnumerateLegalCandidates(
+            GameState gameState,
+            CardInfo card,
+            PieceColor actor)
+        {
+            var candidates = new List<CardPlanCandidate>();
+            int enumerationIndex = 0;
+
+            foreach (PieceInfo piece in gameState.BoardState.Pieces)
+            {
+                if (piece.Color != actor || !IsAllowedKind(piece.Kind))
+                {
+                    continue;
+                }
+
+                var plan = new CardUsePlan(
+                    card.Id,
+                    actor,
+                    CardTargetSelection.PieceAtSquare(
+                        new PieceTargetSnapshot(piece.Square, piece.Color, piece.Kind)));
+                CardPlanValidationResult validation = _validator.Validate(gameState, plan);
+                if (!validation.IsValid)
+                {
+                    continue;
+                }
+
+                candidates.Add(new CardPlanCandidate(
+                    card,
+                    plan,
+                    NeutralScore,
+                    enumerationIndex));
+                enumerationIndex++;
+            }
+
+            return candidates.AsReadOnly();
+        }
+
+        private bool IsAllowedKind(PieceKind kind)
+        {
+            foreach (PieceKind allowed in _allowedKinds)
+            {
+                if (allowed == kind)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private CardPlanScore ScoreCandidate(
@@ -155,6 +218,35 @@ namespace ChaosChess.AI.Decision.CardTargeting
             return Math.Abs(from.File - to.File) <= 1 &&
                 Math.Abs(from.Rank - to.Rank) <= 2 &&
                 from != to;
+        }
+
+        private static IReadOnlyList<PieceKind> CopyAllowedKinds(IEnumerable<PieceKind> allowedKinds)
+        {
+            if (allowedKinds == null)
+            {
+                throw new ArgumentNullException(nameof(allowedKinds));
+            }
+
+            var copy = new List<PieceKind>();
+            foreach (PieceKind kind in allowedKinds)
+            {
+                if (kind == PieceKind.Unknown)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(allowedKinds), kind, "Unknown piece kind.");
+                }
+
+                if (!copy.Contains(kind))
+                {
+                    copy.Add(kind);
+                }
+            }
+
+            if (copy.Count == 0)
+            {
+                throw new ArgumentException("At least one allowed piece kind is required.", nameof(allowedKinds));
+            }
+
+            return new ReadOnlyCollection<PieceKind>(copy);
         }
 
         private static ParsedMove? TryParseFirstEngineMove(

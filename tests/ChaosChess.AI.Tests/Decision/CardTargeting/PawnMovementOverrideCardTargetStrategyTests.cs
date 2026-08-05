@@ -64,6 +64,28 @@ public sealed class PawnMovementOverrideCardTargetStrategyTests
     }
 
     [Fact]
+    public void Decide_UsesAllowedPieceKinds()
+    {
+        var pawn = Piece(PieceKind.Pawn, PieceColor.White, new Square(4, 1), "p");
+        var rook = Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r");
+        GameState state = State(
+            PieceColor.White,
+            "thunderclap_flash",
+            new[] { pawn, rook });
+        var strategy = new PawnMovementOverrideCardTargetStrategy(
+            "thunderclap_flash",
+            "Thunderclap Flash",
+            new[] { PieceKind.Rook });
+
+        CardPlanDecisionResult result = strategy.Decide(
+            Context(state, state.AvailableCards[0], PieceColor.White));
+
+        Assert.True(result.HasSelection, result.Reason);
+        Assert.Equal(rook.Square, result.SelectedCandidate!.Plan.Target.Piece!.Square);
+        Assert.Equal(PieceKind.Rook, result.SelectedCandidate.Plan.Target.Piece.ExpectedKind);
+    }
+
+    [Fact]
     public void Decide_WrongCardIdReturnsUnsupported()
     {
         GameState state = State(
@@ -80,7 +102,7 @@ public sealed class PawnMovementOverrideCardTargetStrategyTests
     }
 
     [Fact]
-    public void Decide_NoActorPawnReturnsNoLegalCandidate()
+    public void Decide_NoAllowedActorPieceReturnsNoLegalCandidate()
     {
         GameState state = State(
             PieceColor.White,
@@ -102,6 +124,10 @@ public sealed class PawnMovementOverrideCardTargetStrategyTests
             () => new PawnMovementOverrideCardTargetStrategy(string.Empty, "Aim"));
         Assert.Throws<ArgumentNullException>(
             () => new PawnMovementOverrideCardTargetStrategy("aim", "Aim", null!));
+        Assert.Throws<ArgumentException>(
+            () => new PawnMovementOverrideCardTargetStrategy("aim", "Aim", Array.Empty<PieceKind>()));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new PawnMovementOverrideCardTargetStrategy("aim", "Aim", new[] { PieceKind.Unknown }));
     }
 
     private static CardTargetStrategyContext Context(
@@ -136,7 +162,16 @@ public sealed class PawnMovementOverrideCardTargetStrategyTests
 
     private static PieceInfo Pawn(PieceColor color, Square square)
     {
-        return new PieceInfo(PieceKind.Pawn, color, square, "p");
+        return Piece(PieceKind.Pawn, color, square, "p");
+    }
+
+    private static PieceInfo Piece(
+        PieceKind kind,
+        PieceColor color,
+        Square square,
+        string fenCode)
+    {
+        return new PieceInfo(kind, color, square, fenCode);
     }
 
     private static MoveCandidate Move(string uciMove)

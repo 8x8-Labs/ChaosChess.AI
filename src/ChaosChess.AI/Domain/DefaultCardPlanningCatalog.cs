@@ -10,11 +10,16 @@ namespace ChaosChess.AI.Domain
         {
             CardPlanningDefinition.Supported("agile", CardTargetKind.PieceAtSquare, 1),
             CardPlanningDefinition.Supported("aim", CardTargetKind.PieceAtSquare, 1),
+            CardPlanningDefinition.Supported("caterpillar", CardTargetKind.PieceAtSquare, 1),
             CardPlanningDefinition.Supported("charge", CardTargetKind.None, 0),
+            CardPlanningDefinition.Supported("concentration", CardTargetKind.PieceAtSquare, 1),
             CardPlanningDefinition.Supported("fast_march", CardTargetKind.PieceAtSquare, 1),
             CardPlanningDefinition.Supported("fire", CardTargetKind.BoardSquare, 1),
+            CardPlanningDefinition.Supported("limitless", CardTargetKind.PieceAtSquare, 1),
             CardPlanningDefinition.Supported("peace_zone", CardTargetKind.BoardSquare, 1),
-            CardPlanningDefinition.Supported("portal", CardTargetKind.OrderedSquares, 2)
+            CardPlanningDefinition.Supported("portal", CardTargetKind.OrderedSquares, 2),
+            CardPlanningDefinition.Supported("sneak_pawn", CardTargetKind.PieceAtSquare, 1),
+            CardPlanningDefinition.Supported("thunderclap_flash", CardTargetKind.PieceAtSquare, 1)
         };
 
         private readonly IReadOnlyDictionary<string, CardPlanningDefinition> _definitions;

@@ -69,27 +69,51 @@ public sealed class UnityConsumerApiContractTests
     [Fact]
     public void UnityConsumerSurface_CompilesWithCardUsePlanContracts()
     {
-        BoardState boardState = FenParser.Parse("8/8/8/8/8/8/4P3/4K3 w - - 0 1");
+        BoardState boardState = FenParser.Parse("4k3/8/8/8/8/8/4P3/RN1QK3 w - - 0 1");
         var agile = new CardInfo("agile", "Mobility", remainingUses: 1);
         var aim = new CardInfo("aim", "Mobility", remainingUses: 1);
+        var caterpillar = new CardInfo("caterpillar", "Mobility", remainingUses: 1);
         var charge = new CardInfo("charge", "Mobility", remainingUses: 1);
+        var concentration = new CardInfo("concentration", "Mobility", remainingUses: 1);
         var fastMarch = new CardInfo("fast_march", "Mobility", remainingUses: 1);
         var fire = new CardInfo("fire", "BoardControl", remainingUses: 1);
+        var limitless = new CardInfo("limitless", "Mobility", remainingUses: 1);
         var peaceZone = new CardInfo("peace_zone", "BoardControl", remainingUses: 1);
         var portal = new CardInfo("portal", "Mobility", remainingUses: 1);
+        var sneakPawn = new CardInfo("sneak_pawn", "Mobility", remainingUses: 1);
+        var thunderclapFlash = new CardInfo("thunderclap_flash", "Mobility", remainingUses: 1);
         var gameState = new GameState(
             boardState,
-            new[] { agile, aim, charge, fastMarch, fire, peaceZone, portal },
+            new[]
+            {
+                agile,
+                aim,
+                caterpillar,
+                charge,
+                concentration,
+                fastMarch,
+                fire,
+                limitless,
+                peaceZone,
+                portal,
+                sneakPawn,
+                thunderclapFlash
+            },
             Array.Empty<TileEffectInfo>());
 
         var catalog = new DefaultCardPlanningCatalog();
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("agile").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("aim").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("caterpillar").RequiredTargetKind);
         Assert.Equal(CardTargetKind.None, catalog.GetDefinition("charge").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("concentration").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("fast_march").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("fire").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("limitless").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("peace_zone").RequiredTargetKind);
         Assert.Equal(2, catalog.GetDefinition("portal").RequiredTargetCount);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("sneak_pawn").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("thunderclap_flash").RequiredTargetKind);
 
         var validator = new CardUsePlanValidator(catalog);
         var traceRecorder = new CardUsePlanTraceRecorder(validator);
@@ -114,6 +138,22 @@ public sealed class UnityConsumerApiContractTests
             "charge",
             PieceColor.White,
             CardTargetSelection.None());
+        CardUsePlan caterpillarPlan = new CardUsePlan(
+            "caterpillar",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(1, 0),
+                    PieceColor.White,
+                    PieceKind.Knight)));
+        CardUsePlan concentrationPlan = new CardUsePlan(
+            "concentration",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(3, 0),
+                    PieceColor.White,
+                    PieceKind.Queen)));
         CardUsePlan fastMarchPlan = new CardUsePlan(
             "fast_march",
             PieceColor.White,
@@ -126,6 +166,14 @@ public sealed class UnityConsumerApiContractTests
             "fire",
             PieceColor.White,
             CardTargetSelection.BoardSquare(new Square(4, 3)));
+        CardUsePlan limitlessPlan = new CardUsePlan(
+            "limitless",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(3, 0),
+                    PieceColor.White,
+                    PieceKind.Queen)));
         CardUsePlan peaceZonePlan = new CardUsePlan(
             "peace_zone",
             PieceColor.White,
@@ -134,16 +182,37 @@ public sealed class UnityConsumerApiContractTests
             "portal",
             PieceColor.White,
             CardTargetSelection.OrderedSquares(
-                new[] { new Square(0, 0), new Square(7, 7) }));
+                new[] { new Square(2, 2), new Square(7, 7) }));
+        CardUsePlan sneakPawnPlan = new CardUsePlan(
+            "sneak_pawn",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
+        CardUsePlan thunderclapFlashPlan = new CardUsePlan(
+            "thunderclap_flash",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(0, 0),
+                    PieceColor.White,
+                    PieceKind.Rook)));
 
         Assert.True(validator.Validate(gameState, agilePlan).IsValid);
         Assert.True(validator.Validate(gameState, aimPlan).IsValid);
+        Assert.True(validator.Validate(gameState, caterpillarPlan).IsValid);
         Assert.True(validator.Validate(gameState, chargePlan).IsValid);
+        Assert.True(validator.Validate(gameState, concentrationPlan).IsValid);
         Assert.True(validator.Validate(gameState, fastMarchPlan).IsValid);
         Assert.True(validator.Validate(gameState, firePlan).IsValid);
+        Assert.True(validator.Validate(gameState, limitlessPlan).IsValid);
         Assert.True(validator.Validate(gameState, peaceZonePlan).IsValid);
         Assert.True(validator.Validate(gameState, portalPlan).IsValid);
-        Assert.Equal(new[] { new Square(0, 0), new Square(7, 7) }, portalPlan.Target.Squares);
+        Assert.True(validator.Validate(gameState, sneakPawnPlan).IsValid);
+        Assert.True(validator.Validate(gameState, thunderclapFlashPlan).IsValid);
+        Assert.Equal(new[] { new Square(2, 2), new Square(7, 7) }, portalPlan.Target.Squares);
 
         CardUsePlan invalidPlan = new CardUsePlan(
             "fire",
