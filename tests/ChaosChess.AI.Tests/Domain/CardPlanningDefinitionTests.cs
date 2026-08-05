@@ -18,8 +18,10 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("cobweb", CardTargetKind.BoardSquare, 1)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("dimension_instability", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, 1)]
+    [InlineData("giant", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("gods_move", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("jumping_platform", CardTargetKind.BoardSquare, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, 1)]
@@ -29,6 +31,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("portal", CardTargetKind.OrderedSquares, 2)]
     [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, 1)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("sunset_blade", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("time_bomb", CardTargetKind.BoardSquare, 1)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, 1)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
@@ -56,8 +59,10 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("cobweb", CardTargetOwnerRelation.Any)]
     [InlineData("concentration", CardTargetOwnerRelation.Self)]
     [InlineData("dark_hand", CardTargetOwnerRelation.Opponent)]
+    [InlineData("dimension_instability", CardTargetOwnerRelation.Self)]
     [InlineData("fast_march", CardTargetOwnerRelation.Self)]
     [InlineData("fire", CardTargetOwnerRelation.Any)]
+    [InlineData("giant", CardTargetOwnerRelation.Self)]
     [InlineData("gods_move", CardTargetOwnerRelation.Self)]
     [InlineData("jumping_platform", CardTargetOwnerRelation.Any)]
     [InlineData("limitless", CardTargetOwnerRelation.Self)]
@@ -67,6 +72,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("portal", CardTargetOwnerRelation.Any)]
     [InlineData("psilocybin_mushroom", CardTargetOwnerRelation.Any)]
     [InlineData("sneak_pawn", CardTargetOwnerRelation.Self)]
+    [InlineData("sunset_blade", CardTargetOwnerRelation.Self)]
     [InlineData("time_bomb", CardTargetOwnerRelation.Any)]
     [InlineData("thunderclap_flash", CardTargetOwnerRelation.Self)]
     public void DefaultCatalog_ReturnsTargetOwnerRelations(
@@ -192,11 +198,14 @@ public sealed class CardPlanningDefinitionTests
         yield return new object[] { "caterpillar", new[] { PieceKind.Knight } };
         yield return new object[] { "concentration", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen } };
         yield return new object[] { "dark_hand", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook } };
+        yield return new object[] { "dimension_instability", new[] { PieceKind.Knight } };
         yield return new object[] { "fast_march", new[] { PieceKind.Pawn } };
+        yield return new object[] { "giant", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop } };
         yield return new object[] { "gods_move", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook } };
         yield return new object[] { "limitless", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen, PieceKind.King, PieceKind.Amazon, PieceKind.Chancellor, PieceKind.KnightRider } };
         yield return new object[] { "missing_promotion", new[] { PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Amazon, PieceKind.Chancellor, PieceKind.KnightRider } };
         yield return new object[] { "sneak_pawn", new[] { PieceKind.Pawn } };
+        yield return new object[] { "sunset_blade", new[] { PieceKind.Pawn } };
         yield return new object[] { "thunderclap_flash", new[] { PieceKind.Rook } };
     }
 }

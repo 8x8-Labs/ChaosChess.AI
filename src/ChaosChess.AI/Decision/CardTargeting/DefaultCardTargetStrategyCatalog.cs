@@ -19,8 +19,10 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new TileEffectCardTargetStrategy("cobweb", "Cobweb"),
                     new PawnMovementOverrideCardTargetStrategy("concentration", "Concentration"),
                     new PieceValueCardTargetStrategy("dark_hand", "Dark Hand"),
+                    new PieceEffectCardTargetStrategy("dimension_instability", "Dimension Instability"),
                     new PawnMovementOverrideCardTargetStrategy("fast_march", "Fast March"),
                     new PieceValueCardTargetStrategy("gods_move", "God's Move"),
+                    new PieceEffectCardTargetStrategy("giant", "Giant"),
                     new TileEffectCardTargetStrategy("jumping_platform", "Jumping Platform"),
                     new PawnMovementOverrideCardTargetStrategy("limitless", "Limitless"),
                     new PieceValueCardTargetStrategy("missing_promotion", "Missing Promotion"),
@@ -30,6 +32,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new PortalCardTargetStrategy(),
                     new TileEffectCardTargetStrategy("psilocybin_mushroom", "Psilocybin Mushroom"),
                     new PawnMovementOverrideCardTargetStrategy("sneak_pawn", "Sneak Pawn"),
+                    new PieceEffectCardTargetStrategy("sunset_blade", "Sunset Blade", PieceEffectTargetProfile.CaptureSetup),
                     new TileEffectCardTargetStrategy("time_bomb", "Time Bomb"),
                     new PawnMovementOverrideCardTargetStrategy("thunderclap_flash", "Thunderclap Flash")
                 });

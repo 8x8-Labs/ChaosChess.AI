@@ -97,6 +97,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                         CardEffectApplicationCode.UnsupportedEffect,
                         new[] { "Movement override effects are not represented by the current GameState contract." });
 
+                case CardEffectPrimitiveKind.AddPieceEffect:
+                    return CardEffectApplicationResult.Unsupported(
+                        CardEffectApplicationCode.UnsupportedEffect,
+                        new[] { "Piece-attached effects are not represented by the current GameState contract." });
+
                 default:
                     return CardEffectApplicationResult.Unsupported(
                         CardEffectApplicationCode.UnsupportedEffect,

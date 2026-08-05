@@ -18,8 +18,10 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("cobweb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("dimension_instability", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("giant", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("gods_move", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("jumping_platform", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
@@ -29,6 +31,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
     [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("sunset_blade", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("time_bomb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
@@ -73,6 +76,25 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
         Assert.Equal(expectedOverrideCode, primitive.MovementOverrideCode);
         Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
+    }
+
+    [Theory]
+    [InlineData("dimension_instability", "DimensionInstability")]
+    [InlineData("giant", "Giant")]
+    [InlineData("sunset_blade", "SunsetBlade")]
+    public void PieceEffectDefinitions_UseSelectedPieceEffectMarker(
+        string cardId,
+        string expectedEffectType)
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition(cardId)!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddPieceEffect, primitive.Kind);
+        Assert.Equal(expectedEffectType, primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+        Assert.Equal(-1, primitive.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, primitive.TileEffectLifetimeKind);
     }
 
     [Fact]

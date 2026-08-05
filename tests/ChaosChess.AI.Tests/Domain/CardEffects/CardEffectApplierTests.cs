@@ -250,25 +250,36 @@ public sealed class CardEffectApplierTests
         var catalog = new DefaultCardEffectDefinitionCatalog();
         var state = CreateState(extraPieces: new[]
         {
-            new PieceInfo(PieceKind.Pawn, PieceColor.White, new Square(0, 1), "p")
+            new PieceInfo(PieceKind.Pawn, PieceColor.White, new Square(0, 1), "p"),
+            new PieceInfo(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n")
         });
         var agilePlan = new CardUsePlan(
             "agile",
             PieceColor.White,
             CardTargetSelection.PieceAtSquare(
                 new PieceTargetSnapshot(new Square(0, 1), PieceColor.White, PieceKind.Pawn)));
+        var dimensionInstabilityPlan = new CardUsePlan(
+            "dimension_instability",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(new Square(1, 0), PieceColor.White, PieceKind.Knight)));
         var chargePlan = new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None());
         var applier = new CardEffectApplier();
 
         CardEffectApplicationResult agile = applier.Apply(
             catalog.FindDefinition("agile")!,
             CreateContext(state, agilePlan));
+        CardEffectApplicationResult dimensionInstability = applier.Apply(
+            catalog.FindDefinition("dimension_instability")!,
+            CreateContext(state, dimensionInstabilityPlan));
         CardEffectApplicationResult charge = applier.Apply(
             catalog.FindDefinition("charge")!,
             CreateContext(state, chargePlan));
 
         Assert.Equal(CardEffectApplicationStatus.Unsupported, agile.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, agile.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, dimensionInstability.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, dimensionInstability.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, charge.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, charge.Code);
     }

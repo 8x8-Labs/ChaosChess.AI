@@ -90,6 +90,32 @@ public sealed class CardPlanCandidateEnumeratorTests
     }
 
     [Theory]
+    [InlineData("dimension_instability", PieceKind.Knight)]
+    [InlineData("giant", PieceKind.Pawn)]
+    [InlineData("giant", PieceKind.Knight)]
+    [InlineData("giant", PieceKind.Bishop)]
+    [InlineData("sunset_blade", PieceKind.Pawn)]
+    public void EnumerateLegalCandidates_PieceEffectCards_ReturnActorAllowedPieceCandidates(
+        string cardId,
+        PieceKind expectedKind)
+    {
+        PieceInfo actorPiece = Piece(expectedKind, PieceColor.White, new Square(3, 3), "p");
+        PieceInfo opponentPiece = Piece(expectedKind, PieceColor.Black, new Square(4, 4), "p");
+        GameState state = State(
+            PieceColor.White,
+            Card(cardId),
+            pieces: new[] { actorPiece, opponentPiece });
+
+        CardPlanCandidate candidate = Assert.Single(
+            enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
+
+        Assert.Equal(actorPiece.Square, candidate.Plan.Target.Piece!.Square);
+        Assert.Equal(expectedKind, candidate.Plan.Target.Piece.ExpectedKind);
+        Assert.Equal(PieceColor.White, candidate.Plan.Target.Piece.ExpectedColor);
+        AssertValid(state, candidate);
+    }
+
+    [Theory]
     [InlineData("at_mine")]
     [InlineData("blessing")]
     [InlineData("cobweb")]

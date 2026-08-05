@@ -83,6 +83,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                 throw new ArgumentException("Tile effect primitives require a non-empty effect type.", nameof(effectType));
             }
 
+            if (kind == CardEffectPrimitiveKind.AddPieceEffect && string.IsNullOrWhiteSpace(effectType))
+            {
+                throw new ArgumentException("Piece effect primitives require a non-empty effect type.", nameof(effectType));
+            }
+
             if (kind == CardEffectPrimitiveKind.SetMovementOverride && string.IsNullOrWhiteSpace(movementOverrideCode))
             {
                 throw new ArgumentException("Movement override primitives require a non-empty override code.", nameof(movementOverrideCode));
@@ -177,7 +182,8 @@ namespace ChaosChess.AI.Domain.CardEffects
                 kind != CardEffectPrimitiveKind.ChangeOwner &&
                 kind != CardEffectPrimitiveKind.SetMovementOverride &&
                 kind != CardEffectPrimitiveKind.AddTileEffect &&
-                kind != CardEffectPrimitiveKind.RemoveTileEffect)
+                kind != CardEffectPrimitiveKind.RemoveTileEffect &&
+                kind != CardEffectPrimitiveKind.AddPieceEffect)
             {
                 throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown effect primitive kind.");
             }

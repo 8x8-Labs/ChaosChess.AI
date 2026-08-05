@@ -107,6 +107,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "dimension_instability",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddPieceEffect,
+                        effectType: "DimensionInstability",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
                 "fast_march",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -115,6 +127,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         CardEffectPrimitiveKind.SetMovementOverride,
                         movementOverrideCode: "f",
                         durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "giant",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddPieceEffect,
+                        effectType: "Giant",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
@@ -240,6 +264,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         CardEffectPrimitiveKind.SetMovementOverride,
                         movementOverrideCode: "e",
                         durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "sunset_blade",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddPieceEffect,
+                        effectType: "SunsetBlade",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(

@@ -17,8 +17,10 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
+    [InlineData("dimension_instability")]
     [InlineData("fast_march")]
     [InlineData("fire")]
+    [InlineData("giant")]
     [InlineData("gods_move")]
     [InlineData("jumping_platform")]
     [InlineData("limitless")]
@@ -28,6 +30,7 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
+    [InlineData("sunset_blade")]
     [InlineData("time_bomb")]
     [InlineData("thunderclap_flash")]
     public void DefaultEffectDefinitions_PreservePlanningCatalogTargetShape(string cardId)
@@ -141,6 +144,17 @@ public sealed class CardEffectCompatibilityContractTests
             effectCatalog,
             applier,
             new CardUsePlan(
+                "dimension_instability",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(1, 0), PieceColor.White, PieceKind.Knight))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
                 "missing_promotion",
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
@@ -182,6 +196,17 @@ public sealed class CardEffectCompatibilityContractTests
             applier,
             new CardUsePlan("fire", PieceColor.White, CardTargetSelection.BoardSquare(new Square(3, 3))),
             CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "giant",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
+            CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
             state,
             validator,
@@ -231,6 +256,17 @@ public sealed class CardEffectCompatibilityContractTests
             applier,
             new CardUsePlan(
                 "sneak_pawn",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "sunset_blade",
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
@@ -307,8 +343,10 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("cobweb", "BoardControl", 1),
                 new CardInfo("concentration", "Mobility", 1),
                 new CardInfo("dark_hand", "Tactical", 1),
+                new CardInfo("dimension_instability", "Mobility", 1),
                 new CardInfo("fast_march", "Mobility", 1),
                 new CardInfo("fire", "BoardControl", 1),
+                new CardInfo("giant", "Transformation", 1),
                 new CardInfo("gods_move", "Mobility", 1),
                 new CardInfo("jumping_platform", "BoardControl", 1),
                 new CardInfo("limitless", "Mobility", 1),
@@ -318,6 +356,7 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("portal", "Mobility", 1),
                 new CardInfo("psilocybin_mushroom", "BoardControl", 1),
                 new CardInfo("sneak_pawn", "Mobility", 1),
+                new CardInfo("sunset_blade", "Tactical", 1),
                 new CardInfo("time_bomb", "BoardControl", 1),
                 new CardInfo("thunderclap_flash", "Mobility", 1)
             },

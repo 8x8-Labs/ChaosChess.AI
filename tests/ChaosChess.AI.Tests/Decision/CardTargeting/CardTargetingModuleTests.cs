@@ -22,8 +22,10 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("cobweb", out _));
         Assert.True(registry.TryGetStrategy("concentration", out _));
         Assert.True(registry.TryGetStrategy("dark_hand", out _));
+        Assert.True(registry.TryGetStrategy("dimension_instability", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
+        Assert.True(registry.TryGetStrategy("giant", out _));
         Assert.True(registry.TryGetStrategy("gods_move", out _));
         Assert.True(registry.TryGetStrategy("jumping_platform", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
@@ -33,9 +35,10 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("portal", out _));
         Assert.True(registry.TryGetStrategy("psilocybin_mushroom", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
+        Assert.True(registry.TryGetStrategy("sunset_blade", out _));
         Assert.True(registry.TryGetStrategy("time_bomb", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(22, registry.Strategies.Count);
+        Assert.Equal(25, registry.Strategies.Count);
     }
 
     [Theory]
@@ -48,8 +51,10 @@ public sealed class CardTargetingModuleTests
     [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
+    [InlineData("dimension_instability")]
     [InlineData("fast_march")]
     [InlineData("fire")]
+    [InlineData("giant")]
     [InlineData("gods_move")]
     [InlineData("jumping_platform")]
     [InlineData("limitless")]
@@ -59,6 +64,7 @@ public sealed class CardTargetingModuleTests
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
+    [InlineData("sunset_blade")]
     [InlineData("time_bomb")]
     [InlineData("thunderclap_flash")]
     public void DecideBestPlan_DefaultStrategiesReturnPlanForSupportedCards(
