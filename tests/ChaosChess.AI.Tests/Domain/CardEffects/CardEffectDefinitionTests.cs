@@ -87,8 +87,31 @@ public sealed class CardEffectDefinitionTests
         Assert.Equal("Fire", primitive.EffectType);
         Assert.Equal(PieceColor.White, primitive.Owner);
         Assert.Equal(2, primitive.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.TurnLimited, primitive.TileEffectLifetimeKind);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
         Assert.Null(primitive.TargetIndex);
+        Assert.Null(primitive.DestinationTargetIndex);
+    }
+
+    [Fact]
+    public void Primitive_AllowsPersistentTileEffectsWithoutTurnLimitedDuration()
+    {
+        CardEffectPrimitive primitive = CardEffectPrimitive.AddTileEffect(
+            new Square(2, 2),
+            "Portal",
+            PieceColor.White,
+            durationTurns: -1,
+            sharedRemainingUses: 2,
+            tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+            targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
+            targetIndex: 0,
+            destinationTargetIndex: 1);
+
+        Assert.Equal(-1, primitive.DurationTurns);
+        Assert.Equal(2, primitive.SharedRemainingUses);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, primitive.TileEffectLifetimeKind);
+        Assert.Equal(0, primitive.TargetIndex);
+        Assert.Equal(1, primitive.DestinationTargetIndex);
     }
 
     [Fact]
@@ -126,11 +149,33 @@ public sealed class CardEffectDefinitionTests
             () => new CardEffectPrimitive(
                 CardEffectPrimitiveKind.MovePiece,
                 targetIndex: -1));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.AddTileEffect,
+                effectType: "Portal",
+                destinationTargetIndex: -1));
         Assert.Throws<ArgumentException>(
             () => new CardEffectPrimitive(
                 CardEffectPrimitiveKind.AddTileEffect,
                 effectType: "Portal",
                 targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.AddTileEffect,
+                effectType: "Portal",
+                destinationTargetIndex: 1));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.AddTileEffect,
+                effectType: "Portal",
+                targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
+                targetIndex: 1,
+                destinationTargetIndex: 1));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.AddTileEffect,
+                effectType: "Portal",
+                tileEffectLifetimeKind: (TileEffectLifetimeKind)99));
     }
 
     [Fact]

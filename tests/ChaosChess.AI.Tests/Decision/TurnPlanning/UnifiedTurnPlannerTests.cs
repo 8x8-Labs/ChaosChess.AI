@@ -270,6 +270,87 @@ public sealed class UnifiedTurnPlannerTests
     }
 
     [Fact]
+    public void PlanTurn_DefaultCardEffectProbe_AnalyzesPostCardMoveForExactFire()
+    {
+        var engine = new StubChessEngine(
+            new[] { Move("e2e4", 13) },
+            new[] { Move("d2d4", 80) });
+        var planner = new UnifiedTurnPlanner(
+            new MoveFilter(engine),
+            new CardTargetingModule(),
+            options: new TurnPlannerOptions(
+                noCardMoveCandidateCount: 1,
+                cardCandidateCount: 1,
+                postCardMoveCandidateCount: 1,
+                opponentReplyCandidateCount: 0,
+                beamWidth: 4));
+
+        TurnPlannerResult result = planner.PlanTurn(
+            State(
+                new[]
+                {
+                    Piece(PieceKind.Pawn, PieceColor.White, "e2", "p"),
+                    Piece(PieceKind.Pawn, PieceColor.White, "d2", "p")
+                },
+                new[] { Card("fire") }));
+
+        TurnPlanCandidate cardCandidate = Assert.Single(
+            result.Candidates,
+            candidate => candidate.Plan?.CardPlan?.CardId == "fire");
+        TurnPlan plan = cardCandidate.Plan!;
+
+        Assert.True(plan.UsesCard);
+        Assert.Equal(CardEffectApplicationStatus.Exact, plan.CardApplicationStatus);
+        Assert.Equal(CardEffectApplicationCode.Success, plan.CardApplicationCode);
+        Assert.Equal(CardTargetKind.BoardSquare, plan.CardPlan!.Target.Kind);
+        Assert.Equal("d2d4", plan.MovePlan!.UciMove);
+        Assert.Equal(new[] { 1, 1 }, engine.VariationCounts);
+        Assert.Equal(2, result.TraceSummary.EngineCallCount);
+        Assert.Equal(1, result.TraceSummary.PostCardMoveCandidateCount);
+        Assert.Equal(2, result.TraceSummary.SelectedCandidateCount);
+        Assert.Equal(0, result.TraceSummary.SkippedCandidateCount);
+    }
+
+    [Fact]
+    public void PlanTurn_DefaultCardEffectProbe_AnalyzesPostCardMoveForExactPortal()
+    {
+        var engine = new StubChessEngine(
+            new[] { Move("e2e4", 13) },
+            new[] { Move("e2e4", 80) });
+        var planner = new UnifiedTurnPlanner(
+            new MoveFilter(engine),
+            new CardTargetingModule(),
+            options: new TurnPlannerOptions(
+                noCardMoveCandidateCount: 1,
+                cardCandidateCount: 1,
+                postCardMoveCandidateCount: 1,
+                opponentReplyCandidateCount: 0,
+                beamWidth: 4));
+
+        TurnPlannerResult result = planner.PlanTurn(
+            State(
+                new[] { Piece(PieceKind.Pawn, PieceColor.White, "e2", "p") },
+                new[] { Card("portal") }));
+
+        TurnPlanCandidate cardCandidate = Assert.Single(
+            result.Candidates,
+            candidate => candidate.Plan?.CardPlan?.CardId == "portal");
+        TurnPlan plan = cardCandidate.Plan!;
+
+        Assert.True(plan.UsesCard);
+        Assert.Equal(CardEffectApplicationStatus.Exact, plan.CardApplicationStatus);
+        Assert.Equal(CardEffectApplicationCode.Success, plan.CardApplicationCode);
+        Assert.Equal(CardTargetKind.OrderedSquares, plan.CardPlan!.Target.Kind);
+        Assert.Equal(2, plan.CardPlan.Target.Squares.Count);
+        Assert.Equal("e2e4", plan.MovePlan!.UciMove);
+        Assert.Equal(new[] { 1, 1 }, engine.VariationCounts);
+        Assert.Equal(2, result.TraceSummary.EngineCallCount);
+        Assert.Equal(1, result.TraceSummary.PostCardMoveCandidateCount);
+        Assert.Equal(2, result.TraceSummary.SelectedCandidateCount);
+        Assert.Equal(0, result.TraceSummary.SkippedCandidateCount);
+    }
+
+    [Fact]
     public void PlanTurn_ExactCardApplication_CreatesCardAndMovePlanFromPostCardState()
     {
         var engine = new StubChessEngine(

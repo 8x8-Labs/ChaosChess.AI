@@ -56,8 +56,12 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
 
         Assert.Equal("Fire", fire.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, fire.TargetBinding);
+        Assert.Equal(-1, fire.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, fire.TileEffectLifetimeKind);
         Assert.Equal("Peace", peace.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, peace.TargetBinding);
+        Assert.Equal(-1, peace.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, peace.TileEffectLifetimeKind);
     }
 
     [Fact]
@@ -73,11 +77,15 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         {
             Assert.Equal(CardEffectPrimitiveKind.AddTileEffect, primitive.Kind);
             Assert.Equal("Portal", primitive.EffectType);
+            Assert.Equal(-1, primitive.DurationTurns);
             Assert.Equal(2, primitive.SharedRemainingUses);
+            Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, primitive.TileEffectLifetimeKind);
             Assert.Equal(CardEffectPrimitiveTargetBinding.OrderedSquareByIndex, primitive.TargetBinding);
         });
         Assert.Equal(0, definition.Primitives[0].TargetIndex);
+        Assert.Equal(1, definition.Primitives[0].DestinationTargetIndex);
         Assert.Equal(1, definition.Primitives[1].TargetIndex);
+        Assert.Equal(0, definition.Primitives[1].DestinationTargetIndex);
     }
 
     [Fact]

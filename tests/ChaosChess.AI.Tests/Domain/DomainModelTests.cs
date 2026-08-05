@@ -81,6 +81,40 @@ public sealed class DomainModelTests
     }
 
     [Fact]
+    public void TileEffectInfo_PreservesPersistentLifetime()
+    {
+        var effect = new TileEffectInfo(
+            "portal-1",
+            "Portal",
+            Square.Parse("c3"),
+            PieceColor.White,
+            remainingTurns: -1,
+            destinationSquare: Square.Parse("f6"),
+            sharedRemainingUses: 2,
+            TileEffectLifetimeKind.PersistentUntilTriggered);
+
+        Assert.Equal(-1, effect.RemainingTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, effect.LifetimeKind);
+        Assert.Equal(Square.Parse("f6"), effect.DestinationSquare);
+        Assert.Equal(2, effect.SharedRemainingUses);
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new TileEffectInfo(
+                "invalid",
+                "Fire",
+                Square.Parse("d4"),
+                PieceColor.White,
+                remainingTurns: -1));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new TileEffectInfo(
+                "invalid",
+                "Fire",
+                Square.Parse("d4"),
+                PieceColor.White,
+                remainingTurns: 1,
+                lifetimeKind: (TileEffectLifetimeKind)99));
+    }
+
+    [Fact]
     public void MoveCandidate_RequiresExactlyOneScoreType()
     {
         Assert.Throws<ArgumentException>(() => new MoveCandidate("e2e4", null, null));

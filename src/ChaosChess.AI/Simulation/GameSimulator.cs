@@ -590,6 +590,12 @@ namespace ChaosChess.AI.Simulation
 
             foreach (TileEffectInfo effect in effects)
             {
+                if (effect.LifetimeKind == TileEffectLifetimeKind.PersistentUntilTriggered)
+                {
+                    ticked.Add(effect);
+                    continue;
+                }
+
                 int remainingTurns = effect.RemainingTurns <= 0
                     ? effect.RemainingTurns
                     : effect.RemainingTurns - 1;
@@ -606,7 +612,8 @@ namespace ChaosChess.AI.Simulation
                     effect.Owner,
                     remainingTurns,
                     effect.DestinationSquare,
-                    effect.SharedRemainingUses));
+                    effect.SharedRemainingUses,
+                    effect.LifetimeKind));
             }
 
             return ticked;
@@ -728,7 +735,8 @@ namespace ChaosChess.AI.Simulation
                     effect.Owner,
                     effect.RemainingTurns,
                     effect.DestinationSquare,
-                    remainingUses);
+                    remainingUses,
+                    effect.LifetimeKind);
             }
         }
 

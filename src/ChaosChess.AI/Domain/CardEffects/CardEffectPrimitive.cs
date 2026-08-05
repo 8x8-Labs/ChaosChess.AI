@@ -14,11 +14,14 @@ namespace ChaosChess.AI.Domain.CardEffects
             string? movementOverrideCode = null,
             int? durationTurns = null,
             int? sharedRemainingUses = null,
+            TileEffectLifetimeKind tileEffectLifetimeKind = TileEffectLifetimeKind.TurnLimited,
             CardEffectPrimitiveTargetBinding targetBinding = CardEffectPrimitiveTargetBinding.None,
-            int? targetIndex = null)
+            int? targetIndex = null,
+            int? destinationTargetIndex = null)
         {
             EnsureValidKind(kind);
             EnsureValidTargetBinding(targetBinding);
+            TileEffectLifetimeKindGuard.EnsureValid(tileEffectLifetimeKind, nameof(tileEffectLifetimeKind));
 
             if (pieceKind.HasValue && pieceKind.Value == ChaosChess.AI.Domain.PieceKind.Unknown)
             {
@@ -30,7 +33,9 @@ namespace ChaosChess.AI.Domain.CardEffects
                 EnsureValidColor(owner.Value, nameof(owner));
             }
 
-            if (durationTurns.HasValue && durationTurns.Value < 0)
+            if (durationTurns.HasValue &&
+                durationTurns.Value < 0 &&
+                tileEffectLifetimeKind != TileEffectLifetimeKind.PersistentUntilTriggered)
             {
                 throw new ArgumentOutOfRangeException(nameof(durationTurns), durationTurns, "Duration cannot be negative.");
             }
@@ -45,10 +50,32 @@ namespace ChaosChess.AI.Domain.CardEffects
                 throw new ArgumentOutOfRangeException(nameof(targetIndex), targetIndex, "Target index cannot be negative.");
             }
 
+            if (destinationTargetIndex.HasValue && destinationTargetIndex.Value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(destinationTargetIndex), destinationTargetIndex, "Destination target index cannot be negative.");
+            }
+
             if (targetBinding == CardEffectPrimitiveTargetBinding.OrderedSquareByIndex &&
                 !targetIndex.HasValue)
             {
                 throw new ArgumentException("Ordered square target binding requires a target index.", nameof(targetIndex));
+            }
+
+            if (destinationTargetIndex.HasValue &&
+                targetBinding != CardEffectPrimitiveTargetBinding.OrderedSquareByIndex)
+            {
+                throw new ArgumentException(
+                    "Destination target index requires ordered square target binding.",
+                    nameof(destinationTargetIndex));
+            }
+
+            if (destinationTargetIndex.HasValue &&
+                targetIndex.HasValue &&
+                destinationTargetIndex.Value == targetIndex.Value)
+            {
+                throw new ArgumentException(
+                    "Destination target index cannot match the source target index.",
+                    nameof(destinationTargetIndex));
             }
 
             if (kind == CardEffectPrimitiveKind.AddTileEffect && string.IsNullOrWhiteSpace(effectType))
@@ -70,8 +97,10 @@ namespace ChaosChess.AI.Domain.CardEffects
             MovementOverrideCode = string.IsNullOrWhiteSpace(movementOverrideCode) ? null : movementOverrideCode;
             DurationTurns = durationTurns;
             SharedRemainingUses = sharedRemainingUses;
+            TileEffectLifetimeKind = tileEffectLifetimeKind;
             TargetBinding = targetBinding;
             TargetIndex = targetIndex;
+            DestinationTargetIndex = destinationTargetIndex;
         }
 
         public CardEffectPrimitiveKind Kind { get; }
@@ -92,9 +121,13 @@ namespace ChaosChess.AI.Domain.CardEffects
 
         public int? SharedRemainingUses { get; }
 
+        public TileEffectLifetimeKind TileEffectLifetimeKind { get; }
+
         public CardEffectPrimitiveTargetBinding TargetBinding { get; }
 
         public int? TargetIndex { get; }
+
+        public int? DestinationTargetIndex { get; }
 
         public static CardEffectPrimitive AddTileEffect(
             Square square,
@@ -103,8 +136,10 @@ namespace ChaosChess.AI.Domain.CardEffects
             int? durationTurns,
             int? sharedRemainingUses = null,
             Square? destinationSquare = null,
+            TileEffectLifetimeKind tileEffectLifetimeKind = TileEffectLifetimeKind.TurnLimited,
             CardEffectPrimitiveTargetBinding targetBinding = CardEffectPrimitiveTargetBinding.SelectedSquare,
-            int? targetIndex = null)
+            int? targetIndex = null,
+            int? destinationTargetIndex = null)
         {
             return new CardEffectPrimitive(
                 CardEffectPrimitiveKind.AddTileEffect,
@@ -114,8 +149,10 @@ namespace ChaosChess.AI.Domain.CardEffects
                 effectType: effectType,
                 durationTurns: durationTurns,
                 sharedRemainingUses: sharedRemainingUses,
+                tileEffectLifetimeKind: tileEffectLifetimeKind,
                 targetBinding: targetBinding,
-                targetIndex: targetIndex);
+                targetIndex: targetIndex,
+                destinationTargetIndex: destinationTargetIndex);
         }
 
         public static CardEffectPrimitive SetMovementOverride(
