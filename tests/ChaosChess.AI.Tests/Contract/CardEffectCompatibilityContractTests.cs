@@ -16,6 +16,7 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("limitless")]
+    [InlineData("missing_promotion")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("sneak_pawn")]
@@ -92,6 +93,17 @@ public sealed class CardEffectCompatibilityContractTests
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(3, 0), PieceColor.White, PieceKind.Queen))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "missing_promotion",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(0, 7), PieceColor.Black, PieceKind.Rook))),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
             state,
@@ -193,7 +205,8 @@ public sealed class CardEffectCompatibilityContractTests
                 new PieceInfo(PieceKind.Rook, PieceColor.White, new Square(0, 0), "R"),
                 new PieceInfo(PieceKind.Knight, PieceColor.White, new Square(1, 0), "N"),
                 new PieceInfo(PieceKind.Queen, PieceColor.White, new Square(3, 0), "Q"),
-                new PieceInfo(PieceKind.Pawn, PieceColor.White, new Square(4, 1), "P")
+                new PieceInfo(PieceKind.Pawn, PieceColor.White, new Square(4, 1), "P"),
+                new PieceInfo(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r")
             },
             PieceColor.White,
             CastlingRights.None,
@@ -213,6 +226,7 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("fast_march", "Mobility", 1),
                 new CardInfo("fire", "BoardControl", 1),
                 new CardInfo("limitless", "Mobility", 1),
+                new CardInfo("missing_promotion", "Transformation", 1),
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1),
                 new CardInfo("sneak_pawn", "Mobility", 1),

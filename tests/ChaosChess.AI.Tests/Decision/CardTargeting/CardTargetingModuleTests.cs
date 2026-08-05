@@ -21,11 +21,12 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
+        Assert.True(registry.TryGetStrategy("missing_promotion", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(12, registry.Strategies.Count);
+        Assert.Equal(13, registry.Strategies.Count);
     }
 
     [Theory]
@@ -37,6 +38,7 @@ public sealed class CardTargetingModuleTests
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("limitless")]
+    [InlineData("missing_promotion")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("sneak_pawn")]
@@ -182,7 +184,8 @@ public sealed class CardTargetingModuleTests
             Pawn(PieceColor.White, new Square(4, 1)),
             Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n"),
             Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r"),
-            Piece(PieceKind.Queen, PieceColor.White, new Square(3, 0), "q")
+            Piece(PieceKind.Queen, PieceColor.White, new Square(3, 0), "q"),
+            Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r")
         };
     }
 

@@ -44,6 +44,16 @@ namespace ChaosChess.AI.Domain
             PieceKind.KnightRider
         };
 
+        private static readonly PieceKind[] MissingPromotionTargetKinds =
+        {
+            PieceKind.Knight,
+            PieceKind.Bishop,
+            PieceKind.Rook,
+            PieceKind.Amazon,
+            PieceKind.Chancellor,
+            PieceKind.KnightRider
+        };
+
         private static readonly CardPlanningDefinition[] DefaultDefinitions =
         {
             CardPlanningDefinition.Supported("agile", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
@@ -54,6 +64,7 @@ namespace ChaosChess.AI.Domain
             CardPlanningDefinition.Supported("fast_march", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("fire", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("limitless", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, AllMobileKinds)),
+            CardPlanningDefinition.Supported("missing_promotion", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, MissingPromotionTargetKinds)),
             CardPlanningDefinition.Supported("peace_zone", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("portal", CardTargetKind.OrderedSquares, 2),
             CardPlanningDefinition.Supported("sneak_pawn", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),

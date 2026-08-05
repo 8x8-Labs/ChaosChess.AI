@@ -94,6 +94,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "missing_promotion",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Opponent, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.ChangePieceKind,
+                        pieceKind: PieceKind.Pawn,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
                 "peace_zone",
                 CardTargetQuery.EmptySquare(),
                 new[]

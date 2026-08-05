@@ -17,6 +17,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
@@ -80,6 +81,19 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, peace.TargetBinding);
         Assert.Equal(-1, peace.DurationTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, peace.TileEffectLifetimeKind);
+    }
+
+    [Fact]
+    public void MissingPromotionDefinition_UsesSelectedOpponentPieceChangeKind()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("missing_promotion")!;
+        CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.ChangePieceKind, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+        Assert.Equal(PieceKind.Pawn, primitive.PieceKind);
     }
 
     [Fact]

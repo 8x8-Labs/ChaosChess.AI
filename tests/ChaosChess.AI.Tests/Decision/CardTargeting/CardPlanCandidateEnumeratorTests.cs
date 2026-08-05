@@ -74,26 +74,18 @@ public sealed class CardPlanCandidateEnumeratorTests
     [Fact]
     public void EnumerateLegalCandidates_UsesOpponentOwnerRelationFromPlanningDefinition()
     {
-        var actorQueen = Piece(PieceKind.Queen, PieceColor.White, new Square(3, 0), "q");
-        var opponentQueen = Piece(PieceKind.Queen, PieceColor.Black, new Square(3, 7), "q");
+        var actorRook = Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r");
+        var opponentRook = Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r");
         var opponentPawn = Piece(PieceKind.Pawn, PieceColor.Black, new Square(4, 6));
-        var customEnumerator = new CardPlanCandidateEnumerator(
-            new DefaultCardPlanningCatalog(
-                new[]
-                {
-                    CardPlanningDefinition.Supported(
-                        "missing_promotion",
-                        CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, PieceKind.Queen))
-                }));
         GameState state = State(
             PieceColor.White,
             Card("missing_promotion"),
-            pieces: new[] { actorQueen, opponentQueen, opponentPawn });
+            pieces: new[] { actorRook, opponentRook, opponentPawn });
 
         CardPlanCandidate candidate = Assert.Single(
-            customEnumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
+            enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
 
-        Assert.Equal(opponentQueen.Square, candidate.Plan.Target.Piece!.Square);
+        Assert.Equal(opponentRook.Square, candidate.Plan.Target.Piece!.Square);
         Assert.Equal(PieceColor.Black, candidate.Plan.Target.Piece.ExpectedColor);
     }
 

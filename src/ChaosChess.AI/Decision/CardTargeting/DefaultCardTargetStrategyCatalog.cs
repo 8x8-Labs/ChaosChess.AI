@@ -17,6 +17,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new PawnMovementOverrideCardTargetStrategy("concentration", "Concentration"),
                     new PawnMovementOverrideCardTargetStrategy("fast_march", "Fast March"),
                     new PawnMovementOverrideCardTargetStrategy("limitless", "Limitless"),
+                    new PieceValueCardTargetStrategy("missing_promotion", "Missing Promotion"),
                     new FireCardTargetStrategy(),
                     new PeaceZoneCardTargetStrategy(),
                     new PortalCardTargetStrategy(),

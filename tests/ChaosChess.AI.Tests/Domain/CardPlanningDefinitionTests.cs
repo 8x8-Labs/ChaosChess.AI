@@ -17,6 +17,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, 2)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, 1)]
@@ -45,6 +46,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("fast_march", CardTargetOwnerRelation.Self)]
     [InlineData("fire", CardTargetOwnerRelation.Any)]
     [InlineData("limitless", CardTargetOwnerRelation.Self)]
+    [InlineData("missing_promotion", CardTargetOwnerRelation.Opponent)]
     [InlineData("peace_zone", CardTargetOwnerRelation.Any)]
     [InlineData("portal", CardTargetOwnerRelation.Any)]
     [InlineData("sneak_pawn", CardTargetOwnerRelation.Self)]
@@ -173,6 +175,7 @@ public sealed class CardPlanningDefinitionTests
         yield return new object[] { "concentration", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen } };
         yield return new object[] { "fast_march", new[] { PieceKind.Pawn } };
         yield return new object[] { "limitless", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen, PieceKind.King, PieceKind.Amazon, PieceKind.Chancellor, PieceKind.KnightRider } };
+        yield return new object[] { "missing_promotion", new[] { PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Amazon, PieceKind.Chancellor, PieceKind.KnightRider } };
         yield return new object[] { "sneak_pawn", new[] { PieceKind.Pawn } };
         yield return new object[] { "thunderclap_flash", new[] { PieceKind.Rook } };
     }
