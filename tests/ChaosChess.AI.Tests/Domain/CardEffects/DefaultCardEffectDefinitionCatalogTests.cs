@@ -17,6 +17,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("gods_move", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
@@ -96,6 +97,19 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveKind.ChangePieceKind, primitive.Kind);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
         Assert.Equal(PieceKind.Pawn, primitive.PieceKind);
+    }
+
+    [Fact]
+    public void GodsMoveDefinition_UsesSelectedOwnPieceChangeKindMarker()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("gods_move")!;
+        CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.ChangePieceKind, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+        Assert.Null(primitive.PieceKind);
     }
 
     [Fact]

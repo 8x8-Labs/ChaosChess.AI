@@ -30,6 +30,14 @@ namespace ChaosChess.AI.Domain
             PieceKind.Rook
         };
 
+        private static readonly PieceKind[] GodsMoveTargetKinds =
+        {
+            PieceKind.Pawn,
+            PieceKind.Knight,
+            PieceKind.Bishop,
+            PieceKind.Rook
+        };
+
         private static readonly PieceKind[] StandardPromotableKinds =
         {
             PieceKind.Pawn,
@@ -72,6 +80,7 @@ namespace ChaosChess.AI.Domain
             CardPlanningDefinition.Supported("dark_hand", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, DarkHandTargetKinds)),
             CardPlanningDefinition.Supported("fast_march", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("fire", CardTargetKind.BoardSquare, 1),
+            CardPlanningDefinition.Supported("gods_move", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, GodsMoveTargetKinds)),
             CardPlanningDefinition.Supported("limitless", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, AllMobileKinds)),
             CardPlanningDefinition.Supported("missing_promotion", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, MissingPromotionTargetKinds)),
             CardPlanningDefinition.Supported("peace_zone", CardTargetKind.BoardSquare, 1),

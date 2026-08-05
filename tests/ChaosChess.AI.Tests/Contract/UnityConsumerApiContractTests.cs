@@ -78,6 +78,7 @@ public sealed class UnityConsumerApiContractTests
         var darkHand = new CardInfo("dark_hand", "Tactical", remainingUses: 1);
         var fastMarch = new CardInfo("fast_march", "Mobility", remainingUses: 1);
         var fire = new CardInfo("fire", "BoardControl", remainingUses: 1);
+        var godsMove = new CardInfo("gods_move", "Mobility", remainingUses: 1);
         var limitless = new CardInfo("limitless", "Mobility", remainingUses: 1);
         var peaceZone = new CardInfo("peace_zone", "BoardControl", remainingUses: 1);
         var portal = new CardInfo("portal", "Mobility", remainingUses: 1);
@@ -95,6 +96,7 @@ public sealed class UnityConsumerApiContractTests
                 darkHand,
                 fastMarch,
                 fire,
+                godsMove,
                 limitless,
                 peaceZone,
                 portal,
@@ -113,6 +115,8 @@ public sealed class UnityConsumerApiContractTests
         Assert.Equal(CardTargetOwnerRelation.Opponent, catalog.GetDefinition("dark_hand").RequiredTargetOwnerRelation);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("fast_march").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("fire").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("gods_move").RequiredTargetKind);
+        Assert.Equal(CardTargetOwnerRelation.Self, catalog.GetDefinition("gods_move").RequiredTargetOwnerRelation);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("limitless").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("peace_zone").RequiredTargetKind);
         Assert.Equal(2, catalog.GetDefinition("portal").RequiredTargetCount);
@@ -178,6 +182,14 @@ public sealed class UnityConsumerApiContractTests
             "fire",
             PieceColor.White,
             CardTargetSelection.BoardSquare(new Square(4, 3)));
+        CardUsePlan godsMovePlan = new CardUsePlan(
+            "gods_move",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
         CardUsePlan limitlessPlan = new CardUsePlan(
             "limitless",
             PieceColor.White,
@@ -220,6 +232,7 @@ public sealed class UnityConsumerApiContractTests
         Assert.True(validator.Validate(gameState, darkHandPlan).IsValid);
         Assert.True(validator.Validate(gameState, fastMarchPlan).IsValid);
         Assert.True(validator.Validate(gameState, firePlan).IsValid);
+        Assert.True(validator.Validate(gameState, godsMovePlan).IsValid);
         Assert.True(validator.Validate(gameState, limitlessPlan).IsValid);
         Assert.True(validator.Validate(gameState, peaceZonePlan).IsValid);
         Assert.True(validator.Validate(gameState, portalPlan).IsValid);

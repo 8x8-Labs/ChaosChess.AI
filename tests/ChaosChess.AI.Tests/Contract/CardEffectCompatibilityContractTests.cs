@@ -16,6 +16,7 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("dark_hand")]
     [InlineData("fast_march")]
     [InlineData("fire")]
+    [InlineData("gods_move")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
     [InlineData("peace_zone")]
@@ -151,6 +152,17 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan(
+                "gods_move",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan("peace_zone", PieceColor.White, CardTargetSelection.BoardSquare(new Square(4, 3))),
             CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
@@ -238,6 +250,7 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("dark_hand", "Tactical", 1),
                 new CardInfo("fast_march", "Mobility", 1),
                 new CardInfo("fire", "BoardControl", 1),
+                new CardInfo("gods_move", "Mobility", 1),
                 new CardInfo("limitless", "Mobility", 1),
                 new CardInfo("missing_promotion", "Transformation", 1),
                 new CardInfo("peace_zone", "BoardControl", 1),

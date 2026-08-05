@@ -21,13 +21,14 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("dark_hand", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
+        Assert.True(registry.TryGetStrategy("gods_move", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
         Assert.True(registry.TryGetStrategy("missing_promotion", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(14, registry.Strategies.Count);
+        Assert.Equal(15, registry.Strategies.Count);
     }
 
     [Theory]
@@ -39,6 +40,7 @@ public sealed class CardTargetingModuleTests
     [InlineData("dark_hand")]
     [InlineData("fast_march")]
     [InlineData("fire")]
+    [InlineData("gods_move")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
     [InlineData("peace_zone")]

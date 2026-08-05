@@ -17,6 +17,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new PawnMovementOverrideCardTargetStrategy("concentration", "Concentration"),
                     new PieceValueCardTargetStrategy("dark_hand", "Dark Hand"),
                     new PawnMovementOverrideCardTargetStrategy("fast_march", "Fast March"),
+                    new PieceValueCardTargetStrategy("gods_move", "God's Move"),
                     new PawnMovementOverrideCardTargetStrategy("limitless", "Limitless"),
                     new PieceValueCardTargetStrategy("missing_promotion", "Missing Promotion"),
                     new FireCardTargetStrategy(),

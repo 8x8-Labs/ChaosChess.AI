@@ -17,6 +17,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, 1)]
+    [InlineData("gods_move", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, 1)]
@@ -47,6 +48,7 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("dark_hand", CardTargetOwnerRelation.Opponent)]
     [InlineData("fast_march", CardTargetOwnerRelation.Self)]
     [InlineData("fire", CardTargetOwnerRelation.Any)]
+    [InlineData("gods_move", CardTargetOwnerRelation.Self)]
     [InlineData("limitless", CardTargetOwnerRelation.Self)]
     [InlineData("missing_promotion", CardTargetOwnerRelation.Opponent)]
     [InlineData("peace_zone", CardTargetOwnerRelation.Any)]
@@ -177,6 +179,7 @@ public sealed class CardPlanningDefinitionTests
         yield return new object[] { "concentration", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen } };
         yield return new object[] { "dark_hand", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook } };
         yield return new object[] { "fast_march", new[] { PieceKind.Pawn } };
+        yield return new object[] { "gods_move", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook } };
         yield return new object[] { "limitless", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen, PieceKind.King, PieceKind.Amazon, PieceKind.Chancellor, PieceKind.KnightRider } };
         yield return new object[] { "missing_promotion", new[] { PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Amazon, PieceKind.Chancellor, PieceKind.KnightRider } };
         yield return new object[] { "sneak_pawn", new[] { PieceKind.Pawn } };
