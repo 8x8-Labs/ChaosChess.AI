@@ -14,11 +14,14 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("at_mine", CardTargetKind.BoardSquare, 1)]
     [InlineData("blessing", CardTargetKind.BoardSquare, 1)]
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("chaotic_knight", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("charge", CardTargetKind.None, 0)]
     [InlineData("cobweb", CardTargetKind.BoardSquare, 1)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("desperado", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("dimension_instability", CardTargetKind.PieceAtSquare, 1)]
+    [InlineData("father_enemy", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, 1)]
     [InlineData("giant", CardTargetKind.PieceAtSquare, 1)]
@@ -55,11 +58,14 @@ public sealed class CardPlanningDefinitionTests
     [InlineData("at_mine", CardTargetOwnerRelation.Any)]
     [InlineData("blessing", CardTargetOwnerRelation.Any)]
     [InlineData("caterpillar", CardTargetOwnerRelation.Self)]
+    [InlineData("chaotic_knight", CardTargetOwnerRelation.Self)]
     [InlineData("charge", CardTargetOwnerRelation.Any)]
     [InlineData("cobweb", CardTargetOwnerRelation.Any)]
     [InlineData("concentration", CardTargetOwnerRelation.Self)]
     [InlineData("dark_hand", CardTargetOwnerRelation.Opponent)]
+    [InlineData("desperado", CardTargetOwnerRelation.Self)]
     [InlineData("dimension_instability", CardTargetOwnerRelation.Self)]
+    [InlineData("father_enemy", CardTargetOwnerRelation.Self)]
     [InlineData("fast_march", CardTargetOwnerRelation.Self)]
     [InlineData("fire", CardTargetOwnerRelation.Any)]
     [InlineData("giant", CardTargetOwnerRelation.Self)]
@@ -196,9 +202,12 @@ public sealed class CardPlanningDefinitionTests
         yield return new object[] { "agile", new[] { PieceKind.Pawn } };
         yield return new object[] { "aim", new[] { PieceKind.Pawn } };
         yield return new object[] { "caterpillar", new[] { PieceKind.Knight } };
+        yield return new object[] { "chaotic_knight", new[] { PieceKind.Knight } };
         yield return new object[] { "concentration", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen } };
         yield return new object[] { "dark_hand", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook } };
+        yield return new object[] { "desperado", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook, PieceKind.Queen, PieceKind.Amazon, PieceKind.Chancellor, PieceKind.KnightRider } };
         yield return new object[] { "dimension_instability", new[] { PieceKind.Knight } };
+        yield return new object[] { "father_enemy", new[] { PieceKind.Pawn } };
         yield return new object[] { "fast_march", new[] { PieceKind.Pawn } };
         yield return new object[] { "giant", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop } };
         yield return new object[] { "gods_move", new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop, PieceKind.Rook } };

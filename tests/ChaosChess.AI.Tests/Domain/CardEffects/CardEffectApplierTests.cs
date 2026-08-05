@@ -245,7 +245,7 @@ public sealed class CardEffectApplierTests
     }
 
     [Fact]
-    public void Apply_AgileAndChargeDefaultsAreUnsupportedByCurrentStateContract()
+    public void Apply_UnsupportedDefaultEffectsReturnUnsupportedByCurrentStateContract()
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
         var state = CreateState(extraPieces: new[]
@@ -263,6 +263,21 @@ public sealed class CardEffectApplierTests
             PieceColor.White,
             CardTargetSelection.PieceAtSquare(
                 new PieceTargetSnapshot(new Square(1, 0), PieceColor.White, PieceKind.Knight)));
+        var chaoticKnightPlan = new CardUsePlan(
+            "chaotic_knight",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(new Square(1, 0), PieceColor.White, PieceKind.Knight)));
+        var desperadoPlan = new CardUsePlan(
+            "desperado",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(new Square(0, 1), PieceColor.White, PieceKind.Pawn)));
+        var fatherEnemyPlan = new CardUsePlan(
+            "father_enemy",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(new Square(0, 1), PieceColor.White, PieceKind.Pawn)));
         var chargePlan = new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None());
         var applier = new CardEffectApplier();
 
@@ -272,14 +287,29 @@ public sealed class CardEffectApplierTests
         CardEffectApplicationResult dimensionInstability = applier.Apply(
             catalog.FindDefinition("dimension_instability")!,
             CreateContext(state, dimensionInstabilityPlan));
+        CardEffectApplicationResult chaoticKnight = applier.Apply(
+            catalog.FindDefinition("chaotic_knight")!,
+            CreateContext(state, chaoticKnightPlan));
+        CardEffectApplicationResult desperado = applier.Apply(
+            catalog.FindDefinition("desperado")!,
+            CreateContext(state, desperadoPlan));
+        CardEffectApplicationResult fatherEnemy = applier.Apply(
+            catalog.FindDefinition("father_enemy")!,
+            CreateContext(state, fatherEnemyPlan));
         CardEffectApplicationResult charge = applier.Apply(
             catalog.FindDefinition("charge")!,
             CreateContext(state, chargePlan));
 
         Assert.Equal(CardEffectApplicationStatus.Unsupported, agile.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, agile.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, chaoticKnight.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, chaoticKnight.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, desperado.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, desperado.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, dimensionInstability.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, dimensionInstability.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, fatherEnemy.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, fatherEnemy.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, charge.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, charge.Code);
     }

@@ -78,12 +78,15 @@ public sealed class PieceEffectCardTargetStrategyTests
     }
 
     [Theory]
+    [InlineData("chaotic_knight")]
+    [InlineData("desperado")]
     [InlineData("dimension_instability")]
+    [InlineData("father_enemy")]
     [InlineData("giant")]
     [InlineData("sunset_blade")]
     public void Decide_GenericPieceEffectCardsSelectLegalActorPiece(string cardId)
     {
-        PieceInfo piece = cardId == "sunset_blade"
+        PieceInfo piece = cardId == "sunset_blade" || cardId == "father_enemy" || cardId == "desperado"
             ? Piece(PieceKind.Pawn, PieceColor.White, new Square(4, 1))
             : Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n");
         PieceEffectTargetProfile profile = cardId == "sunset_blade"

@@ -14,11 +14,14 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("at_mine", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("blessing", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("chaotic_knight", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("cobweb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("desperado", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("dimension_instability", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("father_enemy", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("giant", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
@@ -79,12 +82,17 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     }
 
     [Theory]
-    [InlineData("dimension_instability", "DimensionInstability")]
-    [InlineData("giant", "Giant")]
-    [InlineData("sunset_blade", "SunsetBlade")]
+    [InlineData("chaotic_knight", "ChaoticKnight", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("desperado", "Desperado", 1, TileEffectLifetimeKind.TurnLimited)]
+    [InlineData("dimension_instability", "DimensionInstability", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("father_enemy", "FatherEnemy", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("giant", "Giant", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("sunset_blade", "SunsetBlade", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
     public void PieceEffectDefinitions_UseSelectedPieceEffectMarker(
         string cardId,
-        string expectedEffectType)
+        string expectedEffectType,
+        int expectedDurationTurns,
+        TileEffectLifetimeKind expectedLifetimeKind)
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
 
@@ -93,8 +101,8 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveKind.AddPieceEffect, primitive.Kind);
         Assert.Equal(expectedEffectType, primitive.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
-        Assert.Equal(-1, primitive.DurationTurns);
-        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, primitive.TileEffectLifetimeKind);
+        Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
+        Assert.Equal(expectedLifetimeKind, primitive.TileEffectLifetimeKind);
     }
 
     [Fact]

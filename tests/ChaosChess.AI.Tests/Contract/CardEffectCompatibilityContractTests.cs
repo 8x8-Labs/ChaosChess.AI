@@ -13,11 +13,14 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("at_mine")]
     [InlineData("blessing")]
     [InlineData("caterpillar")]
+    [InlineData("chaotic_knight")]
     [InlineData("charge")]
     [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
+    [InlineData("desperado")]
     [InlineData("dimension_instability")]
+    [InlineData("father_enemy")]
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("giant")]
@@ -107,6 +110,17 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan(
+                "chaotic_knight",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(1, 0), PieceColor.White, PieceKind.Knight))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
@@ -148,6 +162,28 @@ public sealed class CardEffectCompatibilityContractTests
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(1, 0), PieceColor.White, PieceKind.Knight))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "desperado",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "father_enemy",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
             state,
@@ -339,11 +375,14 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("at_mine", "BoardControl", 1),
                 new CardInfo("blessing", "Transformation", 1),
                 new CardInfo("caterpillar", "Mobility", 1),
+                new CardInfo("chaotic_knight", "Utility", 1),
                 new CardInfo("charge", "Mobility", 1),
                 new CardInfo("cobweb", "BoardControl", 1),
                 new CardInfo("concentration", "Mobility", 1),
                 new CardInfo("dark_hand", "Tactical", 1),
+                new CardInfo("desperado", "Tactical", 1),
                 new CardInfo("dimension_instability", "Mobility", 1),
+                new CardInfo("father_enemy", "Tactical", 1),
                 new CardInfo("fast_march", "Mobility", 1),
                 new CardInfo("fire", "BoardControl", 1),
                 new CardInfo("giant", "Transformation", 1),

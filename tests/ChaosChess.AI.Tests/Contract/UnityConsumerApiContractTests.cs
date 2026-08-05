@@ -75,11 +75,14 @@ public sealed class UnityConsumerApiContractTests
         var atMine = new CardInfo("at_mine", "BoardControl", remainingUses: 1);
         var blessing = new CardInfo("blessing", "Transformation", remainingUses: 1);
         var caterpillar = new CardInfo("caterpillar", "Mobility", remainingUses: 1);
+        var chaoticKnight = new CardInfo("chaotic_knight", "Utility", remainingUses: 1);
         var charge = new CardInfo("charge", "Mobility", remainingUses: 1);
         var cobweb = new CardInfo("cobweb", "BoardControl", remainingUses: 1);
         var concentration = new CardInfo("concentration", "Mobility", remainingUses: 1);
         var darkHand = new CardInfo("dark_hand", "Tactical", remainingUses: 1);
+        var desperado = new CardInfo("desperado", "Tactical", remainingUses: 1);
         var dimensionInstability = new CardInfo("dimension_instability", "Mobility", remainingUses: 1);
+        var fatherEnemy = new CardInfo("father_enemy", "Tactical", remainingUses: 1);
         var fastMarch = new CardInfo("fast_march", "Mobility", remainingUses: 1);
         var fire = new CardInfo("fire", "BoardControl", remainingUses: 1);
         var giant = new CardInfo("giant", "Transformation", remainingUses: 1);
@@ -103,11 +106,14 @@ public sealed class UnityConsumerApiContractTests
                 atMine,
                 blessing,
                 caterpillar,
+                chaoticKnight,
                 charge,
                 cobweb,
                 concentration,
                 darkHand,
+                desperado,
                 dimensionInstability,
+                fatherEnemy,
                 fastMarch,
                 fire,
                 giant,
@@ -131,13 +137,16 @@ public sealed class UnityConsumerApiContractTests
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("at_mine").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("blessing").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("caterpillar").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("chaotic_knight").RequiredTargetKind);
         Assert.Equal(CardTargetKind.None, catalog.GetDefinition("charge").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("cobweb").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("concentration").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("dark_hand").RequiredTargetKind);
         Assert.Equal(CardTargetOwnerRelation.Opponent, catalog.GetDefinition("dark_hand").RequiredTargetOwnerRelation);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("desperado").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("dimension_instability").RequiredTargetKind);
         Assert.Equal(CardTargetOwnerRelation.Self, catalog.GetDefinition("dimension_instability").RequiredTargetOwnerRelation);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("father_enemy").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("fast_march").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("fire").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("giant").RequiredTargetKind);
@@ -197,6 +206,14 @@ public sealed class UnityConsumerApiContractTests
                     new Square(1, 0),
                     PieceColor.White,
                     PieceKind.Knight)));
+        CardUsePlan chaoticKnightPlan = new CardUsePlan(
+            "chaotic_knight",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(1, 0),
+                    PieceColor.White,
+                    PieceKind.Knight)));
         CardUsePlan concentrationPlan = new CardUsePlan(
             "concentration",
             PieceColor.White,
@@ -213,6 +230,14 @@ public sealed class UnityConsumerApiContractTests
                     new Square(0, 6),
                     PieceColor.Black,
                     PieceKind.Rook)));
+        CardUsePlan desperadoPlan = new CardUsePlan(
+            "desperado",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
         CardUsePlan dimensionInstabilityPlan = new CardUsePlan(
             "dimension_instability",
             PieceColor.White,
@@ -221,6 +246,14 @@ public sealed class UnityConsumerApiContractTests
                     new Square(1, 0),
                     PieceColor.White,
                     PieceKind.Knight)));
+        CardUsePlan fatherEnemyPlan = new CardUsePlan(
+            "father_enemy",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
         CardUsePlan fastMarchPlan = new CardUsePlan(
             "fast_march",
             PieceColor.White,
@@ -312,11 +345,14 @@ public sealed class UnityConsumerApiContractTests
         Assert.True(validator.Validate(gameState, atMinePlan).IsValid);
         Assert.True(validator.Validate(gameState, blessingPlan).IsValid);
         Assert.True(validator.Validate(gameState, caterpillarPlan).IsValid);
+        Assert.True(validator.Validate(gameState, chaoticKnightPlan).IsValid);
         Assert.True(validator.Validate(gameState, chargePlan).IsValid);
         Assert.True(validator.Validate(gameState, cobwebPlan).IsValid);
         Assert.True(validator.Validate(gameState, concentrationPlan).IsValid);
         Assert.True(validator.Validate(gameState, darkHandPlan).IsValid);
+        Assert.True(validator.Validate(gameState, desperadoPlan).IsValid);
         Assert.True(validator.Validate(gameState, dimensionInstabilityPlan).IsValid);
+        Assert.True(validator.Validate(gameState, fatherEnemyPlan).IsValid);
         Assert.True(validator.Validate(gameState, fastMarchPlan).IsValid);
         Assert.True(validator.Validate(gameState, firePlan).IsValid);
         Assert.True(validator.Validate(gameState, giantPlan).IsValid);

@@ -90,7 +90,17 @@ public sealed class CardPlanCandidateEnumeratorTests
     }
 
     [Theory]
+    [InlineData("chaotic_knight", PieceKind.Knight)]
+    [InlineData("desperado", PieceKind.Pawn)]
+    [InlineData("desperado", PieceKind.Knight)]
+    [InlineData("desperado", PieceKind.Bishop)]
+    [InlineData("desperado", PieceKind.Rook)]
+    [InlineData("desperado", PieceKind.Queen)]
+    [InlineData("desperado", PieceKind.Amazon)]
+    [InlineData("desperado", PieceKind.Chancellor)]
+    [InlineData("desperado", PieceKind.KnightRider)]
     [InlineData("dimension_instability", PieceKind.Knight)]
+    [InlineData("father_enemy", PieceKind.Pawn)]
     [InlineData("giant", PieceKind.Pawn)]
     [InlineData("giant", PieceKind.Knight)]
     [InlineData("giant", PieceKind.Bishop)]

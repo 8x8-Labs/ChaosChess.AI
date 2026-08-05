@@ -60,6 +60,18 @@ namespace ChaosChess.AI.Domain
             PieceKind.KnightRider
         };
 
+        private static readonly PieceKind[] NonKingNonWallKinds =
+        {
+            PieceKind.Pawn,
+            PieceKind.Knight,
+            PieceKind.Bishop,
+            PieceKind.Rook,
+            PieceKind.Queen,
+            PieceKind.Amazon,
+            PieceKind.Chancellor,
+            PieceKind.KnightRider
+        };
+
         private static readonly PieceKind[] MissingPromotionTargetKinds =
         {
             PieceKind.Knight,
@@ -77,11 +89,14 @@ namespace ChaosChess.AI.Domain
             CardPlanningDefinition.Supported("at_mine", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("blessing", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("caterpillar", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, KnightKinds)),
+            CardPlanningDefinition.Supported("chaotic_knight", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, KnightKinds)),
             CardPlanningDefinition.Supported("charge", CardTargetKind.None, 0),
             CardPlanningDefinition.Supported("cobweb", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("concentration", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, StandardPromotableKinds)),
             CardPlanningDefinition.Supported("dark_hand", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, DarkHandTargetKinds)),
+            CardPlanningDefinition.Supported("desperado", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, NonKingNonWallKinds)),
             CardPlanningDefinition.Supported("dimension_instability", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, KnightKinds)),
+            CardPlanningDefinition.Supported("father_enemy", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("fast_march", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, PawnKinds)),
             CardPlanningDefinition.Supported("fire", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("giant", CardTargetRequirement.Piece(CardTargetOwnerRelation.Self, new[] { PieceKind.Pawn, PieceKind.Knight, PieceKind.Bishop })),

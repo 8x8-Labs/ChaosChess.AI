@@ -66,6 +66,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "chaotic_knight",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddPieceEffect,
+                        effectType: "ChaoticKnight",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
                 "charge",
                 CardTargetQuery.None(),
                 new[]
@@ -114,6 +126,29 @@ namespace ChaosChess.AI.Domain.CardEffects
                     new CardEffectPrimitive(
                         CardEffectPrimitiveKind.AddPieceEffect,
                         effectType: "DimensionInstability",
+                        durationTurns: -1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "desperado",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddPieceEffect,
+                        effectType: "Desperado",
+                        durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "father_enemy",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddPieceEffect,
+                        effectType: "FatherEnemy",
                         durationTurns: -1,
                         tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)

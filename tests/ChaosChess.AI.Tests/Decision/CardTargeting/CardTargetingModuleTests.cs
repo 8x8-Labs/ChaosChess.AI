@@ -18,11 +18,14 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("at_mine", out _));
         Assert.True(registry.TryGetStrategy("blessing", out _));
         Assert.True(registry.TryGetStrategy("caterpillar", out _));
+        Assert.True(registry.TryGetStrategy("chaotic_knight", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
         Assert.True(registry.TryGetStrategy("cobweb", out _));
         Assert.True(registry.TryGetStrategy("concentration", out _));
         Assert.True(registry.TryGetStrategy("dark_hand", out _));
+        Assert.True(registry.TryGetStrategy("desperado", out _));
         Assert.True(registry.TryGetStrategy("dimension_instability", out _));
+        Assert.True(registry.TryGetStrategy("father_enemy", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
         Assert.True(registry.TryGetStrategy("giant", out _));
@@ -38,7 +41,7 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("sunset_blade", out _));
         Assert.True(registry.TryGetStrategy("time_bomb", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(25, registry.Strategies.Count);
+        Assert.Equal(28, registry.Strategies.Count);
     }
 
     [Theory]
@@ -47,11 +50,14 @@ public sealed class CardTargetingModuleTests
     [InlineData("at_mine")]
     [InlineData("blessing")]
     [InlineData("caterpillar")]
+    [InlineData("chaotic_knight")]
     [InlineData("charge")]
     [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
+    [InlineData("desperado")]
     [InlineData("dimension_instability")]
+    [InlineData("father_enemy")]
     [InlineData("fast_march")]
     [InlineData("fire")]
     [InlineData("giant")]
