@@ -20,11 +20,55 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "aim",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "t",
+                        durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "caterpillar",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "z",
+                        durationTurns: 2,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
                 "charge",
                 CardTargetQuery.None(),
                 new[]
                 {
                     new CardEffectPrimitive(CardEffectPrimitiveKind.MovePiece)
+                }),
+            new CardEffectDefinition(
+                "concentration",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "a",
+                        durationTurns: 5,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "fast_march",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "f",
+                        durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
                 "fire",
@@ -37,6 +81,27 @@ namespace ChaosChess.AI.Domain.CardEffects
                         durationTurns: -1,
                         tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
+                "limitless",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "a",
+                        durationTurns: null,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "missing_promotion",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Opponent, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.ChangePieceKind,
+                        pieceKind: PieceKind.Pawn,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
                 "peace_zone",
@@ -73,6 +138,28 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
                         targetIndex: 1,
                         destinationTargetIndex: 0)
+                }),
+            new CardEffectDefinition(
+                "sneak_pawn",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "e",
+                        durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "thunderclap_flash",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SetMovementOverride,
+                        movementOverrideCode: "m",
+                        durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 })
         };
 

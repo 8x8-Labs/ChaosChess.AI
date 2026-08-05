@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChaosChess.AI.Domain;
+using ChaosChess.AI.Domain.CardEffects;
 
 namespace ChaosChess.AI.Decision.CardTargeting
 {
@@ -91,7 +92,8 @@ namespace ChaosChess.AI.Decision.CardTargeting
                 case CardTargetKind.PieceAtSquare:
                     foreach (PieceInfo piece in gameState.BoardState.Pieces)
                     {
-                        if (piece.Color != actor || piece.Kind != PieceKind.Pawn)
+                        if (!MatchesOwnerRelation(definition.RequiredTargetOwnerRelation, actor, piece.Color) ||
+                            !IsAllowedPieceKind(definition.AllowedTargetPieceKinds, piece.Kind))
                         {
                             continue;
                         }
@@ -128,6 +130,44 @@ namespace ChaosChess.AI.Decision.CardTargeting
 
                     yield break;
             }
+        }
+
+        private static bool MatchesOwnerRelation(
+            CardTargetOwnerRelation relation,
+            PieceColor actor,
+            PieceColor target)
+        {
+            switch (relation)
+            {
+                case CardTargetOwnerRelation.Self:
+                    return target == actor;
+                case CardTargetOwnerRelation.Opponent:
+                    return target != actor;
+                case CardTargetOwnerRelation.Any:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsAllowedPieceKind(
+            IReadOnlyList<PieceKind> allowedKinds,
+            PieceKind kind)
+        {
+            if (allowedKinds.Count == 0)
+            {
+                return true;
+            }
+
+            foreach (PieceKind allowedKind in allowedKinds)
+            {
+                if (allowedKind == kind)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static IEnumerable<Square> EnumerateBoardSquares()

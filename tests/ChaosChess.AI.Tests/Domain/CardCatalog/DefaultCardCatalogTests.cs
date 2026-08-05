@@ -19,6 +19,17 @@ public sealed class DefaultCardCatalogTests
         "portal"
     };
 
+    private static readonly string[] WaveOneCardIds =
+    {
+        "aim",
+        "caterpillar",
+        "concentration",
+        "fast_march",
+        "limitless",
+        "sneak_pawn",
+        "thunderclap_flash"
+    };
+
     [Fact]
     public void DefaultCatalog_ContainsUnityCardInventory()
     {
@@ -83,6 +94,25 @@ public sealed class DefaultCardCatalogTests
 
             Assert.NotNull(entry);
             Assert.True(entry.CurrentUnityAiSupported);
+            Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
+            Assert.NotNull(effectCatalog.FindDefinition(cardId));
+        }
+    }
+
+    [Fact]
+    public void DefaultCatalog_IncludesWaveOnePlanningAndEffectDefinitions()
+    {
+        var catalog = new DefaultCardCatalog();
+        var planningCatalog = new DefaultCardPlanningCatalog();
+        var effectCatalog = new DefaultCardEffectDefinitionCatalog();
+
+        foreach (string cardId in WaveOneCardIds)
+        {
+            CardCatalogEntry entry = catalog.FindEntry(cardId)!;
+
+            Assert.NotNull(entry);
+            Assert.False(entry.CurrentUnityAiSupported);
+            Assert.Equal(CardCatalogActivationWave.Wave1, entry.ActivationWave);
             Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
             Assert.NotNull(effectCatalog.FindDefinition(cardId));
         }
