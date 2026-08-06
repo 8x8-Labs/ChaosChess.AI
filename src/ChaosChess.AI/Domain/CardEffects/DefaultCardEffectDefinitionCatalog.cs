@@ -85,6 +85,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                     new CardEffectPrimitive(CardEffectPrimitiveKind.MovePiece)
                 }),
             new CardEffectDefinition(
+                "checkmate_declaration",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "CheckmateDeclaration",
+                        durationTurns: 4)
+                }),
+            new CardEffectDefinition(
                 "cobweb",
                 CardTargetQuery.EmptySquare(),
                 new[]
@@ -119,6 +129,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "democracy",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "Democracy",
+                        durationTurns: null)
+                }),
+            new CardEffectDefinition(
                 "dimension_instability",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -140,6 +160,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         effectType: "Desperado",
                         durationTurns: 1,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "destroyer_tank_cards",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "DestroyerTank",
+                        durationTurns: 1)
                 }),
             new CardEffectDefinition(
                 "father_enemy",
@@ -231,6 +261,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "mutiny",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "Mutiny",
+                        durationTurns: 3)
+                }),
+            new CardEffectDefinition(
                 "obey_order",
                 CardTargetQuery.EmptySquare(),
                 new[]
@@ -302,6 +342,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "stag_fight",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "StagFight",
+                        durationTurns: 3)
+                }),
+            new CardEffectDefinition(
                 "sunset_blade",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -334,6 +384,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         movementOverrideCode: "m",
                         durationTurns: 1,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "windmill",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "Windmill",
+                        durationTurns: 2)
                 })
         };
 

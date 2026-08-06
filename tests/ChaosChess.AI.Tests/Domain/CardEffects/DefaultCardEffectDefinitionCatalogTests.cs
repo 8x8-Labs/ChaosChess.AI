@@ -16,10 +16,13 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("chaotic_knight", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("checkmate_declaration", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("cobweb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("dark_hand", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("democracy", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("desperado", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("destroyer_tank_cards", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("dimension_instability", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("father_enemy", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
@@ -29,14 +32,17 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("jumping_platform", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("mutiny", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("obey_order", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
     [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("stag_fight", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("sunset_blade", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("time_bomb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("windmill", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
         CardTargetKind expectedKind,
@@ -103,6 +109,28 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
         Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
         Assert.Equal(expectedLifetimeKind, primitive.TileEffectLifetimeKind);
+    }
+
+    [Theory]
+    [InlineData("checkmate_declaration", "CheckmateDeclaration", 4)]
+    [InlineData("democracy", "Democracy", null)]
+    [InlineData("destroyer_tank_cards", "DestroyerTank", 1)]
+    [InlineData("mutiny", "Mutiny", 3)]
+    [InlineData("stag_fight", "StagFight", 3)]
+    [InlineData("windmill", "Windmill", 2)]
+    public void GlobalEffectDefinitions_UseNoneTargetGlobalEffectMarker(
+        string cardId,
+        string expectedEffectType,
+        int? expectedDurationTurns)
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition(cardId)!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddGlobalEffect, primitive.Kind);
+        Assert.Equal(expectedEffectType, primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.None, primitive.TargetBinding);
+        Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
     }
 
     [Fact]

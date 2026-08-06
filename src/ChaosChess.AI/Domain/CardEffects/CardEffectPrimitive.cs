@@ -88,6 +88,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                 throw new ArgumentException("Piece effect primitives require a non-empty effect type.", nameof(effectType));
             }
 
+            if (kind == CardEffectPrimitiveKind.AddGlobalEffect && string.IsNullOrWhiteSpace(effectType))
+            {
+                throw new ArgumentException("Global effect primitives require a non-empty effect type.", nameof(effectType));
+            }
+
             if (kind == CardEffectPrimitiveKind.SetMovementOverride && string.IsNullOrWhiteSpace(movementOverrideCode))
             {
                 throw new ArgumentException("Movement override primitives require a non-empty override code.", nameof(movementOverrideCode));
@@ -183,7 +188,8 @@ namespace ChaosChess.AI.Domain.CardEffects
                 kind != CardEffectPrimitiveKind.SetMovementOverride &&
                 kind != CardEffectPrimitiveKind.AddTileEffect &&
                 kind != CardEffectPrimitiveKind.RemoveTileEffect &&
-                kind != CardEffectPrimitiveKind.AddPieceEffect)
+                kind != CardEffectPrimitiveKind.AddPieceEffect &&
+                kind != CardEffectPrimitiveKind.AddGlobalEffect)
             {
                 throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown effect primitive kind.");
             }

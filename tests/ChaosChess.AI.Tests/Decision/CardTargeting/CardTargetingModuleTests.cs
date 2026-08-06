@@ -20,10 +20,13 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("caterpillar", out _));
         Assert.True(registry.TryGetStrategy("chaotic_knight", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
+        Assert.True(registry.TryGetStrategy("checkmate_declaration", out _));
         Assert.True(registry.TryGetStrategy("cobweb", out _));
         Assert.True(registry.TryGetStrategy("concentration", out _));
         Assert.True(registry.TryGetStrategy("dark_hand", out _));
+        Assert.True(registry.TryGetStrategy("democracy", out _));
         Assert.True(registry.TryGetStrategy("desperado", out _));
+        Assert.True(registry.TryGetStrategy("destroyer_tank_cards", out _));
         Assert.True(registry.TryGetStrategy("dimension_instability", out _));
         Assert.True(registry.TryGetStrategy("father_enemy", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
@@ -33,15 +36,18 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("jumping_platform", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
         Assert.True(registry.TryGetStrategy("missing_promotion", out _));
+        Assert.True(registry.TryGetStrategy("mutiny", out _));
         Assert.True(registry.TryGetStrategy("obey_order", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
         Assert.True(registry.TryGetStrategy("psilocybin_mushroom", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
+        Assert.True(registry.TryGetStrategy("stag_fight", out _));
         Assert.True(registry.TryGetStrategy("sunset_blade", out _));
         Assert.True(registry.TryGetStrategy("time_bomb", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(28, registry.Strategies.Count);
+        Assert.True(registry.TryGetStrategy("windmill", out _));
+        Assert.Equal(34, registry.Strategies.Count);
     }
 
     [Theory]
@@ -52,10 +58,13 @@ public sealed class CardTargetingModuleTests
     [InlineData("caterpillar")]
     [InlineData("chaotic_knight")]
     [InlineData("charge")]
+    [InlineData("checkmate_declaration")]
     [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
+    [InlineData("democracy")]
     [InlineData("desperado")]
+    [InlineData("destroyer_tank_cards")]
     [InlineData("dimension_instability")]
     [InlineData("father_enemy")]
     [InlineData("fast_march")]
@@ -65,14 +74,17 @@ public sealed class CardTargetingModuleTests
     [InlineData("jumping_platform")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
+    [InlineData("mutiny")]
     [InlineData("obey_order")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
+    [InlineData("stag_fight")]
     [InlineData("sunset_blade")]
     [InlineData("time_bomb")]
     [InlineData("thunderclap_flash")]
+    [InlineData("windmill")]
     public void DecideBestPlan_DefaultStrategiesReturnPlanForSupportedCards(
         string cardId)
     {

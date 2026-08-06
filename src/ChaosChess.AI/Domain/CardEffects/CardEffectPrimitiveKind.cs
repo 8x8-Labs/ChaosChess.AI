@@ -10,6 +10,7 @@ namespace ChaosChess.AI.Domain.CardEffects
         SetMovementOverride = 5,
         AddTileEffect = 6,
         RemoveTileEffect = 7,
-        AddPieceEffect = 8
+        AddPieceEffect = 8,
+        AddGlobalEffect = 9
     }
 }

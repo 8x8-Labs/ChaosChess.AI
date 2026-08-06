@@ -12,10 +12,17 @@ public sealed class CardPlanCandidateEnumeratorTests
     private readonly CardPlanCandidateEnumerator enumerator = new();
     private readonly CardUsePlanValidator validator = new();
 
-    [Fact]
-    public void EnumerateLegalCandidates_Charge_ReturnsSingleNoneCandidate()
+    [Theory]
+    [InlineData("charge")]
+    [InlineData("checkmate_declaration")]
+    [InlineData("democracy")]
+    [InlineData("destroyer_tank_cards")]
+    [InlineData("mutiny")]
+    [InlineData("stag_fight")]
+    [InlineData("windmill")]
+    public void EnumerateLegalCandidates_NoneTargetCards_ReturnSingleNoneCandidate(string cardId)
     {
-        GameState state = State(PieceColor.White, Card("charge"));
+        GameState state = State(PieceColor.White, Card(cardId));
 
         CardPlanCandidate candidate = Assert.Single(
             enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));

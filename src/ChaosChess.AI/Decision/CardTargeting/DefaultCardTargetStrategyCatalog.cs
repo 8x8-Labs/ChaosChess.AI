@@ -17,10 +17,13 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new PawnMovementOverrideCardTargetStrategy("caterpillar", "Caterpillar"),
                     new PieceEffectCardTargetStrategy("chaotic_knight", "Chaotic Knight"),
                     new ChargeCardTargetStrategy(),
+                    new GlobalEffectCardTargetStrategy("checkmate_declaration", "Checkmate Declaration"),
                     new TileEffectCardTargetStrategy("cobweb", "Cobweb"),
                     new PawnMovementOverrideCardTargetStrategy("concentration", "Concentration"),
                     new PieceValueCardTargetStrategy("dark_hand", "Dark Hand"),
+                    new GlobalEffectCardTargetStrategy("democracy", "Democracy"),
                     new PieceEffectCardTargetStrategy("desperado", "Desperado"),
+                    new GlobalEffectCardTargetStrategy("destroyer_tank_cards", "Destroyer Tank Cards"),
                     new PieceEffectCardTargetStrategy("dimension_instability", "Dimension Instability"),
                     new PieceEffectCardTargetStrategy("father_enemy", "Father Enemy"),
                     new PawnMovementOverrideCardTargetStrategy("fast_march", "Fast March"),
@@ -29,15 +32,18 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new TileEffectCardTargetStrategy("jumping_platform", "Jumping Platform"),
                     new PawnMovementOverrideCardTargetStrategy("limitless", "Limitless"),
                     new PieceValueCardTargetStrategy("missing_promotion", "Missing Promotion"),
+                    new GlobalEffectCardTargetStrategy("mutiny", "Mutiny"),
                     new TileEffectCardTargetStrategy("obey_order", "Obey Order"),
                     new FireCardTargetStrategy(),
                     new PeaceZoneCardTargetStrategy(),
                     new PortalCardTargetStrategy(),
                     new TileEffectCardTargetStrategy("psilocybin_mushroom", "Psilocybin Mushroom"),
                     new PawnMovementOverrideCardTargetStrategy("sneak_pawn", "Sneak Pawn"),
+                    new GlobalEffectCardTargetStrategy("stag_fight", "Stag Fight"),
                     new PieceEffectCardTargetStrategy("sunset_blade", "Sunset Blade", PieceEffectTargetProfile.CaptureSetup),
                     new TileEffectCardTargetStrategy("time_bomb", "Time Bomb"),
-                    new PawnMovementOverrideCardTargetStrategy("thunderclap_flash", "Thunderclap Flash")
+                    new PawnMovementOverrideCardTargetStrategy("thunderclap_flash", "Thunderclap Flash"),
+                    new GlobalEffectCardTargetStrategy("windmill", "Windmill")
                 });
         }
 

@@ -102,6 +102,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                         CardEffectApplicationCode.UnsupportedEffect,
                         new[] { "Piece-attached effects are not represented by the current GameState contract." });
 
+                case CardEffectPrimitiveKind.AddGlobalEffect:
+                    return CardEffectApplicationResult.Unsupported(
+                        CardEffectApplicationCode.UnsupportedEffect,
+                        new[] { "Global ongoing effects are not represented by the current GameState contract." });
+
                 default:
                     return CardEffectApplicationResult.Unsupported(
                         CardEffectApplicationCode.UnsupportedEffect,

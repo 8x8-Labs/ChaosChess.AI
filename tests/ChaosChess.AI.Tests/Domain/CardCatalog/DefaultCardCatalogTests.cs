@@ -30,6 +30,20 @@ public sealed class DefaultCardCatalogTests
         "thunderclap_flash"
     };
 
+    private static readonly string[] ActivatedWaveThreeCardIds =
+    {
+        "checkmate_declaration",
+        "democracy",
+        "destroyer_tank_cards",
+        "stag_fight",
+        "windmill"
+    };
+
+    private static readonly string[] ActivatedWaveTwoCardIds =
+    {
+        "mutiny"
+    };
+
     [Fact]
     public void DefaultCatalog_ContainsUnityCardInventory()
     {
@@ -113,6 +127,44 @@ public sealed class DefaultCardCatalogTests
             Assert.NotNull(entry);
             Assert.False(entry.CurrentUnityAiSupported);
             Assert.Equal(CardCatalogActivationWave.Wave1, entry.ActivationWave);
+            Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
+            Assert.NotNull(effectCatalog.FindDefinition(cardId));
+        }
+    }
+
+    [Fact]
+    public void DefaultCatalog_IncludesActivatedWaveThreePlanningAndEffectDefinitions()
+    {
+        var catalog = new DefaultCardCatalog();
+        var planningCatalog = new DefaultCardPlanningCatalog();
+        var effectCatalog = new DefaultCardEffectDefinitionCatalog();
+
+        foreach (string cardId in ActivatedWaveThreeCardIds)
+        {
+            CardCatalogEntry entry = catalog.FindEntry(cardId)!;
+
+            Assert.NotNull(entry);
+            Assert.False(entry.CurrentUnityAiSupported);
+            Assert.Equal(CardCatalogActivationWave.Wave3, entry.ActivationWave);
+            Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
+            Assert.NotNull(effectCatalog.FindDefinition(cardId));
+        }
+    }
+
+    [Fact]
+    public void DefaultCatalog_IncludesActivatedWaveTwoPlanningAndEffectDefinitions()
+    {
+        var catalog = new DefaultCardCatalog();
+        var planningCatalog = new DefaultCardPlanningCatalog();
+        var effectCatalog = new DefaultCardEffectDefinitionCatalog();
+
+        foreach (string cardId in ActivatedWaveTwoCardIds)
+        {
+            CardCatalogEntry entry = catalog.FindEntry(cardId)!;
+
+            Assert.NotNull(entry);
+            Assert.False(entry.CurrentUnityAiSupported);
+            Assert.Equal(CardCatalogActivationWave.Wave2, entry.ActivationWave);
             Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
             Assert.NotNull(effectCatalog.FindDefinition(cardId));
         }

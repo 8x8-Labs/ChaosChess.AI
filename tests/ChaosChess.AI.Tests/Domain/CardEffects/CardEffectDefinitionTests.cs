@@ -140,6 +140,8 @@ public sealed class CardEffectDefinitionTests
         Assert.Throws<ArgumentException>(
             () => new CardEffectPrimitive(CardEffectPrimitiveKind.AddTileEffect));
         Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(CardEffectPrimitiveKind.AddGlobalEffect));
+        Assert.Throws<ArgumentException>(
             () => new CardEffectPrimitive(CardEffectPrimitiveKind.SetMovementOverride));
         Assert.Throws<ArgumentOutOfRangeException>(
             () => new CardEffectPrimitive(

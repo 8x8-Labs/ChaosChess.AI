@@ -15,10 +15,13 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("caterpillar")]
     [InlineData("chaotic_knight")]
     [InlineData("charge")]
+    [InlineData("checkmate_declaration")]
     [InlineData("cobweb")]
     [InlineData("concentration")]
     [InlineData("dark_hand")]
+    [InlineData("democracy")]
     [InlineData("desperado")]
+    [InlineData("destroyer_tank_cards")]
     [InlineData("dimension_instability")]
     [InlineData("father_enemy")]
     [InlineData("fast_march")]
@@ -28,14 +31,17 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("jumping_platform")]
     [InlineData("limitless")]
     [InlineData("missing_promotion")]
+    [InlineData("mutiny")]
     [InlineData("obey_order")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
     [InlineData("sneak_pawn")]
+    [InlineData("stag_fight")]
     [InlineData("sunset_blade")]
     [InlineData("time_bomb")]
     [InlineData("thunderclap_flash")]
+    [InlineData("windmill")]
     public void DefaultEffectDefinitions_PreservePlanningCatalogTargetShape(string cardId)
     {
         var planningCatalog = new DefaultCardPlanningCatalog();
@@ -128,6 +134,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("checkmate_declaration", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan("cobweb", PieceColor.White, CardTargetSelection.BoardSquare(new Square(4, 3))),
             CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
@@ -157,6 +170,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("democracy", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan(
                 "dimension_instability",
                 PieceColor.White,
@@ -179,6 +199,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("destroyer_tank_cards", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan(
                 "father_enemy",
                 PieceColor.White,
@@ -195,6 +222,13 @@ public sealed class CardEffectCompatibilityContractTests
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(0, 7), PieceColor.Black, PieceKind.Rook))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("mutiny", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
             state,
@@ -301,6 +335,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("stag_fight", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan(
                 "sunset_blade",
                 PieceColor.White,
@@ -322,8 +363,15 @@ public sealed class CardEffectCompatibilityContractTests
             new CardUsePlan(
                 "thunderclap_flash",
                 PieceColor.White,
-                CardTargetSelection.PieceAtSquare(
-                    new PieceTargetSnapshot(new Square(0, 0), PieceColor.White, PieceKind.Rook))),
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(new Square(0, 0), PieceColor.White, PieceKind.Rook))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("windmill", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Unsupported);
     }
 
@@ -377,10 +425,13 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("caterpillar", "Mobility", 1),
                 new CardInfo("chaotic_knight", "Utility", 1),
                 new CardInfo("charge", "Mobility", 1),
+                new CardInfo("checkmate_declaration", "Tactical", 1),
                 new CardInfo("cobweb", "BoardControl", 1),
                 new CardInfo("concentration", "Mobility", 1),
                 new CardInfo("dark_hand", "Tactical", 1),
+                new CardInfo("democracy", "Tactical", 1),
                 new CardInfo("desperado", "Tactical", 1),
+                new CardInfo("destroyer_tank_cards", "Tactical", 1),
                 new CardInfo("dimension_instability", "Mobility", 1),
                 new CardInfo("father_enemy", "Tactical", 1),
                 new CardInfo("fast_march", "Mobility", 1),
@@ -390,14 +441,17 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("jumping_platform", "BoardControl", 1),
                 new CardInfo("limitless", "Mobility", 1),
                 new CardInfo("missing_promotion", "Transformation", 1),
+                new CardInfo("mutiny", "Tactical", 1),
                 new CardInfo("obey_order", "Utility", 1),
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1),
                 new CardInfo("psilocybin_mushroom", "BoardControl", 1),
                 new CardInfo("sneak_pawn", "Mobility", 1),
+                new CardInfo("stag_fight", "Mobility", 1),
                 new CardInfo("sunset_blade", "Tactical", 1),
                 new CardInfo("time_bomb", "BoardControl", 1),
-                new CardInfo("thunderclap_flash", "Mobility", 1)
+                new CardInfo("thunderclap_flash", "Mobility", 1),
+                new CardInfo("windmill", "Mobility", 1)
             },
             Array.Empty<TileEffectInfo>());
     }

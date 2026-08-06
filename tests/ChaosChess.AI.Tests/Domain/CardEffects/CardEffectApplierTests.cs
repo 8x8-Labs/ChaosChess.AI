@@ -279,6 +279,12 @@ public sealed class CardEffectApplierTests
             CardTargetSelection.PieceAtSquare(
                 new PieceTargetSnapshot(new Square(0, 1), PieceColor.White, PieceKind.Pawn)));
         var chargePlan = new CardUsePlan("charge", PieceColor.White, CardTargetSelection.None());
+        var checkmateDeclarationPlan = new CardUsePlan("checkmate_declaration", PieceColor.White, CardTargetSelection.None());
+        var democracyPlan = new CardUsePlan("democracy", PieceColor.White, CardTargetSelection.None());
+        var destroyerTankPlan = new CardUsePlan("destroyer_tank_cards", PieceColor.White, CardTargetSelection.None());
+        var mutinyPlan = new CardUsePlan("mutiny", PieceColor.White, CardTargetSelection.None());
+        var stagFightPlan = new CardUsePlan("stag_fight", PieceColor.White, CardTargetSelection.None());
+        var windmillPlan = new CardUsePlan("windmill", PieceColor.White, CardTargetSelection.None());
         var applier = new CardEffectApplier();
 
         CardEffectApplicationResult agile = applier.Apply(
@@ -299,6 +305,24 @@ public sealed class CardEffectApplierTests
         CardEffectApplicationResult charge = applier.Apply(
             catalog.FindDefinition("charge")!,
             CreateContext(state, chargePlan));
+        CardEffectApplicationResult checkmateDeclaration = applier.Apply(
+            catalog.FindDefinition("checkmate_declaration")!,
+            CreateContext(state, checkmateDeclarationPlan));
+        CardEffectApplicationResult democracy = applier.Apply(
+            catalog.FindDefinition("democracy")!,
+            CreateContext(state, democracyPlan));
+        CardEffectApplicationResult destroyerTank = applier.Apply(
+            catalog.FindDefinition("destroyer_tank_cards")!,
+            CreateContext(state, destroyerTankPlan));
+        CardEffectApplicationResult mutiny = applier.Apply(
+            catalog.FindDefinition("mutiny")!,
+            CreateContext(state, mutinyPlan));
+        CardEffectApplicationResult stagFight = applier.Apply(
+            catalog.FindDefinition("stag_fight")!,
+            CreateContext(state, stagFightPlan));
+        CardEffectApplicationResult windmill = applier.Apply(
+            catalog.FindDefinition("windmill")!,
+            CreateContext(state, windmillPlan));
 
         Assert.Equal(CardEffectApplicationStatus.Unsupported, agile.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, agile.Code);
@@ -312,6 +336,18 @@ public sealed class CardEffectApplierTests
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, fatherEnemy.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, charge.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, charge.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, checkmateDeclaration.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, checkmateDeclaration.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, democracy.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, democracy.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, destroyerTank.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, destroyerTank.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, mutiny.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, mutiny.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, stagFight.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, stagFight.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, windmill.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, windmill.Code);
     }
 
     [Fact]
