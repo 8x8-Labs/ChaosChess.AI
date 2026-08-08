@@ -34,6 +34,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("mutiny", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("obey_order", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("overbearing", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
     [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
@@ -116,6 +117,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("democracy", "Democracy", null)]
     [InlineData("destroyer_tank_cards", "DestroyerTank", 1)]
     [InlineData("mutiny", "Mutiny", 3)]
+    [InlineData("overbearing", "Overbearing", null)]
     [InlineData("stag_fight", "StagFight", 3)]
     [InlineData("windmill", "Windmill", 2)]
     public void GlobalEffectDefinitions_UseNoneTargetGlobalEffectMarker(

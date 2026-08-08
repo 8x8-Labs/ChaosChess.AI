@@ -18,6 +18,7 @@ public sealed class CardPlanCandidateEnumeratorTests
     [InlineData("democracy")]
     [InlineData("destroyer_tank_cards")]
     [InlineData("mutiny")]
+    [InlineData("overbearing")]
     [InlineData("stag_fight")]
     [InlineData("windmill")]
     public void EnumerateLegalCandidates_NoneTargetCards_ReturnSingleNoneCandidate(string cardId)

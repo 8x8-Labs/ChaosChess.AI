@@ -283,6 +283,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
+                "overbearing",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "Overbearing",
+                        durationTurns: null)
+                }),
+            new CardEffectDefinition(
                 "peace_zone",
                 CardTargetQuery.EmptySquare(),
                 new[]

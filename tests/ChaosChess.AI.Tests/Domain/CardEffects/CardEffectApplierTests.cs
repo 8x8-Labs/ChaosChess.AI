@@ -283,6 +283,7 @@ public sealed class CardEffectApplierTests
         var democracyPlan = new CardUsePlan("democracy", PieceColor.White, CardTargetSelection.None());
         var destroyerTankPlan = new CardUsePlan("destroyer_tank_cards", PieceColor.White, CardTargetSelection.None());
         var mutinyPlan = new CardUsePlan("mutiny", PieceColor.White, CardTargetSelection.None());
+        var overbearingPlan = new CardUsePlan("overbearing", PieceColor.White, CardTargetSelection.None());
         var stagFightPlan = new CardUsePlan("stag_fight", PieceColor.White, CardTargetSelection.None());
         var windmillPlan = new CardUsePlan("windmill", PieceColor.White, CardTargetSelection.None());
         var applier = new CardEffectApplier();
@@ -317,6 +318,9 @@ public sealed class CardEffectApplierTests
         CardEffectApplicationResult mutiny = applier.Apply(
             catalog.FindDefinition("mutiny")!,
             CreateContext(state, mutinyPlan));
+        CardEffectApplicationResult overbearing = applier.Apply(
+            catalog.FindDefinition("overbearing")!,
+            CreateContext(state, overbearingPlan));
         CardEffectApplicationResult stagFight = applier.Apply(
             catalog.FindDefinition("stag_fight")!,
             CreateContext(state, stagFightPlan));
@@ -344,6 +348,8 @@ public sealed class CardEffectApplierTests
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, destroyerTank.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, mutiny.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, mutiny.Code);
+        Assert.Equal(CardEffectApplicationStatus.Unsupported, overbearing.Status);
+        Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, overbearing.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, stagFight.Status);
         Assert.Equal(CardEffectApplicationCode.UnsupportedEffect, stagFight.Code);
         Assert.Equal(CardEffectApplicationStatus.Unsupported, windmill.Status);

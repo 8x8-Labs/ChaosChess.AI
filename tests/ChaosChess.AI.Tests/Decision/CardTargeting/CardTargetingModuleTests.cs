@@ -38,6 +38,7 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("missing_promotion", out _));
         Assert.True(registry.TryGetStrategy("mutiny", out _));
         Assert.True(registry.TryGetStrategy("obey_order", out _));
+        Assert.True(registry.TryGetStrategy("overbearing", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
         Assert.True(registry.TryGetStrategy("psilocybin_mushroom", out _));
@@ -47,7 +48,7 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("time_bomb", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
         Assert.True(registry.TryGetStrategy("windmill", out _));
-        Assert.Equal(34, registry.Strategies.Count);
+        Assert.Equal(35, registry.Strategies.Count);
     }
 
     [Theory]
@@ -76,6 +77,7 @@ public sealed class CardTargetingModuleTests
     [InlineData("missing_promotion")]
     [InlineData("mutiny")]
     [InlineData("obey_order")]
+    [InlineData("overbearing")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
@@ -227,7 +229,7 @@ public sealed class CardTargetingModuleTests
             Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n"),
             Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r"),
             Piece(PieceKind.Queen, PieceColor.White, new Square(3, 0), "q"),
-            Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r")
+            Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 6), "r")
         };
     }
 

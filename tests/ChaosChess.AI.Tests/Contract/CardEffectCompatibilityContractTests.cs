@@ -33,6 +33,7 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("missing_promotion")]
     [InlineData("mutiny")]
     [InlineData("obey_order")]
+    [InlineData("overbearing")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
@@ -242,6 +243,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("overbearing", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan(
                 "fast_march",
                 PieceColor.White,
@@ -443,6 +451,7 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("missing_promotion", "Transformation", 1),
                 new CardInfo("mutiny", "Tactical", 1),
                 new CardInfo("obey_order", "Utility", 1),
+                new CardInfo("overbearing", "Control", 1),
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1),
                 new CardInfo("psilocybin_mushroom", "BoardControl", 1),

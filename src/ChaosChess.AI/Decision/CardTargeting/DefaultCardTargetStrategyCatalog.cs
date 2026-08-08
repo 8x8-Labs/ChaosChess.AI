@@ -34,6 +34,7 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     new PieceValueCardTargetStrategy("missing_promotion", "Missing Promotion"),
                     new GlobalEffectCardTargetStrategy("mutiny", "Mutiny"),
                     new TileEffectCardTargetStrategy("obey_order", "Obey Order"),
+                    new OverbearingCardTargetStrategy(),
                     new FireCardTargetStrategy(),
                     new PeaceZoneCardTargetStrategy(),
                     new PortalCardTargetStrategy(),

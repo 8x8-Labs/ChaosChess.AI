@@ -94,6 +94,7 @@ public sealed class UnityConsumerApiContractTests
         var limitless = new CardInfo("limitless", "Mobility", remainingUses: 1);
         var mutiny = new CardInfo("mutiny", "Tactical", remainingUses: 1);
         var obeyOrder = new CardInfo("obey_order", "Utility", remainingUses: 1);
+        var overbearing = new CardInfo("overbearing", "Control", remainingUses: 1);
         var peaceZone = new CardInfo("peace_zone", "BoardControl", remainingUses: 1);
         var portal = new CardInfo("portal", "Mobility", remainingUses: 1);
         var psilocybinMushroom = new CardInfo("psilocybin_mushroom", "BoardControl", remainingUses: 1);
@@ -131,6 +132,7 @@ public sealed class UnityConsumerApiContractTests
                 limitless,
                 mutiny,
                 obeyOrder,
+                overbearing,
                 peaceZone,
                 portal,
                 psilocybinMushroom,
@@ -171,6 +173,7 @@ public sealed class UnityConsumerApiContractTests
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("limitless").RequiredTargetKind);
         Assert.Equal(CardTargetKind.None, catalog.GetDefinition("mutiny").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("obey_order").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("overbearing").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("peace_zone").RequiredTargetKind);
         Assert.Equal(2, catalog.GetDefinition("portal").RequiredTargetCount);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("psilocybin_mushroom").RequiredTargetKind);
@@ -332,6 +335,10 @@ public sealed class UnityConsumerApiContractTests
             "obey_order",
             PieceColor.White,
             CardTargetSelection.BoardSquare(new Square(5, 3)));
+        CardUsePlan overbearingPlan = new CardUsePlan(
+            "overbearing",
+            PieceColor.White,
+            CardTargetSelection.None());
         CardUsePlan peaceZonePlan = new CardUsePlan(
             "peace_zone",
             PieceColor.White,
@@ -406,6 +413,7 @@ public sealed class UnityConsumerApiContractTests
         Assert.True(validator.Validate(gameState, limitlessPlan).IsValid);
         Assert.True(validator.Validate(gameState, mutinyPlan).IsValid);
         Assert.True(validator.Validate(gameState, obeyOrderPlan).IsValid);
+        Assert.True(validator.Validate(gameState, overbearingPlan).IsValid);
         Assert.True(validator.Validate(gameState, peaceZonePlan).IsValid);
         Assert.True(validator.Validate(gameState, portalPlan).IsValid);
         Assert.True(validator.Validate(gameState, psilocybinMushroomPlan).IsValid);

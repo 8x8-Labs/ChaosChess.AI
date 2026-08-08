@@ -35,6 +35,7 @@ public sealed class DefaultCardCatalogTests
         "checkmate_declaration",
         "democracy",
         "destroyer_tank_cards",
+        "overbearing",
         "stag_fight",
         "windmill"
     };

@@ -109,6 +109,7 @@ namespace ChaosChess.AI.Domain
             CardPlanningDefinition.Supported("missing_promotion", CardTargetRequirement.Piece(CardTargetOwnerRelation.Opponent, MissingPromotionTargetKinds)),
             CardPlanningDefinition.Supported("mutiny", CardTargetKind.None, 0),
             CardPlanningDefinition.Supported("obey_order", CardTargetKind.BoardSquare, 1),
+            CardPlanningDefinition.Supported("overbearing", CardTargetKind.None, 0),
             CardPlanningDefinition.Supported("peace_zone", CardTargetKind.BoardSquare, 1),
             CardPlanningDefinition.Supported("portal", CardTargetKind.OrderedSquares, 2),
             CardPlanningDefinition.Supported("psilocybin_mushroom", CardTargetKind.BoardSquare, 1),
