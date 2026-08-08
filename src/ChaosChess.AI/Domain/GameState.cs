@@ -8,15 +8,20 @@ namespace ChaosChess.AI.Domain
     {
         private readonly ReadOnlyCollection<CardInfo> _availableCards;
         private readonly ReadOnlyCollection<TileEffectInfo> _tileEffects;
+        private readonly ReadOnlyCollection<TimeReversalState> _timeReversals;
 
         public GameState(
             BoardState boardState,
             IEnumerable<CardInfo> availableCards,
-            IEnumerable<TileEffectInfo> tileEffects)
+            IEnumerable<TileEffectInfo> tileEffects,
+            CapturedPieceState? capturedPieces = null,
+            IEnumerable<TimeReversalState>? timeReversals = null)
         {
             BoardState = boardState ?? throw new ArgumentNullException(nameof(boardState));
             _availableCards = CopyCards(availableCards);
             _tileEffects = CopyTileEffects(tileEffects);
+            CapturedPieces = capturedPieces ?? CapturedPieceState.Empty;
+            _timeReversals = CopyTimeReversals(timeReversals);
         }
 
         public BoardState BoardState { get; }
@@ -24,6 +29,10 @@ namespace ChaosChess.AI.Domain
         public IReadOnlyList<CardInfo> AvailableCards => _availableCards;
 
         public IReadOnlyList<TileEffectInfo> TileEffects => _tileEffects;
+
+        public CapturedPieceState CapturedPieces { get; }
+
+        public IReadOnlyList<TimeReversalState> TimeReversals => _timeReversals;
 
         private static ReadOnlyCollection<CardInfo> CopyCards(IEnumerable<CardInfo> cards)
         {
@@ -61,6 +70,28 @@ namespace ChaosChess.AI.Domain
                 if (effect == null)
                 {
                     throw new ArgumentException("Tile effect collection cannot contain null.", nameof(effects));
+                }
+
+                copy.Add(effect);
+            }
+
+            return copy.AsReadOnly();
+        }
+
+        private static ReadOnlyCollection<TimeReversalState> CopyTimeReversals(IEnumerable<TimeReversalState>? effects)
+        {
+            var copy = new List<TimeReversalState>();
+
+            if (effects == null)
+            {
+                return copy.AsReadOnly();
+            }
+
+            foreach (TimeReversalState effect in effects)
+            {
+                if (effect == null)
+                {
+                    throw new ArgumentException("Time reversal collection cannot contain null.", nameof(effects));
                 }
 
                 copy.Add(effect);

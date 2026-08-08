@@ -8,6 +8,21 @@ namespace ChaosChess.AI.Domain
             Square square,
             PieceColor expectedColor,
             PieceKind expectedKind)
+            : this(
+                square,
+                expectedColor,
+                expectedKind,
+                isPromotioned: false,
+                startSquare: null)
+        {
+        }
+
+        public PieceTargetSnapshot(
+            Square square,
+            PieceColor expectedColor,
+            PieceKind expectedKind,
+            bool isPromotioned,
+            Square? startSquare)
         {
             EnsureValidColor(expectedColor);
 
@@ -19,6 +34,8 @@ namespace ChaosChess.AI.Domain
             Square = square;
             ExpectedColor = expectedColor;
             ExpectedKind = expectedKind;
+            IsPromotioned = isPromotioned;
+            StartSquare = startSquare;
         }
 
         public Square Square { get; }
@@ -26,6 +43,10 @@ namespace ChaosChess.AI.Domain
         public PieceColor ExpectedColor { get; }
 
         public PieceKind ExpectedKind { get; }
+
+        public bool IsPromotioned { get; }
+
+        public Square? StartSquare { get; }
 
         private static void EnsureValidColor(PieceColor color)
         {

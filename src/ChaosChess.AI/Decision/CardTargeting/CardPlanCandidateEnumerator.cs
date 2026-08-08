@@ -99,7 +99,40 @@ namespace ChaosChess.AI.Decision.CardTargeting
                         }
 
                         yield return CardTargetSelection.PieceAtSquare(
-                            new PieceTargetSnapshot(piece.Square, piece.Color, piece.Kind));
+                            CreatePieceTarget(piece));
+                    }
+
+                    yield break;
+
+                case CardTargetKind.PieceAndSquare:
+                    Square[] destinationSquares = CopySquares(EnumerateBoardSquares());
+                    foreach (PieceInfo piece in gameState.BoardState.Pieces)
+                    {
+                        if (!MatchesOwnerRelation(definition.RequiredTargetOwnerRelation, actor, piece.Color) ||
+                            !IsAllowedPieceKind(definition.AllowedTargetPieceKinds, piece.Kind))
+                        {
+                            continue;
+                        }
+
+                        PieceTargetSnapshot pieceTarget = CreatePieceTarget(piece);
+                        foreach (Square square in destinationSquares)
+                        {
+                            yield return CardTargetSelection.PieceAndSquare(pieceTarget, square);
+                        }
+                    }
+
+                    yield break;
+
+                case CardTargetKind.OrderedPieces:
+                    PieceTargetSnapshot[] pieceTargets = CopyPieceTargets(EnumeratePieceTargets(
+                        gameState,
+                        actor,
+                        definition));
+                    foreach (IReadOnlyList<PieceTargetSnapshot> targets in EnumerateOrderedPieceTargets(
+                        pieceTargets,
+                        definition.RequiredTargetCount))
+                    {
+                        yield return CardTargetSelection.OrderedPieces(targets);
                     }
 
                     yield break;
@@ -129,6 +162,88 @@ namespace ChaosChess.AI.Decision.CardTargeting
                     }
 
                     yield break;
+            }
+        }
+
+        private static IEnumerable<PieceTargetSnapshot> EnumeratePieceTargets(
+            GameState gameState,
+            PieceColor actor,
+            CardPlanningDefinition definition)
+        {
+            foreach (PieceInfo piece in gameState.BoardState.Pieces)
+            {
+                if (!MatchesOwnerRelation(definition.RequiredTargetOwnerRelation, actor, piece.Color) ||
+                    !IsAllowedPieceKind(definition.AllowedTargetPieceKinds, piece.Kind))
+                {
+                    continue;
+                }
+
+                yield return CreatePieceTarget(piece);
+            }
+        }
+
+        private static PieceTargetSnapshot CreatePieceTarget(PieceInfo piece)
+        {
+            return new PieceTargetSnapshot(
+                piece.Square,
+                piece.Color,
+                piece.Kind,
+                piece.IsPromotioned,
+                piece.StartSquare);
+        }
+
+        private static IEnumerable<IReadOnlyList<PieceTargetSnapshot>> EnumerateOrderedPieceTargets(
+            PieceTargetSnapshot[] pieces,
+            int count)
+        {
+            var selected = new PieceTargetSnapshot[count];
+            var used = new bool[pieces.Length];
+
+            foreach (IReadOnlyList<PieceTargetSnapshot> target in EnumerateOrderedPieceTargets(
+                pieces,
+                count,
+                selected,
+                used,
+                depth: 0))
+            {
+                yield return target;
+            }
+        }
+
+        private static IEnumerable<IReadOnlyList<PieceTargetSnapshot>> EnumerateOrderedPieceTargets(
+            PieceTargetSnapshot[] pieces,
+            int count,
+            PieceTargetSnapshot[] selected,
+            bool[] used,
+            int depth)
+        {
+            if (depth == count)
+            {
+                yield return (PieceTargetSnapshot[])selected.Clone();
+                yield break;
+            }
+
+            for (int i = 0; i < pieces.Length; i++)
+            {
+                if (used[i])
+                {
+                    continue;
+                }
+
+                used[i] = true;
+                selected[depth] = pieces[i];
+
+                foreach (IReadOnlyList<PieceTargetSnapshot> target in EnumerateOrderedPieceTargets(
+                    pieces,
+                    count,
+                    selected,
+                    used,
+                    depth + 1))
+                {
+                    yield return target;
+                }
+
+                used[i] = false;
             }
         }
 
@@ -188,6 +303,18 @@ namespace ChaosChess.AI.Decision.CardTargeting
             foreach (Square square in squares)
             {
                 copy.Add(square);
+            }
+
+            return copy.ToArray();
+        }
+
+        private static PieceTargetSnapshot[] CopyPieceTargets(IEnumerable<PieceTargetSnapshot> pieces)
+        {
+            var copy = new List<PieceTargetSnapshot>();
+
+            foreach (PieceTargetSnapshot piece in pieces)
+            {
+                copy.Add(piece);
             }
 
             return copy.ToArray();

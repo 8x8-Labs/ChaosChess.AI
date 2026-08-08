@@ -74,6 +74,57 @@ public sealed class CardUsePlanValidatorTests
     }
 
     [Fact]
+    public void Validate_ValidOrderedPiecesPlan_PreservesOrderAndReturnsValid()
+    {
+        var first = new Square(0, 6);
+        var second = new Square(2, 6);
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("dimension_disturbance"),
+            pieces: new[]
+            {
+                Piece(PieceKind.Rook, PieceColor.Black, first, "r"),
+                Piece(PieceKind.Bishop, PieceColor.Black, second, "b")
+            });
+        CardUsePlan plan = Plan(
+            "dimension_disturbance",
+            PieceColor.White,
+            CardTargetSelection.OrderedPieces(new[]
+            {
+                new PieceTargetSnapshot(first, PieceColor.Black, PieceKind.Rook),
+                new PieceTargetSnapshot(second, PieceColor.Black, PieceKind.Bishop)
+            }));
+
+        CardPlanValidationResult result = validator.Validate(state, plan);
+
+        AssertValid(result);
+        Assert.Equal(new[] { first, second }, plan.Target.Squares);
+        Assert.Equal(first, plan.Target.Piece!.Square);
+        Assert.Equal(2, plan.Target.Pieces.Count);
+    }
+
+    [Fact]
+    public void Validate_ValidTeleportPlan_ReturnsValid()
+    {
+        var source = new Square(4, 1);
+        var destination = new Square(4, 5);
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("teleport"),
+            pieces: new[] { Piece(PieceKind.Pawn, PieceColor.White, source) });
+        CardUsePlan plan = Plan(
+            "teleport",
+            PieceColor.White,
+            CardTargetSelection.PieceAndSquare(
+                new PieceTargetSnapshot(source, PieceColor.White, PieceKind.Pawn),
+                destination));
+
+        CardPlanValidationResult result = validator.Validate(state, plan);
+
+        AssertValid(result);
+    }
+
+    [Fact]
     public void Validate_NullInputs_ReturnInvalidCodes()
     {
         CardUsePlan plan = Plan("charge", PieceColor.White, CardTargetSelection.None());
@@ -342,6 +393,28 @@ public sealed class CardUsePlanValidatorTests
     }
 
     [Fact]
+    public void Validate_TeleportDestinationWithTileEffect_ReturnsTargetSquareHasTileEffect()
+    {
+        var source = new Square(4, 1);
+        var destination = new Square(4, 5);
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("teleport"),
+            pieces: new[] { Piece(PieceKind.Pawn, PieceColor.White, source) },
+            tileEffects: new[] { TileEffect("existing", destination) });
+        CardUsePlan plan = Plan(
+            "teleport",
+            PieceColor.White,
+            CardTargetSelection.PieceAndSquare(
+                new PieceTargetSnapshot(source, PieceColor.White, PieceKind.Pawn),
+                destination));
+
+        CardPlanValidationResult result = validator.Validate(state, plan);
+
+        AssertInvalid(result, CardPlanValidationCode.TargetSquareHasTileEffect);
+    }
+
+    [Fact]
     public void Validate_PortalDuplicateSquare_ReturnsDuplicateTargetSquare()
     {
         var square = new Square(4, 4);
@@ -350,6 +423,28 @@ public sealed class CardUsePlanValidatorTests
             "portal",
             PieceColor.White,
             CardTargetSelection.OrderedSquares(new[] { square, square }));
+
+        CardPlanValidationResult result = validator.Validate(state, plan);
+
+        AssertInvalid(result, CardPlanValidationCode.DuplicateTargetSquare);
+    }
+
+    [Fact]
+    public void Validate_OrderedPiecesDuplicateSquare_ReturnsDuplicateTargetSquare()
+    {
+        var square = new Square(0, 6);
+        GameState state = CreateState(
+            PieceColor.White,
+            Card("dimension_disturbance"),
+            pieces: new[] { Piece(PieceKind.Rook, PieceColor.Black, square, "r") });
+        CardUsePlan plan = Plan(
+            "dimension_disturbance",
+            PieceColor.White,
+            CardTargetSelection.OrderedPieces(new[]
+            {
+                new PieceTargetSnapshot(square, PieceColor.Black, PieceKind.Rook),
+                new PieceTargetSnapshot(square, PieceColor.Black, PieceKind.Rook)
+            }));
 
         CardPlanValidationResult result = validator.Validate(state, plan);
 

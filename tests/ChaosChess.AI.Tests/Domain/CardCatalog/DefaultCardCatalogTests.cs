@@ -30,6 +30,38 @@ public sealed class DefaultCardCatalogTests
         "thunderclap_flash"
     };
 
+    private static readonly string[] ActivatedWaveThreeCardIds =
+    {
+        "arena",
+        "chaotic_knight",
+        "checkmate_declaration",
+        "democracy",
+        "destroyer_tank_cards",
+        "dimension_disturbance",
+        "gaslighting",
+        "honey_trap",
+        "magnet",
+        "obey_order",
+        "overbearing",
+        "position_swap",
+        "shuffle_board",
+        "stag_fight",
+        "sync",
+        "time_reversal",
+        "weird_castling",
+        "windmill"
+    };
+
+    private static readonly string[] ActivatedWaveTwoCardIds =
+    {
+        "castle_knight",
+        "mutiny",
+        "rampart",
+        "revive",
+        "teleport",
+        "transmigration"
+    };
+
     [Fact]
     public void DefaultCatalog_ContainsUnityCardInventory()
     {
@@ -113,6 +145,44 @@ public sealed class DefaultCardCatalogTests
             Assert.NotNull(entry);
             Assert.False(entry.CurrentUnityAiSupported);
             Assert.Equal(CardCatalogActivationWave.Wave1, entry.ActivationWave);
+            Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
+            Assert.NotNull(effectCatalog.FindDefinition(cardId));
+        }
+    }
+
+    [Fact]
+    public void DefaultCatalog_IncludesActivatedWaveThreePlanningAndEffectDefinitions()
+    {
+        var catalog = new DefaultCardCatalog();
+        var planningCatalog = new DefaultCardPlanningCatalog();
+        var effectCatalog = new DefaultCardEffectDefinitionCatalog();
+
+        foreach (string cardId in ActivatedWaveThreeCardIds)
+        {
+            CardCatalogEntry entry = catalog.FindEntry(cardId)!;
+
+            Assert.NotNull(entry);
+            Assert.False(entry.CurrentUnityAiSupported);
+            Assert.Equal(CardCatalogActivationWave.Wave3, entry.ActivationWave);
+            Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
+            Assert.NotNull(effectCatalog.FindDefinition(cardId));
+        }
+    }
+
+    [Fact]
+    public void DefaultCatalog_IncludesActivatedWaveTwoPlanningAndEffectDefinitions()
+    {
+        var catalog = new DefaultCardCatalog();
+        var planningCatalog = new DefaultCardPlanningCatalog();
+        var effectCatalog = new DefaultCardEffectDefinitionCatalog();
+
+        foreach (string cardId in ActivatedWaveTwoCardIds)
+        {
+            CardCatalogEntry entry = catalog.FindEntry(cardId)!;
+
+            Assert.NotNull(entry);
+            Assert.False(entry.CurrentUnityAiSupported);
+            Assert.Equal(CardCatalogActivationWave.Wave2, entry.ActivationWave);
             Assert.True(planningCatalog.GetDefinition(cardId).IsSupported);
             Assert.NotNull(effectCatalog.FindDefinition(cardId));
         }

@@ -5,6 +5,8 @@ namespace ChaosChess.AI.Domain
         None,
         PieceAtSquare,
         BoardSquare,
-        OrderedSquares
+        OrderedSquares,
+        PieceAndSquare,
+        OrderedPieces
     }
 }

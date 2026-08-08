@@ -11,17 +11,54 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [Theory]
     [InlineData("agile", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("aim", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("arena", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("at_mine", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("blessing", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("castle_knight", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("caterpillar", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("chaotic_knight", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("charge", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("checkmate_declaration", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("cobweb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("concentration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("dark_hand", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("democracy", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("desperado", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("destroyer_tank_cards", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("dimension_disturbance", CardTargetKind.OrderedPieces, CardTargetOwnerRelation.Opponent, 2)]
+    [InlineData("dimension_instability", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("father_enemy", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fast_march", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("fire", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("gaslighting", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("giant", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("gods_move", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("honey_trap", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("jumping_platform", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("limitless", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("magnet", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("missing_promotion", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("mutiny", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("obey_order", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("overbearing", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("peace_zone", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("portal", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
+    [InlineData("position_swap", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("rampart", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
+    [InlineData("revive", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("shuffle_board", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("stag_fight", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
+    [InlineData("sunset_blade", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("sync", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("teleport", CardTargetKind.PieceAndSquare, CardTargetOwnerRelation.Self, 2)]
+    [InlineData("time_bomb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("time_reversal", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("transmigration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
+    [InlineData("weird_castling", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
+    [InlineData("windmill", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     public void DefaultCatalog_ReturnsSupportedDefinitions(
         string cardId,
         CardTargetKind expectedKind,
@@ -45,11 +82,12 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("aim", "t", 1)]
     [InlineData("caterpillar", "z", 2)]
     [InlineData("concentration", "a", 5)]
+    [InlineData("dark_hand", "a", 2)]
     [InlineData("fast_march", "f", 1)]
     [InlineData("limitless", "a", null)]
     [InlineData("sneak_pawn", "e", 1)]
     [InlineData("thunderclap_flash", "m", 1)]
-    public void PawnMovementDefinitions_UseSelectedPieceMovementOverride(
+    public void MovementOverrideDefinitions_UseSelectedPieceMovementOverride(
         string cardId,
         string expectedOverrideCode,
         int? expectedDurationTurns)
@@ -66,21 +104,153 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     }
 
     [Fact]
+    public void CastleKnightDefinition_MergesSelectedKnightIntoNearestRook()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("castle_knight")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.MergeSelectedPieceIntoNearestAlly, primitive.Kind);
+        Assert.Equal(PieceKind.Chancellor, primitive.PieceKind);
+        Assert.Equal(nameof(PieceKind.Rook), primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+    }
+
+    [Fact]
+    public void WeirdCastlingDefinition_SwapsSelectedPieceWithActorKing()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("weird_castling")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.SwapSelectedPieceWithActorKing, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+    }
+
+    [Theory]
+    [InlineData("chaotic_knight", "ChaoticKnight", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("desperado", "Desperado", 1, TileEffectLifetimeKind.TurnLimited)]
+    [InlineData("dimension_instability", "DimensionInstability", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("father_enemy", "FatherEnemy", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("giant", "Giant", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    [InlineData("sunset_blade", "SunsetBlade", -1, TileEffectLifetimeKind.PersistentUntilTriggered)]
+    public void PieceEffectDefinitions_UseSelectedPieceEffectMarker(
+        string cardId,
+        string expectedEffectType,
+        int expectedDurationTurns,
+        TileEffectLifetimeKind expectedLifetimeKind)
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition(cardId)!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddPieceEffect, primitive.Kind);
+        Assert.Equal(expectedEffectType, primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+        Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
+        Assert.Equal(expectedLifetimeKind, primitive.TileEffectLifetimeKind);
+    }
+
+    [Theory]
+    [InlineData("checkmate_declaration", "CheckmateDeclaration", 4)]
+    [InlineData("arena", "ArenaRandomExpectedValue", null)]
+    [InlineData("democracy", "Democracy", null)]
+    [InlineData("destroyer_tank_cards", "DestroyerTank", 1)]
+    [InlineData("gaslighting", "GaslightingRandomExpectedValue", null)]
+    [InlineData("honey_trap", "HoneyTrapRandomExpectedValue", null)]
+    [InlineData("mutiny", "Mutiny", 3)]
+    [InlineData("overbearing", "Overbearing", null)]
+    [InlineData("shuffle_board", "ShuffleBoardRandomExpectedValue", null)]
+    [InlineData("stag_fight", "StagFight", 3)]
+    [InlineData("time_reversal", "TimeReversal", 8)]
+    [InlineData("windmill", "Windmill", 2)]
+    public void GlobalEffectDefinitions_UseNoneTargetGlobalEffectMarker(
+        string cardId,
+        string expectedEffectType,
+        int? expectedDurationTurns)
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition(cardId)!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddGlobalEffect, primitive.Kind);
+        Assert.Equal(expectedEffectType, primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.None, primitive.TargetBinding);
+        Assert.Equal(expectedDurationTurns, primitive.DurationTurns);
+    }
+
+    [Fact]
     public void TileDefinitions_UseSelectedSquareTileEffects()
     {
         var catalog = new DefaultCardEffectDefinitionCatalog();
 
+        CardEffectPrimitive atMine = Assert.Single(catalog.FindDefinition("at_mine")!.Primitives);
+        CardEffectPrimitive blessing = Assert.Single(catalog.FindDefinition("blessing")!.Primitives);
+        CardEffectPrimitive cobweb = Assert.Single(catalog.FindDefinition("cobweb")!.Primitives);
         CardEffectPrimitive fire = Assert.Single(catalog.FindDefinition("fire")!.Primitives);
+        CardEffectPrimitive jumpingPlatform = Assert.Single(catalog.FindDefinition("jumping_platform")!.Primitives);
+        CardEffectPrimitive obeyOrder = Assert.Single(catalog.FindDefinition("obey_order")!.Primitives);
         CardEffectPrimitive peace = Assert.Single(catalog.FindDefinition("peace_zone")!.Primitives);
+        CardEffectPrimitive psilocybinMushroom = Assert.Single(catalog.FindDefinition("psilocybin_mushroom")!.Primitives);
 
+        AssertTileEffect(atMine, "ATMine");
+        AssertTileEffect(blessing, "Blessing");
+        AssertTileEffect(cobweb, "Cobweb");
         Assert.Equal("Fire", fire.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, fire.TargetBinding);
         Assert.Equal(-1, fire.DurationTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, fire.TileEffectLifetimeKind);
+        AssertTileEffect(jumpingPlatform, "JumpingPlatform");
         Assert.Equal("Peace", peace.EffectType);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, peace.TargetBinding);
         Assert.Equal(-1, peace.DurationTurns);
         Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, peace.TileEffectLifetimeKind);
+        AssertTileEffect(obeyOrder, "ObeyOrder");
+        AssertTileEffect(psilocybinMushroom, "PsilocybinMushroom");
+    }
+
+    [Fact]
+    public void TimeBombDefinition_UsesSelectedSquareDurationTileEffect()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("time_bomb")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddTileEffect, primitive.Kind);
+        Assert.Equal("TimeBomb", primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+        Assert.Equal(3, primitive.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.TurnLimited, primitive.TileEffectLifetimeKind);
+    }
+
+    [Fact]
+    public void MagnetDefinition_UsesSelectedSquareRandomExpectedValueMarker()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("magnet")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddGlobalEffect, primitive.Kind);
+        Assert.Equal("MagnetRandomExpectedValue", primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+        Assert.Null(primitive.DurationTurns);
+    }
+
+    [Fact]
+    public void DimensionDisturbanceDefinition_UsesOrderedOpponentPiecesRandomExpectedValueMarker()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("dimension_disturbance")!;
+        CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
+
+        Assert.Equal(CardTargetKind.OrderedPieces, definition.TargetQuery.Kind);
+        Assert.True(definition.TargetQuery.IsOrdered);
+        Assert.Equal(CardTargetOwnerRelation.Opponent, definition.TargetQuery.OwnerRelation);
+        Assert.Equal(2, definition.TargetQuery.Count);
+        Assert.Equal(CardEffectPrimitiveKind.AddGlobalEffect, primitive.Kind);
+        Assert.Equal("DimensionDisturbanceRandomExpectedValue", primitive.EffectType);
+        Assert.Null(primitive.DurationTurns);
     }
 
     [Fact]
@@ -94,6 +264,35 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(CardEffectPrimitiveKind.ChangePieceKind, primitive.Kind);
         Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
         Assert.Equal(PieceKind.Pawn, primitive.PieceKind);
+    }
+
+    [Fact]
+    public void TransmigrationDefinition_RevertsSelectedPromotedPieceToStartSquarePawn()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("transmigration")!;
+
+        Assert.Equal(2, definition.Primitives.Count);
+        Assert.Equal(CardEffectPrimitiveKind.ChangePieceKind, definition.Primitives[0].Kind);
+        Assert.Equal(PieceKind.Pawn, definition.Primitives[0].PieceKind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, definition.Primitives[0].TargetBinding);
+        Assert.Equal(CardEffectPrimitiveKind.MovePiece, definition.Primitives[1].Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, definition.Primitives[1].TargetBinding);
+        Assert.Equal(CardEffectPrimitiveDestinationBinding.SelectedPieceStartSquare, definition.Primitives[1].DestinationBinding);
+    }
+
+    [Fact]
+    public void GodsMoveDefinition_UsesSelectedOwnPieceChangeKindMarker()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("gods_move")!;
+        CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.ChangePieceKind, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+        Assert.Null(primitive.PieceKind);
     }
 
     [Fact]
@@ -118,6 +317,77 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         Assert.Equal(1, definition.Primitives[0].DestinationTargetIndex);
         Assert.Equal(1, definition.Primitives[1].TargetIndex);
         Assert.Equal(0, definition.Primitives[1].DestinationTargetIndex);
+    }
+
+    [Fact]
+    public void SyncDefinition_UsesMirroredPersistentTileEffectPair()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("sync")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.AddMirroredTileEffectPair, primitive.Kind);
+        Assert.Equal("Sync", primitive.EffectType);
+        Assert.Equal(-1, primitive.DurationTurns);
+        Assert.Equal(1, primitive.SharedRemainingUses);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, primitive.TileEffectLifetimeKind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+    }
+
+    [Fact]
+    public void RampartDefinition_CreatesTwoSelectedWallPieces()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("rampart")!;
+
+        Assert.Equal(CardTargetKind.OrderedSquares, definition.TargetQuery.Kind);
+        Assert.Equal(2, definition.Primitives.Count);
+        Assert.All(definition.Primitives, primitive =>
+        {
+            Assert.Equal(CardEffectPrimitiveKind.CreatePiece, primitive.Kind);
+            Assert.Equal(PieceKind.Wall, primitive.PieceKind);
+            Assert.Equal(CardEffectPrimitiveTargetBinding.OrderedSquareByIndex, primitive.TargetBinding);
+        });
+        Assert.Equal(0, definition.Primitives[0].TargetIndex);
+        Assert.Equal(1, definition.Primitives[1].TargetIndex);
+    }
+
+    [Fact]
+    public void ReviveDefinition_CreatesHighestCapturedPieceOrWallOnSelectedSquare()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("revive")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.CreatePiece, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+        Assert.Equal(CardEffectPrimitivePieceKindBinding.ActorHighestValueCapturedOrWall, primitive.PieceKindBinding);
+        Assert.Null(primitive.PieceKind);
+    }
+
+    [Fact]
+    public void TeleportDefinition_MovesSelectedPieceToSelectedSquare()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectDefinition definition = catalog.FindDefinition("teleport")!;
+        CardEffectPrimitive primitive = Assert.Single(definition.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.MovePiece, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedPiece, primitive.TargetBinding);
+        Assert.Equal(0, primitive.DestinationTargetIndex);
+    }
+
+    [Fact]
+    public void PositionSwapDefinition_FlipsBoardPerspective()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("position_swap")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.FlipBoardPerspective, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.None, primitive.TargetBinding);
     }
 
     [Fact]
@@ -173,5 +443,14 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
             cardId,
             CardTargetQuery.None(),
             new[] { new CardEffectPrimitive(CardEffectPrimitiveKind.RemoveTileEffect) });
+    }
+
+    private static void AssertTileEffect(CardEffectPrimitive primitive, string expectedType)
+    {
+        Assert.Equal(CardEffectPrimitiveKind.AddTileEffect, primitive.Kind);
+        Assert.Equal(expectedType, primitive.EffectType);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+        Assert.Equal(-1, primitive.DurationTurns);
+        Assert.Equal(TileEffectLifetimeKind.PersistentUntilTriggered, primitive.TileEffectLifetimeKind);
     }
 }

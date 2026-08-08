@@ -22,6 +22,32 @@ public sealed class CardEffectDefinitionTests
     }
 
     [Fact]
+    public void TargetQuery_PieceAndEmptySquareStoresTargetShape()
+    {
+        CardTargetQuery query = CardTargetQuery.PieceAndEmptySquare(CardTargetOwnerRelation.Self);
+
+        Assert.Equal(CardTargetKind.PieceAndSquare, query.Kind);
+        Assert.Equal(CardTargetOwnerRelation.Self, query.OwnerRelation);
+        Assert.Equal(2, query.Count);
+        Assert.True(query.RequiresEmptySquares);
+        Assert.False(query.RequiresOccupiedSquares);
+        Assert.True(query.IsOrdered);
+    }
+
+    [Fact]
+    public void TargetQuery_OrderedPiecesStoresTargetShape()
+    {
+        CardTargetQuery query = CardTargetQuery.OrderedPieces(CardTargetOwnerRelation.Opponent, 2);
+
+        Assert.Equal(CardTargetKind.OrderedPieces, query.Kind);
+        Assert.Equal(CardTargetOwnerRelation.Opponent, query.OwnerRelation);
+        Assert.Equal(2, query.Count);
+        Assert.False(query.RequiresEmptySquares);
+        Assert.True(query.RequiresOccupiedSquares);
+        Assert.True(query.IsOrdered);
+    }
+
+    [Fact]
     public void TargetQuery_RejectsInvalidShape()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
@@ -67,6 +93,24 @@ public sealed class CardEffectDefinitionTests
                 2,
                 true,
                 false,
+                false,
+                false));
+        Assert.Throws<ArgumentException>(
+            () => new CardTargetQuery(
+                CardTargetKind.PieceAndSquare,
+                CardTargetOwnerRelation.Self,
+                1,
+                true,
+                false,
+                false,
+                true));
+        Assert.Throws<ArgumentException>(
+            () => new CardTargetQuery(
+                CardTargetKind.OrderedPieces,
+                CardTargetOwnerRelation.Opponent,
+                2,
+                false,
+                true,
                 false,
                 false));
     }
@@ -123,6 +167,20 @@ public sealed class CardEffectDefinitionTests
             () => new CardEffectPrimitive(
                 CardEffectPrimitiveKind.CreatePiece,
                 pieceKind: PieceKind.Unknown));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(CardEffectPrimitiveKind.CreatePiece));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.CreatePiece,
+                pieceKindBinding: (CardEffectPrimitivePieceKindBinding)99));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.MovePiece,
+                pieceKindBinding: CardEffectPrimitivePieceKindBinding.ActorHighestValueCapturedOrWall));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.MergeSelectedPieceIntoNearestAlly,
+                pieceKind: PieceKind.Chancellor));
         Assert.Throws<ArgumentOutOfRangeException>(
             () => new CardEffectPrimitive(
                 CardEffectPrimitiveKind.ChangeOwner,
@@ -139,6 +197,10 @@ public sealed class CardEffectDefinitionTests
                 sharedRemainingUses: -1));
         Assert.Throws<ArgumentException>(
             () => new CardEffectPrimitive(CardEffectPrimitiveKind.AddTileEffect));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(CardEffectPrimitiveKind.AddMirroredTileEffectPair));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(CardEffectPrimitiveKind.AddGlobalEffect));
         Assert.Throws<ArgumentException>(
             () => new CardEffectPrimitive(CardEffectPrimitiveKind.SetMovementOverride));
         Assert.Throws<ArgumentOutOfRangeException>(

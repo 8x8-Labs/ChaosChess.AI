@@ -231,6 +231,37 @@ public sealed class GameSimulatorTests
     }
 
     [Fact]
+    public void SimulateFuture_SyncExit_TeleportsLinkedPieceAndRemovesPair()
+    {
+        GameState state = State(
+            new[]
+            {
+                Piece(PieceKind.King, PieceColor.White, "e1", "k"),
+                Piece(PieceKind.King, PieceColor.Black, "e8", "k"),
+                Piece(PieceKind.Pawn, PieceColor.White, "c3", "p"),
+                Piece(PieceKind.Rook, PieceColor.White, "f3", "r")
+            },
+            PieceColor.White,
+            CastlingRights.None,
+            null,
+            Sync("sync-a", "c3", "f3"),
+            Sync("sync-b", "f3", "c3"));
+        GameSimulator simulator = Simulator(new StubChessEngine(new[] { Move("c3c4", 13) }));
+
+        SimulationResult result = simulator.SimulateFuture(
+            state,
+            PieceColor.White,
+            new SimulationOptions(horizonPly: 1, variationCount: 1));
+
+        Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("c4")));
+        Assert.Null(result.FinalState.BoardState.FindPiece(Square.Parse("f3")));
+        PieceInfo? linked = result.FinalState.BoardState.FindPiece(Square.Parse("f4"));
+        Assert.NotNull(linked);
+        Assert.Equal(PieceKind.Rook, linked!.Kind);
+        Assert.Empty(result.FinalState.TileEffects);
+    }
+
+    [Fact]
     public void SimulateFuture_FireAndBlessing_RecordWarningsWithoutChangingEffect()
     {
         GameState state = State(
@@ -256,6 +287,84 @@ public sealed class GameSimulatorTests
         Assert.Equal(2, result.Warnings.Count);
         Assert.Contains(result.FinalState.TileEffects, effect => effect.Id == "fire-1");
         Assert.Contains(result.FinalState.TileEffects, effect => effect.Id == "blessing-1");
+    }
+
+    [Fact]
+    public void SimulateFuture_ExpiredTimeReversal_RollsBackWhenSavedBoardIsBetter()
+    {
+        BoardState savedBoard = Board(
+            new[]
+            {
+                Piece(PieceKind.King, PieceColor.White, "e1", "k"),
+                Piece(PieceKind.King, PieceColor.Black, "e8", "k"),
+                Piece(PieceKind.Queen, PieceColor.White, "d1", "q"),
+                Piece(PieceKind.Pawn, PieceColor.White, "e2", "p")
+            },
+            PieceColor.White);
+        BoardState currentBoard = Board(
+            new[]
+            {
+                Piece(PieceKind.King, PieceColor.White, "e1", "k"),
+                Piece(PieceKind.King, PieceColor.Black, "e8", "k"),
+                Piece(PieceKind.Pawn, PieceColor.White, "e2", "p")
+            },
+            PieceColor.White);
+        GameState state = StateWithTimeReversal(currentBoard, savedBoard, PieceColor.White);
+        GameSimulator simulator = Simulator(new StubChessEngine(
+            board => new PositionEvaluation(
+                PieceColor.White,
+                board.FindPiece(Square.Parse("d1")) != null ? 900 : 0,
+                mateIn: null),
+            new[] { Move("e2e3", 13) }));
+
+        SimulationResult result = simulator.SimulateFuture(
+            state,
+            PieceColor.White,
+            new SimulationOptions(horizonPly: 1, variationCount: 1));
+
+        Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("d1")));
+        Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("e2")));
+        Assert.Null(result.FinalState.BoardState.FindPiece(Square.Parse("e3")));
+        Assert.Empty(result.FinalState.TimeReversals);
+    }
+
+    [Fact]
+    public void SimulateFuture_ExpiredTimeReversal_KeepsCurrentBoardWhenCurrentIsBetter()
+    {
+        BoardState savedBoard = Board(
+            new[]
+            {
+                Piece(PieceKind.King, PieceColor.White, "e1", "k"),
+                Piece(PieceKind.King, PieceColor.Black, "e8", "k"),
+                Piece(PieceKind.Pawn, PieceColor.White, "e2", "p")
+            },
+            PieceColor.White);
+        BoardState currentBoard = Board(
+            new[]
+            {
+                Piece(PieceKind.King, PieceColor.White, "e1", "k"),
+                Piece(PieceKind.King, PieceColor.Black, "e8", "k"),
+                Piece(PieceKind.Queen, PieceColor.White, "d1", "q"),
+                Piece(PieceKind.Pawn, PieceColor.White, "e2", "p")
+            },
+            PieceColor.White);
+        GameState state = StateWithTimeReversal(currentBoard, savedBoard, PieceColor.White);
+        GameSimulator simulator = Simulator(new StubChessEngine(
+            board => new PositionEvaluation(
+                PieceColor.White,
+                board.FindPiece(Square.Parse("d1")) != null ? 900 : 0,
+                mateIn: null),
+            new[] { Move("e2e3", 13) }));
+
+        SimulationResult result = simulator.SimulateFuture(
+            state,
+            PieceColor.White,
+            new SimulationOptions(horizonPly: 1, variationCount: 1));
+
+        Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("d1")));
+        Assert.Null(result.FinalState.BoardState.FindPiece(Square.Parse("e2")));
+        Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("e3")));
+        Assert.Empty(result.FinalState.TimeReversals);
     }
 
     [Fact]
@@ -422,6 +531,30 @@ public sealed class GameSimulatorTests
             effects);
     }
 
+    private static BoardState Board(IEnumerable<PieceInfo> pieces, PieceColor sideToMove)
+    {
+        return new BoardState(
+            pieces,
+            sideToMove,
+            CastlingRights.None,
+            enPassantTarget: null,
+            halfmoveClock: 0,
+            fullmoveNumber: 1);
+    }
+
+    private static GameState StateWithTimeReversal(
+        BoardState currentBoard,
+        BoardState savedBoard,
+        PieceColor owner)
+    {
+        return new GameState(
+            currentBoard,
+            Array.Empty<CardInfo>(),
+            Array.Empty<TileEffectInfo>(),
+            CapturedPieceState.Empty,
+            new[] { new TimeReversalState("time-reversal.1", owner, 1, savedBoard) });
+    }
+
     private static PieceInfo Piece(
         PieceKind kind,
         PieceColor color,
@@ -466,6 +599,22 @@ public sealed class GameSimulatorTests
             sharedRemainingUses: sharedUses);
     }
 
+    private static TileEffectInfo Sync(
+        string id,
+        string square,
+        string destination)
+    {
+        return new TileEffectInfo(
+            id,
+            "Sync",
+            Square.Parse(square),
+            PieceColor.White,
+            remainingTurns: -1,
+            destinationSquare: Square.Parse(destination),
+            sharedRemainingUses: 1,
+            lifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered);
+    }
+
     private static string SortedSquares(IEnumerable<PieceInfo> pieces)
     {
         var values = new List<string>();
@@ -482,9 +631,20 @@ public sealed class GameSimulatorTests
     private sealed class StubChessEngine : IChessEngine
     {
         private readonly Queue<IReadOnlyList<MoveCandidate>> _moveBatches = new Queue<IReadOnlyList<MoveCandidate>>();
+        private readonly Func<BoardState, PositionEvaluation> _evaluatePosition;
 
         public StubChessEngine(params IReadOnlyList<MoveCandidate>[] moveBatches)
+            : this(
+                _ => new PositionEvaluation(PieceColor.White, scoreCentipawns: 0, mateIn: null),
+                moveBatches)
         {
+        }
+
+        public StubChessEngine(
+            Func<BoardState, PositionEvaluation> evaluatePosition,
+            params IReadOnlyList<MoveCandidate>[] moveBatches)
+        {
+            _evaluatePosition = evaluatePosition;
             foreach (IReadOnlyList<MoveCandidate> batch in moveBatches)
             {
                 _moveBatches.Enqueue(batch);
@@ -505,7 +665,7 @@ public sealed class GameSimulatorTests
 
         public PositionEvaluation EvaluatePosition(BoardState boardState, int depth)
         {
-            return new PositionEvaluation(PieceColor.White, scoreCentipawns: 0, mateIn: null);
+            return _evaluatePosition(boardState);
         }
 
         public bool IsInCheck(BoardState boardState)

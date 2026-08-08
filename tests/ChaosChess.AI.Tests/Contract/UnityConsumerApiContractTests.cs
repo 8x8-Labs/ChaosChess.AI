@@ -69,51 +69,120 @@ public sealed class UnityConsumerApiContractTests
     [Fact]
     public void UnityConsumerSurface_CompilesWithCardUsePlanContracts()
     {
-        BoardState boardState = FenParser.Parse("4k3/8/8/8/8/8/4P3/RN1QK3 w - - 0 1");
+        BoardState boardState = FenParser.Parse("4k3/r7/8/8/8/8/4P3/RN1QK3 w - - 0 1");
         var agile = new CardInfo("agile", "Mobility", remainingUses: 1);
         var aim = new CardInfo("aim", "Mobility", remainingUses: 1);
+        var atMine = new CardInfo("at_mine", "BoardControl", remainingUses: 1);
+        var blessing = new CardInfo("blessing", "Transformation", remainingUses: 1);
         var caterpillar = new CardInfo("caterpillar", "Mobility", remainingUses: 1);
+        var chaoticKnight = new CardInfo("chaotic_knight", "Utility", remainingUses: 1);
         var charge = new CardInfo("charge", "Mobility", remainingUses: 1);
+        var checkmateDeclaration = new CardInfo("checkmate_declaration", "Tactical", remainingUses: 1);
+        var cobweb = new CardInfo("cobweb", "BoardControl", remainingUses: 1);
         var concentration = new CardInfo("concentration", "Mobility", remainingUses: 1);
+        var darkHand = new CardInfo("dark_hand", "Tactical", remainingUses: 1);
+        var democracy = new CardInfo("democracy", "Tactical", remainingUses: 1);
+        var desperado = new CardInfo("desperado", "Tactical", remainingUses: 1);
+        var destroyerTankCards = new CardInfo("destroyer_tank_cards", "Tactical", remainingUses: 1);
+        var dimensionInstability = new CardInfo("dimension_instability", "Mobility", remainingUses: 1);
+        var fatherEnemy = new CardInfo("father_enemy", "Tactical", remainingUses: 1);
         var fastMarch = new CardInfo("fast_march", "Mobility", remainingUses: 1);
         var fire = new CardInfo("fire", "BoardControl", remainingUses: 1);
+        var giant = new CardInfo("giant", "Transformation", remainingUses: 1);
+        var godsMove = new CardInfo("gods_move", "Mobility", remainingUses: 1);
+        var jumpingPlatform = new CardInfo("jumping_platform", "BoardControl", remainingUses: 1);
         var limitless = new CardInfo("limitless", "Mobility", remainingUses: 1);
+        var mutiny = new CardInfo("mutiny", "Tactical", remainingUses: 1);
+        var obeyOrder = new CardInfo("obey_order", "Utility", remainingUses: 1);
+        var overbearing = new CardInfo("overbearing", "Control", remainingUses: 1);
         var peaceZone = new CardInfo("peace_zone", "BoardControl", remainingUses: 1);
         var portal = new CardInfo("portal", "Mobility", remainingUses: 1);
+        var psilocybinMushroom = new CardInfo("psilocybin_mushroom", "BoardControl", remainingUses: 1);
         var sneakPawn = new CardInfo("sneak_pawn", "Mobility", remainingUses: 1);
+        var stagFight = new CardInfo("stag_fight", "Mobility", remainingUses: 1);
+        var sunsetBlade = new CardInfo("sunset_blade", "Tactical", remainingUses: 1);
+        var timeBomb = new CardInfo("time_bomb", "BoardControl", remainingUses: 1);
         var thunderclapFlash = new CardInfo("thunderclap_flash", "Mobility", remainingUses: 1);
+        var windmill = new CardInfo("windmill", "Mobility", remainingUses: 1);
         var gameState = new GameState(
             boardState,
             new[]
             {
                 agile,
                 aim,
+                atMine,
+                blessing,
                 caterpillar,
+                chaoticKnight,
                 charge,
+                checkmateDeclaration,
+                cobweb,
                 concentration,
+                darkHand,
+                democracy,
+                desperado,
+                destroyerTankCards,
+                dimensionInstability,
+                fatherEnemy,
                 fastMarch,
                 fire,
+                giant,
+                godsMove,
+                jumpingPlatform,
                 limitless,
+                mutiny,
+                obeyOrder,
+                overbearing,
                 peaceZone,
                 portal,
+                psilocybinMushroom,
                 sneakPawn,
-                thunderclapFlash
+                stagFight,
+                sunsetBlade,
+                timeBomb,
+                thunderclapFlash,
+                windmill
             },
             Array.Empty<TileEffectInfo>());
 
         var catalog = new DefaultCardPlanningCatalog();
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("agile").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("aim").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("at_mine").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("blessing").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("caterpillar").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("chaotic_knight").RequiredTargetKind);
         Assert.Equal(CardTargetKind.None, catalog.GetDefinition("charge").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("checkmate_declaration").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("cobweb").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("concentration").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("dark_hand").RequiredTargetKind);
+        Assert.Equal(CardTargetOwnerRelation.Opponent, catalog.GetDefinition("dark_hand").RequiredTargetOwnerRelation);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("democracy").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("desperado").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("destroyer_tank_cards").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("dimension_instability").RequiredTargetKind);
+        Assert.Equal(CardTargetOwnerRelation.Self, catalog.GetDefinition("dimension_instability").RequiredTargetOwnerRelation);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("father_enemy").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("fast_march").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("fire").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("giant").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("gods_move").RequiredTargetKind);
+        Assert.Equal(CardTargetOwnerRelation.Self, catalog.GetDefinition("gods_move").RequiredTargetOwnerRelation);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("jumping_platform").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("limitless").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("mutiny").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("obey_order").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("overbearing").RequiredTargetKind);
         Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("peace_zone").RequiredTargetKind);
         Assert.Equal(2, catalog.GetDefinition("portal").RequiredTargetCount);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("psilocybin_mushroom").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("sneak_pawn").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("stag_fight").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("sunset_blade").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.BoardSquare, catalog.GetDefinition("time_bomb").RequiredTargetKind);
         Assert.Equal(CardTargetKind.PieceAtSquare, catalog.GetDefinition("thunderclap_flash").RequiredTargetKind);
+        Assert.Equal(CardTargetKind.None, catalog.GetDefinition("windmill").RequiredTargetKind);
 
         var validator = new CardUsePlanValidator(catalog);
         var traceRecorder = new CardUsePlanTraceRecorder(validator);
@@ -134,12 +203,36 @@ public sealed class UnityConsumerApiContractTests
                     new Square(4, 1),
                     PieceColor.White,
                     PieceKind.Pawn)));
+        CardUsePlan atMinePlan = new CardUsePlan(
+            "at_mine",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(3, 3)));
+        CardUsePlan blessingPlan = new CardUsePlan(
+            "blessing",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(2, 3)));
         CardUsePlan chargePlan = new CardUsePlan(
             "charge",
             PieceColor.White,
             CardTargetSelection.None());
+        CardUsePlan checkmateDeclarationPlan = new CardUsePlan(
+            "checkmate_declaration",
+            PieceColor.White,
+            CardTargetSelection.None());
+        CardUsePlan cobwebPlan = new CardUsePlan(
+            "cobweb",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(4, 3)));
         CardUsePlan caterpillarPlan = new CardUsePlan(
             "caterpillar",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(1, 0),
+                    PieceColor.White,
+                    PieceKind.Knight)));
+        CardUsePlan chaoticKnightPlan = new CardUsePlan(
+            "chaotic_knight",
             PieceColor.White,
             CardTargetSelection.PieceAtSquare(
                 new PieceTargetSnapshot(
@@ -154,6 +247,46 @@ public sealed class UnityConsumerApiContractTests
                     new Square(3, 0),
                     PieceColor.White,
                     PieceKind.Queen)));
+        CardUsePlan darkHandPlan = new CardUsePlan(
+            "dark_hand",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(0, 6),
+                    PieceColor.Black,
+                    PieceKind.Rook)));
+        CardUsePlan democracyPlan = new CardUsePlan(
+            "democracy",
+            PieceColor.White,
+            CardTargetSelection.None());
+        CardUsePlan desperadoPlan = new CardUsePlan(
+            "desperado",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
+        CardUsePlan destroyerTankCardsPlan = new CardUsePlan(
+            "destroyer_tank_cards",
+            PieceColor.White,
+            CardTargetSelection.None());
+        CardUsePlan dimensionInstabilityPlan = new CardUsePlan(
+            "dimension_instability",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(1, 0),
+                    PieceColor.White,
+                    PieceKind.Knight)));
+        CardUsePlan fatherEnemyPlan = new CardUsePlan(
+            "father_enemy",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
         CardUsePlan fastMarchPlan = new CardUsePlan(
             "fast_march",
             PieceColor.White,
@@ -166,6 +299,26 @@ public sealed class UnityConsumerApiContractTests
             "fire",
             PieceColor.White,
             CardTargetSelection.BoardSquare(new Square(4, 3)));
+        CardUsePlan giantPlan = new CardUsePlan(
+            "giant",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
+        CardUsePlan godsMovePlan = new CardUsePlan(
+            "gods_move",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
+        CardUsePlan jumpingPlatformPlan = new CardUsePlan(
+            "jumping_platform",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(5, 3)));
         CardUsePlan limitlessPlan = new CardUsePlan(
             "limitless",
             PieceColor.White,
@@ -174,6 +327,18 @@ public sealed class UnityConsumerApiContractTests
                     new Square(3, 0),
                     PieceColor.White,
                     PieceKind.Queen)));
+        CardUsePlan mutinyPlan = new CardUsePlan(
+            "mutiny",
+            PieceColor.White,
+            CardTargetSelection.None());
+        CardUsePlan obeyOrderPlan = new CardUsePlan(
+            "obey_order",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(5, 3)));
+        CardUsePlan overbearingPlan = new CardUsePlan(
+            "overbearing",
+            PieceColor.White,
+            CardTargetSelection.None());
         CardUsePlan peaceZonePlan = new CardUsePlan(
             "peace_zone",
             PieceColor.White,
@@ -183,6 +348,10 @@ public sealed class UnityConsumerApiContractTests
             PieceColor.White,
             CardTargetSelection.OrderedSquares(
                 new[] { new Square(2, 2), new Square(7, 7) }));
+        CardUsePlan psilocybinMushroomPlan = new CardUsePlan(
+            "psilocybin_mushroom",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(3, 4)));
         CardUsePlan sneakPawnPlan = new CardUsePlan(
             "sneak_pawn",
             PieceColor.White,
@@ -191,6 +360,22 @@ public sealed class UnityConsumerApiContractTests
                     new Square(4, 1),
                     PieceColor.White,
                     PieceKind.Pawn)));
+        CardUsePlan stagFightPlan = new CardUsePlan(
+            "stag_fight",
+            PieceColor.White,
+            CardTargetSelection.None());
+        CardUsePlan sunsetBladePlan = new CardUsePlan(
+            "sunset_blade",
+            PieceColor.White,
+            CardTargetSelection.PieceAtSquare(
+                new PieceTargetSnapshot(
+                    new Square(4, 1),
+                    PieceColor.White,
+                    PieceKind.Pawn)));
+        CardUsePlan timeBombPlan = new CardUsePlan(
+            "time_bomb",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(new Square(6, 3)));
         CardUsePlan thunderclapFlashPlan = new CardUsePlan(
             "thunderclap_flash",
             PieceColor.White,
@@ -199,19 +384,45 @@ public sealed class UnityConsumerApiContractTests
                     new Square(0, 0),
                     PieceColor.White,
                     PieceKind.Rook)));
+        CardUsePlan windmillPlan = new CardUsePlan(
+            "windmill",
+            PieceColor.White,
+            CardTargetSelection.None());
 
         Assert.True(validator.Validate(gameState, agilePlan).IsValid);
         Assert.True(validator.Validate(gameState, aimPlan).IsValid);
+        Assert.True(validator.Validate(gameState, atMinePlan).IsValid);
+        Assert.True(validator.Validate(gameState, blessingPlan).IsValid);
         Assert.True(validator.Validate(gameState, caterpillarPlan).IsValid);
+        Assert.True(validator.Validate(gameState, chaoticKnightPlan).IsValid);
         Assert.True(validator.Validate(gameState, chargePlan).IsValid);
+        Assert.True(validator.Validate(gameState, checkmateDeclarationPlan).IsValid);
+        Assert.True(validator.Validate(gameState, cobwebPlan).IsValid);
         Assert.True(validator.Validate(gameState, concentrationPlan).IsValid);
+        Assert.True(validator.Validate(gameState, darkHandPlan).IsValid);
+        Assert.True(validator.Validate(gameState, democracyPlan).IsValid);
+        Assert.True(validator.Validate(gameState, desperadoPlan).IsValid);
+        Assert.True(validator.Validate(gameState, destroyerTankCardsPlan).IsValid);
+        Assert.True(validator.Validate(gameState, dimensionInstabilityPlan).IsValid);
+        Assert.True(validator.Validate(gameState, fatherEnemyPlan).IsValid);
         Assert.True(validator.Validate(gameState, fastMarchPlan).IsValid);
         Assert.True(validator.Validate(gameState, firePlan).IsValid);
+        Assert.True(validator.Validate(gameState, giantPlan).IsValid);
+        Assert.True(validator.Validate(gameState, godsMovePlan).IsValid);
+        Assert.True(validator.Validate(gameState, jumpingPlatformPlan).IsValid);
         Assert.True(validator.Validate(gameState, limitlessPlan).IsValid);
+        Assert.True(validator.Validate(gameState, mutinyPlan).IsValid);
+        Assert.True(validator.Validate(gameState, obeyOrderPlan).IsValid);
+        Assert.True(validator.Validate(gameState, overbearingPlan).IsValid);
         Assert.True(validator.Validate(gameState, peaceZonePlan).IsValid);
         Assert.True(validator.Validate(gameState, portalPlan).IsValid);
+        Assert.True(validator.Validate(gameState, psilocybinMushroomPlan).IsValid);
         Assert.True(validator.Validate(gameState, sneakPawnPlan).IsValid);
+        Assert.True(validator.Validate(gameState, stagFightPlan).IsValid);
+        Assert.True(validator.Validate(gameState, sunsetBladePlan).IsValid);
+        Assert.True(validator.Validate(gameState, timeBombPlan).IsValid);
         Assert.True(validator.Validate(gameState, thunderclapFlashPlan).IsValid);
+        Assert.True(validator.Validate(gameState, windmillPlan).IsValid);
         Assert.Equal(new[] { new Square(2, 2), new Square(7, 7) }, portalPlan.Target.Squares);
 
         CardUsePlan invalidPlan = new CardUsePlan(
