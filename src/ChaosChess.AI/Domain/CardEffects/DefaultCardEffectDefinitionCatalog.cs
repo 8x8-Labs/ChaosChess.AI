@@ -426,6 +426,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetIndex: 1)
                 }),
             new CardEffectDefinition(
+                "revive",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.CreatePiece,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare,
+                        pieceKindBinding: CardEffectPrimitivePieceKindBinding.ActorHighestValueCapturedOrWall)
+                }),
+            new CardEffectDefinition(
                 "shuffle_board",
                 CardTargetQuery.None(),
                 new[]
@@ -501,6 +511,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         effectType: "TimeBomb",
                         durationTurns: 3,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
+                "time_reversal",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "TimeReversal",
+                        durationTurns: 8)
                 }),
             new CardEffectDefinition(
                 "transmigration",

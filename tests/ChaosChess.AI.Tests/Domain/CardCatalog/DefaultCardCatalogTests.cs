@@ -47,6 +47,7 @@ public sealed class DefaultCardCatalogTests
         "shuffle_board",
         "stag_fight",
         "sync",
+        "time_reversal",
         "weird_castling",
         "windmill"
     };
@@ -56,6 +57,7 @@ public sealed class DefaultCardCatalogTests
         "castle_knight",
         "mutiny",
         "rampart",
+        "revive",
         "teleport",
         "transmigration"
     };

@@ -46,6 +46,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("position_swap", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("psilocybin_mushroom", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("rampart", CardTargetKind.OrderedSquares, CardTargetOwnerRelation.Any, 2)]
+    [InlineData("revive", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("shuffle_board", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("sneak_pawn", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("stag_fight", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
@@ -53,6 +54,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("sync", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
     [InlineData("teleport", CardTargetKind.PieceAndSquare, CardTargetOwnerRelation.Self, 2)]
     [InlineData("time_bomb", CardTargetKind.BoardSquare, CardTargetOwnerRelation.Any, 1)]
+    [InlineData("time_reversal", CardTargetKind.None, CardTargetOwnerRelation.Any, 0)]
     [InlineData("thunderclap_flash", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
     [InlineData("transmigration", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Opponent, 1)]
     [InlineData("weird_castling", CardTargetKind.PieceAtSquare, CardTargetOwnerRelation.Self, 1)]
@@ -160,6 +162,7 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
     [InlineData("overbearing", "Overbearing", null)]
     [InlineData("shuffle_board", "ShuffleBoardRandomExpectedValue", null)]
     [InlineData("stag_fight", "StagFight", 3)]
+    [InlineData("time_reversal", "TimeReversal", 8)]
     [InlineData("windmill", "Windmill", 2)]
     public void GlobalEffectDefinitions_UseNoneTargetGlobalEffectMarker(
         string cardId,
@@ -348,6 +351,19 @@ public sealed class DefaultCardEffectDefinitionCatalogTests
         });
         Assert.Equal(0, definition.Primitives[0].TargetIndex);
         Assert.Equal(1, definition.Primitives[1].TargetIndex);
+    }
+
+    [Fact]
+    public void ReviveDefinition_CreatesHighestCapturedPieceOrWallOnSelectedSquare()
+    {
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectPrimitive primitive = Assert.Single(catalog.FindDefinition("revive")!.Primitives);
+
+        Assert.Equal(CardEffectPrimitiveKind.CreatePiece, primitive.Kind);
+        Assert.Equal(CardEffectPrimitiveTargetBinding.SelectedSquare, primitive.TargetBinding);
+        Assert.Equal(CardEffectPrimitivePieceKindBinding.ActorHighestValueCapturedOrWall, primitive.PieceKindBinding);
+        Assert.Null(primitive.PieceKind);
     }
 
     [Fact]

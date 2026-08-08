@@ -17,12 +17,14 @@ namespace ChaosChess.AI.Domain.CardEffects
             TileEffectLifetimeKind tileEffectLifetimeKind = TileEffectLifetimeKind.TurnLimited,
             CardEffectPrimitiveTargetBinding targetBinding = CardEffectPrimitiveTargetBinding.None,
             CardEffectPrimitiveDestinationBinding destinationBinding = CardEffectPrimitiveDestinationBinding.None,
+            CardEffectPrimitivePieceKindBinding pieceKindBinding = CardEffectPrimitivePieceKindBinding.None,
             int? targetIndex = null,
             int? destinationTargetIndex = null)
         {
             EnsureValidKind(kind);
             EnsureValidTargetBinding(targetBinding);
             EnsureValidDestinationBinding(destinationBinding);
+            EnsureValidPieceKindBinding(pieceKindBinding);
             TileEffectLifetimeKindGuard.EnsureValid(tileEffectLifetimeKind, nameof(tileEffectLifetimeKind));
 
             if (pieceKind.HasValue && pieceKind.Value == ChaosChess.AI.Domain.PieceKind.Unknown)
@@ -117,9 +119,17 @@ namespace ChaosChess.AI.Domain.CardEffects
                 throw new ArgumentException("Global effect primitives require a non-empty effect type.", nameof(effectType));
             }
 
-            if (kind == CardEffectPrimitiveKind.CreatePiece && !pieceKind.HasValue)
+            if (kind == CardEffectPrimitiveKind.CreatePiece &&
+                !pieceKind.HasValue &&
+                pieceKindBinding == CardEffectPrimitivePieceKindBinding.None)
             {
-                throw new ArgumentException("Create piece primitives require a piece kind.", nameof(pieceKind));
+                throw new ArgumentException("Create piece primitives require a piece kind or piece kind binding.", nameof(pieceKind));
+            }
+
+            if (pieceKindBinding != CardEffectPrimitivePieceKindBinding.None &&
+                kind != CardEffectPrimitiveKind.CreatePiece)
+            {
+                throw new ArgumentException("Piece kind binding is only supported for CreatePiece primitives.", nameof(pieceKindBinding));
             }
 
             if (kind == CardEffectPrimitiveKind.MergeSelectedPieceIntoNearestAlly &&
@@ -147,6 +157,7 @@ namespace ChaosChess.AI.Domain.CardEffects
             TileEffectLifetimeKind = tileEffectLifetimeKind;
             TargetBinding = targetBinding;
             DestinationBinding = destinationBinding;
+            PieceKindBinding = pieceKindBinding;
             TargetIndex = targetIndex;
             DestinationTargetIndex = destinationTargetIndex;
         }
@@ -175,6 +186,8 @@ namespace ChaosChess.AI.Domain.CardEffects
 
         public CardEffectPrimitiveDestinationBinding DestinationBinding { get; }
 
+        public CardEffectPrimitivePieceKindBinding PieceKindBinding { get; }
+
         public int? TargetIndex { get; }
 
         public int? DestinationTargetIndex { get; }
@@ -189,6 +202,7 @@ namespace ChaosChess.AI.Domain.CardEffects
             TileEffectLifetimeKind tileEffectLifetimeKind = TileEffectLifetimeKind.TurnLimited,
             CardEffectPrimitiveTargetBinding targetBinding = CardEffectPrimitiveTargetBinding.SelectedSquare,
             CardEffectPrimitiveDestinationBinding destinationBinding = CardEffectPrimitiveDestinationBinding.None,
+            CardEffectPrimitivePieceKindBinding pieceKindBinding = CardEffectPrimitivePieceKindBinding.None,
             int? targetIndex = null,
             int? destinationTargetIndex = null)
         {
@@ -203,6 +217,7 @@ namespace ChaosChess.AI.Domain.CardEffects
                 tileEffectLifetimeKind: tileEffectLifetimeKind,
                 targetBinding: targetBinding,
                 destinationBinding: destinationBinding,
+                pieceKindBinding: pieceKindBinding,
                 targetIndex: targetIndex,
                 destinationTargetIndex: destinationTargetIndex);
         }
@@ -266,6 +281,15 @@ namespace ChaosChess.AI.Domain.CardEffects
                 destinationBinding != CardEffectPrimitiveDestinationBinding.SelectedPieceStartSquare)
             {
                 throw new ArgumentOutOfRangeException(nameof(destinationBinding), destinationBinding, "Unknown primitive destination binding.");
+            }
+        }
+
+        private static void EnsureValidPieceKindBinding(CardEffectPrimitivePieceKindBinding pieceKindBinding)
+        {
+            if (pieceKindBinding != CardEffectPrimitivePieceKindBinding.None &&
+                pieceKindBinding != CardEffectPrimitivePieceKindBinding.ActorHighestValueCapturedOrWall)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pieceKindBinding), pieceKindBinding, "Unknown primitive piece kind binding.");
             }
         }
     }

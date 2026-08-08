@@ -88,13 +88,60 @@ public sealed class DomainModelTests
         {
             new TileEffectInfo("effect.mine.1", "Mine", Square.Parse("c3"), PieceColor.Black, 2)
         };
+        var timeReversals = new List<TimeReversalState>
+        {
+            new TimeReversalState("time-reversal.1", PieceColor.White, 8, boardState)
+        };
 
-        var gameState = new GameState(boardState, cards, effects);
+        var gameState = new GameState(boardState, cards, effects, timeReversals: timeReversals);
         cards.Clear();
         effects.Clear();
+        timeReversals.Clear();
 
         Assert.Single(gameState.AvailableCards);
         Assert.Single(gameState.TileEffects);
+        Assert.Single(gameState.TimeReversals);
+        Assert.Empty(gameState.CapturedPieces.WhitePieces);
+        Assert.Empty(gameState.CapturedPieces.BlackPieces);
+    }
+
+    [Fact]
+    public void TimeReversalState_ValidatesAndTicks()
+    {
+        var boardState = new BoardState(
+            Array.Empty<PieceInfo>(),
+            PieceColor.White,
+            CastlingRights.None,
+            null,
+            0,
+            1);
+
+        var timeReversal = new TimeReversalState("time-reversal.1", PieceColor.White, 8, boardState);
+        TimeReversalState ticked = timeReversal.Tick();
+
+        Assert.Equal("time-reversal.1", timeReversal.Id);
+        Assert.Equal(PieceColor.White, timeReversal.Owner);
+        Assert.Equal(7, ticked.RemainingTurns);
+        Assert.Same(boardState, ticked.SavedBoardState);
+        Assert.Throws<ArgumentException>(() => new TimeReversalState("", PieceColor.White, 1, boardState));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TimeReversalState("bad", PieceColor.White, -1, boardState));
+        Assert.Throws<ArgumentNullException>(() => new TimeReversalState("bad", PieceColor.White, 1, null!));
+    }
+
+    [Fact]
+    public void CapturedPieceState_CopiesInputCollections()
+    {
+        var white = new List<PieceKind> { PieceKind.Queen };
+        var black = new List<PieceKind> { PieceKind.Rook };
+
+        var capturedPieces = new CapturedPieceState(white, black);
+        white.Clear();
+        black.Clear();
+
+        Assert.Equal(new[] { PieceKind.Queen }, capturedPieces.WhitePieces);
+        Assert.Equal(new[] { PieceKind.Rook }, capturedPieces.GetPieces(PieceColor.Black));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new CapturedPieceState(new[] { PieceKind.Unknown }, Array.Empty<PieceKind>()));
     }
 
     [Fact]

@@ -22,6 +22,7 @@ public sealed class CardPlanCandidateEnumeratorTests
     [InlineData("overbearing")]
     [InlineData("shuffle_board")]
     [InlineData("stag_fight")]
+    [InlineData("time_reversal")]
     [InlineData("windmill")]
     public void EnumerateLegalCandidates_NoneTargetCards_ReturnSingleNoneCandidate(string cardId)
     {
@@ -191,6 +192,7 @@ public sealed class CardPlanCandidateEnumeratorTests
     [InlineData("obey_order")]
     [InlineData("peace_zone")]
     [InlineData("psilocybin_mushroom")]
+    [InlineData("revive")]
     [InlineData("time_bomb")]
     public void EnumerateLegalCandidates_BoardSquareCards_ExcludeOccupiedAndEffectSquares(
         string cardId)

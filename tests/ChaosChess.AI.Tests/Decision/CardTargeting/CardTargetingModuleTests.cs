@@ -50,6 +50,7 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("position_swap", out _));
         Assert.True(registry.TryGetStrategy("psilocybin_mushroom", out _));
         Assert.True(registry.TryGetStrategy("rampart", out _));
+        Assert.True(registry.TryGetStrategy("revive", out _));
         Assert.True(registry.TryGetStrategy("shuffle_board", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
         Assert.True(registry.TryGetStrategy("stag_fight", out _));
@@ -57,11 +58,12 @@ public sealed class CardTargetingModuleTests
         Assert.True(registry.TryGetStrategy("sync", out _));
         Assert.True(registry.TryGetStrategy("teleport", out _));
         Assert.True(registry.TryGetStrategy("time_bomb", out _));
+        Assert.True(registry.TryGetStrategy("time_reversal", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
         Assert.True(registry.TryGetStrategy("transmigration", out _));
         Assert.True(registry.TryGetStrategy("weird_castling", out _));
         Assert.True(registry.TryGetStrategy("windmill", out _));
-        Assert.Equal(48, registry.Strategies.Count);
+        Assert.Equal(50, registry.Strategies.Count);
     }
 
     [Theory]
@@ -102,6 +104,7 @@ public sealed class CardTargetingModuleTests
     [InlineData("position_swap")]
     [InlineData("psilocybin_mushroom")]
     [InlineData("rampart")]
+    [InlineData("revive")]
     [InlineData("shuffle_board")]
     [InlineData("sneak_pawn")]
     [InlineData("stag_fight")]
@@ -109,6 +112,7 @@ public sealed class CardTargetingModuleTests
     [InlineData("sync")]
     [InlineData("teleport")]
     [InlineData("time_bomb")]
+    [InlineData("time_reversal")]
     [InlineData("thunderclap_flash")]
     [InlineData("transmigration")]
     [InlineData("weird_castling")]

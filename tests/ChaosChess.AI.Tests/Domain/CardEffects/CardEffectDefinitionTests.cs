@@ -169,6 +169,14 @@ public sealed class CardEffectDefinitionTests
                 pieceKind: PieceKind.Unknown));
         Assert.Throws<ArgumentException>(
             () => new CardEffectPrimitive(CardEffectPrimitiveKind.CreatePiece));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.CreatePiece,
+                pieceKindBinding: (CardEffectPrimitivePieceKindBinding)99));
+        Assert.Throws<ArgumentException>(
+            () => new CardEffectPrimitive(
+                CardEffectPrimitiveKind.MovePiece,
+                pieceKindBinding: CardEffectPrimitivePieceKindBinding.ActorHighestValueCapturedOrWall));
         Assert.Throws<ArgumentException>(
             () => new CardEffectPrimitive(
                 CardEffectPrimitiveKind.MergeSelectedPieceIntoNearestAlly,

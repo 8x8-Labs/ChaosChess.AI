@@ -14,6 +14,7 @@ public sealed class GlobalEffectCardTargetStrategyTests
     [InlineData("destroyer_tank_cards")]
     [InlineData("mutiny")]
     [InlineData("stag_fight")]
+    [InlineData("time_reversal")]
     [InlineData("windmill")]
     public void Decide_SelectsSingleNoneTargetActivation(string cardId)
     {

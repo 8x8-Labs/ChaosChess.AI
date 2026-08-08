@@ -297,6 +297,74 @@ public sealed class CardEffectApplierTests
     }
 
     [Fact]
+    public void Apply_ReviveCreatesHighestValueCapturedActorPieceAndConsumesIt()
+    {
+        var target = new Square(3, 3);
+        var state = CreateState(
+            capturedPieces: new CapturedPieceState(
+                new[] { PieceKind.Knight, PieceKind.Queen, PieceKind.Rook },
+                Array.Empty<PieceKind>()));
+        var plan = new CardUsePlan(
+            "revive",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(target));
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectApplicationResult result = new CardEffectApplier().Apply(
+            catalog.FindDefinition("revive")!,
+            CreateContext(state, plan));
+
+        Assert.Equal(CardEffectApplicationStatus.Exact, result.Status);
+        PieceInfo revived = result.State!.BoardState.FindPiece(target)!;
+        Assert.Equal(PieceKind.Queen, revived.Kind);
+        Assert.Equal(PieceColor.White, revived.Color);
+        Assert.Equal(new[] { PieceKind.Knight, PieceKind.Rook }, result.State.CapturedPieces.WhitePieces);
+        Assert.Equal(new[] { PieceKind.Knight, PieceKind.Queen, PieceKind.Rook }, state.CapturedPieces.WhitePieces);
+    }
+
+    [Fact]
+    public void Apply_ReviveCreatesWallWhenActorHasNoCapturedPieces()
+    {
+        var target = new Square(3, 3);
+        var state = CreateState();
+        var plan = new CardUsePlan(
+            "revive",
+            PieceColor.White,
+            CardTargetSelection.BoardSquare(target));
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectApplicationResult result = new CardEffectApplier().Apply(
+            catalog.FindDefinition("revive")!,
+            CreateContext(state, plan));
+
+        Assert.Equal(CardEffectApplicationStatus.Exact, result.Status);
+        PieceInfo wall = result.State!.BoardState.FindPiece(target)!;
+        Assert.Equal(PieceKind.Wall, wall.Kind);
+        Assert.Equal(PieceColor.White, wall.Color);
+        Assert.Empty(result.State.CapturedPieces.WhitePieces);
+    }
+
+    [Fact]
+    public void Apply_TimeReversalStoresBoardSnapshotForActor()
+    {
+        var state = CreateState();
+        var plan = new CardUsePlan("time_reversal", PieceColor.White, CardTargetSelection.None());
+        var catalog = new DefaultCardEffectDefinitionCatalog();
+
+        CardEffectApplicationResult result = new CardEffectApplier().Apply(
+            catalog.FindDefinition("time_reversal")!,
+            CreateContext(state, plan));
+
+        Assert.Equal(CardEffectApplicationStatus.Exact, result.Status);
+        TimeReversalState timeReversal = Assert.Single(result.State!.TimeReversals);
+        Assert.Equal("time_reversal:TimeReversal:0", timeReversal.Id);
+        Assert.Equal(PieceColor.White, timeReversal.Owner);
+        Assert.Equal(8, timeReversal.RemainingTurns);
+        Assert.Same(state.BoardState, timeReversal.SavedBoardState);
+        Assert.Empty(state.TimeReversals);
+    }
+
+    [Fact]
     public void Apply_RampartCreatesTwoActorWallPieces()
     {
         var first = new Square(2, 2);
@@ -812,7 +880,8 @@ public sealed class CardEffectApplierTests
 
     private static GameState CreateState(
         IEnumerable<PieceInfo>? extraPieces = null,
-        IEnumerable<TileEffectInfo>? tileEffects = null)
+        IEnumerable<TileEffectInfo>? tileEffects = null,
+        CapturedPieceState? capturedPieces = null)
     {
         var pieces = new List<PieceInfo>
         {
@@ -834,6 +903,7 @@ public sealed class CardEffectApplierTests
                 halfmoveClock: 0,
                 fullmoveNumber: 1),
             Array.Empty<CardInfo>(),
-            tileEffects ?? Enumerable.Empty<TileEffectInfo>());
+            tileEffects ?? Enumerable.Empty<TileEffectInfo>(),
+            capturedPieces);
     }
 }

@@ -42,11 +42,13 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
+    [InlineData("revive")]
     [InlineData("shuffle_board")]
     [InlineData("sneak_pawn")]
     [InlineData("stag_fight")]
     [InlineData("sunset_blade")]
     [InlineData("time_bomb")]
+    [InlineData("time_reversal")]
     [InlineData("thunderclap_flash")]
     [InlineData("transmigration")]
     [InlineData("windmill")]
@@ -360,6 +362,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("revive", PieceColor.White, CardTargetSelection.BoardSquare(new Square(6, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan("shuffle_board", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
@@ -397,6 +406,13 @@ public sealed class CardEffectCompatibilityContractTests
             effectCatalog,
             applier,
             new CardUsePlan("time_bomb", PieceColor.White, CardTargetSelection.BoardSquare(new Square(6, 3))),
+            CardEffectApplicationStatus.Exact);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("time_reversal", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
             state,
@@ -510,15 +526,20 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1),
                 new CardInfo("psilocybin_mushroom", "BoardControl", 1),
+                new CardInfo("revive", "Transformation", 1),
                 new CardInfo("shuffle_board", "Tactical", 1),
                 new CardInfo("sneak_pawn", "Mobility", 1),
                 new CardInfo("stag_fight", "Mobility", 1),
                 new CardInfo("sunset_blade", "Tactical", 1),
                 new CardInfo("time_bomb", "BoardControl", 1),
+                new CardInfo("time_reversal", "Utility", 1),
                 new CardInfo("thunderclap_flash", "Mobility", 1),
                 new CardInfo("transmigration", "Transformation", 1),
                 new CardInfo("windmill", "Mobility", 1)
             },
-            Array.Empty<TileEffectInfo>());
+            Array.Empty<TileEffectInfo>(),
+            new CapturedPieceState(
+                new[] { PieceKind.Knight, PieceKind.Queen },
+                Array.Empty<PieceKind>()));
     }
 }

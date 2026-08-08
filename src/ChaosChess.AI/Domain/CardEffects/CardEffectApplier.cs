@@ -44,6 +44,9 @@ namespace ChaosChess.AI.Domain.CardEffects
 
             var pieces = new List<PieceInfo>(context.State.BoardState.Pieces);
             var tileEffects = new List<TileEffectInfo>(context.State.TileEffects);
+            var whiteCapturedPieces = new List<PieceKind>(context.State.CapturedPieces.WhitePieces);
+            var blackCapturedPieces = new List<PieceKind>(context.State.CapturedPieces.BlackPieces);
+            var timeReversals = new List<TimeReversalState>(context.State.TimeReversals);
             CastlingRights castlingRights = context.State.BoardState.CastlingRights;
             Square? enPassantTarget = context.State.BoardState.EnPassantTarget;
 
@@ -55,6 +58,9 @@ namespace ChaosChess.AI.Domain.CardEffects
                     primitive,
                     pieces,
                     tileEffects,
+                    whiteCapturedPieces,
+                    blackCapturedPieces,
+                    timeReversals,
                     ref castlingRights,
                     ref enPassantTarget);
                 if (result != null)
@@ -73,7 +79,9 @@ namespace ChaosChess.AI.Domain.CardEffects
             var nextState = new GameState(
                 nextBoard,
                 context.State.AvailableCards,
-                tileEffects);
+                tileEffects,
+                new CapturedPieceState(whiteCapturedPieces, blackCapturedPieces),
+                timeReversals);
 
             return CardEffectApplicationResult.Exact(nextState);
         }
@@ -84,6 +92,9 @@ namespace ChaosChess.AI.Domain.CardEffects
             CardEffectPrimitive primitive,
             IList<PieceInfo> pieces,
             IList<TileEffectInfo> tileEffects,
+            IList<PieceKind> whiteCapturedPieces,
+            IList<PieceKind> blackCapturedPieces,
+            IList<TimeReversalState> timeReversals,
             ref CastlingRights castlingRights,
             ref Square? enPassantTarget)
         {
@@ -102,7 +113,7 @@ namespace ChaosChess.AI.Domain.CardEffects
                     return ApplyMovePiece(context, primitive, pieces);
 
                 case CardEffectPrimitiveKind.CreatePiece:
-                    return ApplyCreatePiece(context, primitive, pieces);
+                    return ApplyCreatePiece(context, primitive, pieces, whiteCapturedPieces, blackCapturedPieces);
 
                 case CardEffectPrimitiveKind.ChangePieceKind:
                     return ApplyChangePieceKind(context, primitive, pieces);
@@ -128,9 +139,7 @@ namespace ChaosChess.AI.Domain.CardEffects
                         new[] { "Piece-attached effects are not represented by the current GameState contract." });
 
                 case CardEffectPrimitiveKind.AddGlobalEffect:
-                    return CardEffectApplicationResult.Unsupported(
-                        CardEffectApplicationCode.UnsupportedEffect,
-                        new[] { "Global ongoing effects are not represented by the current GameState contract." });
+                    return ApplyAddGlobalEffect(definition, context, primitive, timeReversals);
 
                 default:
                     return CardEffectApplicationResult.Unsupported(
@@ -179,6 +188,34 @@ namespace ChaosChess.AI.Domain.CardEffects
                 destination,
                 primitive.SharedRemainingUses,
                 primitive.TileEffectLifetimeKind));
+            return null;
+        }
+
+        private static CardEffectApplicationResult? ApplyAddGlobalEffect(
+            CardEffectDefinition definition,
+            CardEffectApplicationContext context,
+            CardEffectPrimitive primitive,
+            IList<TimeReversalState> timeReversals)
+        {
+            if (!string.Equals(primitive.EffectType, "TimeReversal", StringComparison.Ordinal))
+            {
+                return CardEffectApplicationResult.Unsupported(
+                    CardEffectApplicationCode.UnsupportedEffect,
+                    new[] { "Global ongoing effects are not represented by the current GameState contract." });
+            }
+
+            if (!primitive.DurationTurns.HasValue)
+            {
+                return CardEffectApplicationResult.Failed(
+                    CardEffectApplicationCode.InvalidDefinition,
+                    new[] { "TimeReversal global effect requires a duration." });
+            }
+
+            timeReversals.Add(new TimeReversalState(
+                CreateGlobalEffectId(definition.CardId, primitive.EffectType!, timeReversals.Count),
+                primitive.Owner ?? context.Owner,
+                primitive.DurationTurns.Value,
+                context.State.BoardState));
             return null;
         }
 
@@ -365,18 +402,24 @@ namespace ChaosChess.AI.Domain.CardEffects
         private static CardEffectApplicationResult? ApplyCreatePiece(
             CardEffectApplicationContext context,
             CardEffectPrimitive primitive,
-            IList<PieceInfo> pieces)
+            IList<PieceInfo> pieces,
+            IList<PieceKind> whiteCapturedPieces,
+            IList<PieceKind> blackCapturedPieces)
         {
             if (!TryResolveSquare(context.Plan, primitive, out Square square, out CardEffectApplicationResult? failure))
             {
                 return failure;
             }
 
-            if (!primitive.PieceKind.HasValue)
+            if (!TryResolveCreatedPieceKind(
+                context,
+                primitive,
+                whiteCapturedPieces,
+                blackCapturedPieces,
+                out PieceKind createdKind,
+                out failure))
             {
-                return CardEffectApplicationResult.Failed(
-                    CardEffectApplicationCode.InvalidDefinition,
-                    new[] { "CreatePiece requires a piece kind." });
+                return failure;
             }
 
             if (FindPiece(pieces, square) != null)
@@ -387,11 +430,77 @@ namespace ChaosChess.AI.Domain.CardEffects
             }
 
             pieces.Add(new PieceInfo(
-                primitive.PieceKind.Value,
+                createdKind,
                 primitive.Owner ?? context.Owner,
                 square,
-                GetFenCode(primitive.PieceKind.Value)));
+                GetFenCode(createdKind)));
             return null;
+        }
+
+        private static bool TryResolveCreatedPieceKind(
+            CardEffectApplicationContext context,
+            CardEffectPrimitive primitive,
+            IList<PieceKind> whiteCapturedPieces,
+            IList<PieceKind> blackCapturedPieces,
+            out PieceKind pieceKind,
+            out CardEffectApplicationResult? failure)
+        {
+            pieceKind = PieceKind.Unknown;
+            failure = null;
+
+            if (primitive.PieceKind.HasValue)
+            {
+                pieceKind = primitive.PieceKind.Value;
+                return true;
+            }
+
+            switch (primitive.PieceKindBinding)
+            {
+                case CardEffectPrimitivePieceKindBinding.ActorHighestValueCapturedOrWall:
+                    PieceColor owner = primitive.Owner ?? context.Owner;
+                    IList<PieceKind> capturedPieces = owner == PieceColor.White
+                        ? whiteCapturedPieces
+                        : blackCapturedPieces;
+                    pieceKind = TakeHighestValueCapturedOrWall(capturedPieces);
+                    return true;
+
+                case CardEffectPrimitivePieceKindBinding.None:
+                    failure = CardEffectApplicationResult.Failed(
+                        CardEffectApplicationCode.InvalidDefinition,
+                        new[] { "CreatePiece requires a piece kind." });
+                    return false;
+
+                default:
+                    failure = CardEffectApplicationResult.Failed(
+                        CardEffectApplicationCode.InvalidDefinition,
+                        new[] { "CreatePiece has an unknown piece kind binding." });
+                    return false;
+            }
+        }
+
+        private static PieceKind TakeHighestValueCapturedOrWall(IList<PieceKind> capturedPieces)
+        {
+            if (capturedPieces.Count == 0)
+            {
+                return PieceKind.Wall;
+            }
+
+            int bestIndex = 0;
+            int bestValue = GetPieceValue(capturedPieces[0]);
+
+            for (int i = 1; i < capturedPieces.Count; i++)
+            {
+                int value = GetPieceValue(capturedPieces[i]);
+                if (value > bestValue)
+                {
+                    bestIndex = i;
+                    bestValue = value;
+                }
+            }
+
+            PieceKind result = capturedPieces[bestIndex];
+            capturedPieces.RemoveAt(bestIndex);
+            return result;
         }
 
         private static void ApplyFlipBoardPerspective(
@@ -763,6 +872,30 @@ namespace ChaosChess.AI.Domain.CardEffects
             }
         }
 
+        private static int GetPieceValue(PieceKind kind)
+        {
+            switch (kind)
+            {
+                case PieceKind.Pawn:
+                    return 1;
+                case PieceKind.Knight:
+                case PieceKind.Bishop:
+                case PieceKind.King:
+                    return 3;
+                case PieceKind.Rook:
+                    return 5;
+                case PieceKind.KnightRider:
+                    return 7;
+                case PieceKind.Queen:
+                case PieceKind.Chancellor:
+                    return 9;
+                case PieceKind.Amazon:
+                    return 13;
+                default:
+                    return 0;
+            }
+        }
+
         private static PieceInfo? FindSelectedPiece(
             CardEffectApplicationContext context,
             IEnumerable<PieceInfo> pieces)
@@ -886,6 +1019,14 @@ namespace ChaosChess.AI.Domain.CardEffects
             Square square)
         {
             return cardId + ":" + effectType + ":" + square;
+        }
+
+        private static string CreateGlobalEffectId(
+            string cardId,
+            string effectType,
+            int index)
+        {
+            return cardId + ":" + effectType + ":" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

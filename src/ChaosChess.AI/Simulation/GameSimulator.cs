@@ -244,7 +244,7 @@ namespace ChaosChess.AI.Simulation
                 : SimulationTerminationReason.Stalemate;
         }
 
-        private static bool TryApplyFilteredPeaceBlock(
+        private bool TryApplyFilteredPeaceBlock(
             GameState state,
             MoveFilterResult moveFilterResult,
             out GameState? blockedState)
@@ -281,9 +281,9 @@ namespace ChaosChess.AI.Simulation
                     state.BoardState.EnPassantTarget,
                     state.BoardState.HalfmoveClock,
                     state.BoardState.FullmoveNumber);
-                blockedState = new GameState(
+                blockedState = CreateStateAfterTurn(
+                    state,
                     nextBoard,
-                    state.AvailableCards,
                     TickTileEffects(effects));
                 return true;
             }
@@ -340,14 +340,14 @@ namespace ChaosChess.AI.Simulation
                 movingPiece,
                 capturedPiece,
                 move);
-            GameState nextState = new GameState(
+            GameState nextState = CreateStateAfterTurn(
+                state,
                 nextBoard,
-                state.AvailableCards,
                 tickedEffects);
 
             SimulationTerminationReason? termination = null;
 
-            if (!HasBothKings(nextBoard))
+            if (!HasBothKings(nextState.BoardState))
             {
                 termination = SimulationTerminationReason.KingRemoved;
             }
@@ -362,6 +362,66 @@ namespace ChaosChess.AI.Simulation
                 nextState,
                 termination,
                 warnings);
+        }
+
+        private GameState CreateStateAfterTurn(
+            GameState previousState,
+            BoardState nextBoard,
+            IReadOnlyList<TileEffectInfo> tickedEffects)
+        {
+            var activeTimeReversals = new List<TimeReversalState>();
+            var expiredTimeReversals = new List<TimeReversalState>();
+
+            foreach (TimeReversalState timeReversal in previousState.TimeReversals)
+            {
+                TimeReversalState ticked = timeReversal.Tick();
+                if (ticked.RemainingTurns == 0)
+                {
+                    expiredTimeReversals.Add(ticked);
+                }
+                else
+                {
+                    activeTimeReversals.Add(ticked);
+                }
+            }
+
+            GameState nextState = new GameState(
+                nextBoard,
+                previousState.AvailableCards,
+                tickedEffects,
+                previousState.CapturedPieces,
+                activeTimeReversals);
+
+            return ResolveExpiredTimeReversals(nextState, expiredTimeReversals);
+        }
+
+        private GameState ResolveExpiredTimeReversals(
+            GameState currentState,
+            IEnumerable<TimeReversalState> expiredTimeReversals)
+        {
+            GameState resolved = currentState;
+
+            foreach (TimeReversalState timeReversal in expiredTimeReversals)
+            {
+                var savedState = new GameState(
+                    timeReversal.SavedBoardState,
+                    resolved.AvailableCards,
+                    resolved.TileEffects,
+                    resolved.CapturedPieces,
+                    resolved.TimeReversals);
+
+                EvaluationResult savedEvaluation = _evaluator.Evaluate(savedState, timeReversal.Owner);
+                EvaluationResult currentEvaluation = _evaluator.Evaluate(resolved, timeReversal.Owner);
+
+                if (savedEvaluation.TotalScore <= currentEvaluation.TotalScore)
+                {
+                    continue;
+                }
+
+                resolved = savedState;
+            }
+
+            return resolved;
         }
 
         private static List<PieceInfo> CopyPiecesExcept(
