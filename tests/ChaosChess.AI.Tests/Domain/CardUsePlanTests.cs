@@ -46,10 +46,13 @@ public sealed class CardUsePlanTests
     [Fact]
     public void PieceAtSquareTarget_StoresPieceSnapshotAndSquare()
     {
+        var startSquare = new Square(4, 1);
         var piece = new PieceTargetSnapshot(
-            new Square(4, 1),
+            new Square(4, 7),
             PieceColor.White,
-            PieceKind.Pawn);
+            PieceKind.Queen,
+            isPromotioned: true,
+            startSquare);
 
         CardTargetSelection target = CardTargetSelection.PieceAtSquare(piece);
 
@@ -57,6 +60,8 @@ public sealed class CardUsePlanTests
         Assert.Same(piece, target.Piece);
         Square square = Assert.Single(target.Squares);
         Assert.Equal(piece.Square, square);
+        Assert.True(piece.IsPromotioned);
+        Assert.Equal(startSquare, piece.StartSquare);
     }
 
     [Fact]

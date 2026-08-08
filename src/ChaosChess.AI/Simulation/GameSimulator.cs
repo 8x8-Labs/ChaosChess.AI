@@ -244,7 +244,7 @@ namespace ChaosChess.AI.Simulation
                 : SimulationTerminationReason.Stalemate;
         }
 
-        private static bool TryApplyFilteredPeaceBlock(
+        private bool TryApplyFilteredPeaceBlock(
             GameState state,
             MoveFilterResult moveFilterResult,
             out GameState? blockedState)
@@ -281,9 +281,9 @@ namespace ChaosChess.AI.Simulation
                     state.BoardState.EnPassantTarget,
                     state.BoardState.HalfmoveClock,
                     state.BoardState.FullmoveNumber);
-                blockedState = new GameState(
+                blockedState = CreateStateAfterTurn(
+                    state,
                     nextBoard,
-                    state.AvailableCards,
                     TickTileEffects(effects));
                 return true;
             }
@@ -328,6 +328,7 @@ namespace ChaosChess.AI.Simulation
             PieceInfo? survivingMovedPiece = FindPieceBySquare(pieces, move.To);
             if (survivingMovedPiece != null)
             {
+                ApplySyncExitEffect(pieces, tileEffects, survivingMovedPiece, move.From);
                 AddUnsupportedEffectWarnings(tileEffects, survivingMovedPiece.Square, warnings);
                 ApplyPortalEffect(pieces, tileEffects, survivingMovedPiece);
             }
@@ -339,14 +340,14 @@ namespace ChaosChess.AI.Simulation
                 movingPiece,
                 capturedPiece,
                 move);
-            GameState nextState = new GameState(
+            GameState nextState = CreateStateAfterTurn(
+                state,
                 nextBoard,
-                state.AvailableCards,
                 tickedEffects);
 
             SimulationTerminationReason? termination = null;
 
-            if (!HasBothKings(nextBoard))
+            if (!HasBothKings(nextState.BoardState))
             {
                 termination = SimulationTerminationReason.KingRemoved;
             }
@@ -361,6 +362,66 @@ namespace ChaosChess.AI.Simulation
                 nextState,
                 termination,
                 warnings);
+        }
+
+        private GameState CreateStateAfterTurn(
+            GameState previousState,
+            BoardState nextBoard,
+            IReadOnlyList<TileEffectInfo> tickedEffects)
+        {
+            var activeTimeReversals = new List<TimeReversalState>();
+            var expiredTimeReversals = new List<TimeReversalState>();
+
+            foreach (TimeReversalState timeReversal in previousState.TimeReversals)
+            {
+                TimeReversalState ticked = timeReversal.Tick();
+                if (ticked.RemainingTurns == 0)
+                {
+                    expiredTimeReversals.Add(ticked);
+                }
+                else
+                {
+                    activeTimeReversals.Add(ticked);
+                }
+            }
+
+            GameState nextState = new GameState(
+                nextBoard,
+                previousState.AvailableCards,
+                tickedEffects,
+                previousState.CapturedPieces,
+                activeTimeReversals);
+
+            return ResolveExpiredTimeReversals(nextState, expiredTimeReversals);
+        }
+
+        private GameState ResolveExpiredTimeReversals(
+            GameState currentState,
+            IEnumerable<TimeReversalState> expiredTimeReversals)
+        {
+            GameState resolved = currentState;
+
+            foreach (TimeReversalState timeReversal in expiredTimeReversals)
+            {
+                var savedState = new GameState(
+                    timeReversal.SavedBoardState,
+                    resolved.AvailableCards,
+                    resolved.TileEffects,
+                    resolved.CapturedPieces,
+                    resolved.TimeReversals);
+
+                EvaluationResult savedEvaluation = _evaluator.Evaluate(savedState, timeReversal.Owner);
+                EvaluationResult currentEvaluation = _evaluator.Evaluate(resolved, timeReversal.Owner);
+
+                if (savedEvaluation.TotalScore <= currentEvaluation.TotalScore)
+                {
+                    continue;
+                }
+
+                resolved = savedState;
+            }
+
+            return resolved;
         }
 
         private static List<PieceInfo> CopyPiecesExcept(
@@ -516,6 +577,55 @@ namespace ChaosChess.AI.Simulation
                 }
 
                 effects.Remove(mine);
+            }
+        }
+
+        private static void ApplySyncExitEffect(
+            IList<PieceInfo> pieces,
+            IList<TileEffectInfo> effects,
+            PieceInfo movedPiece,
+            Square sourceSquare)
+        {
+            for (int i = 0; i < effects.Count; i++)
+            {
+                TileEffectInfo effect = effects[i];
+
+                if (!IsEffect(effect, "Sync") ||
+                    effect.Square != sourceSquare ||
+                    !effect.DestinationSquare.HasValue ||
+                    !effect.SharedRemainingUses.HasValue ||
+                    effect.SharedRemainingUses.Value <= 0)
+                {
+                    continue;
+                }
+
+                PieceInfo? linkedPiece = FindPieceBySquare(pieces, effect.DestinationSquare.Value);
+                if (linkedPiece == null)
+                {
+                    return;
+                }
+
+                Square linkedDestination = CreateMirroredSquare(movedPiece.Square);
+                RemovePieceAt(pieces, linkedPiece.Square);
+                RemovePieceAt(pieces, linkedDestination);
+                pieces.Add(new PieceInfo(
+                    linkedPiece.Kind,
+                    linkedPiece.Color,
+                    linkedDestination,
+                    linkedPiece.FenCode));
+
+                int remainingUses = effect.SharedRemainingUses.Value - 1;
+
+                if (remainingUses <= 0)
+                {
+                    RemoveSyncPair(effects, effect);
+                }
+                else
+                {
+                    UpdateSyncPairUses(effects, effect, remainingUses);
+                }
+
+                return;
             }
         }
 
@@ -740,6 +850,32 @@ namespace ChaosChess.AI.Simulation
             }
         }
 
+        private static void UpdateSyncPairUses(
+            IList<TileEffectInfo> effects,
+            TileEffectInfo triggeredEffect,
+            int remainingUses)
+        {
+            for (int i = 0; i < effects.Count; i++)
+            {
+                TileEffectInfo effect = effects[i];
+
+                if (!IsSyncPairMember(effect, triggeredEffect))
+                {
+                    continue;
+                }
+
+                effects[i] = new TileEffectInfo(
+                    effect.Id,
+                    effect.EffectType,
+                    effect.Square,
+                    effect.Owner,
+                    effect.RemainingTurns,
+                    effect.DestinationSquare,
+                    remainingUses,
+                    effect.LifetimeKind);
+            }
+        }
+
         private static void RemovePortalPair(
             IList<TileEffectInfo> effects,
             TileEffectInfo triggeredEffect)
@@ -753,11 +889,34 @@ namespace ChaosChess.AI.Simulation
             }
         }
 
+        private static void RemoveSyncPair(
+            IList<TileEffectInfo> effects,
+            TileEffectInfo triggeredEffect)
+        {
+            for (int i = effects.Count - 1; i >= 0; i--)
+            {
+                if (IsSyncPairMember(effects[i], triggeredEffect))
+                {
+                    effects.RemoveAt(i);
+                }
+            }
+        }
+
         private static bool IsPortalPairMember(
             TileEffectInfo effect,
             TileEffectInfo triggeredEffect)
         {
             return IsEffect(effect, "Portal") &&
+                (ReferenceEquals(effect, triggeredEffect) ||
+                    effect.Square == triggeredEffect.DestinationSquare ||
+                    effect.DestinationSquare == triggeredEffect.Square);
+        }
+
+        private static bool IsSyncPairMember(
+            TileEffectInfo effect,
+            TileEffectInfo triggeredEffect)
+        {
+            return IsEffect(effect, "Sync") &&
                 (ReferenceEquals(effect, triggeredEffect) ||
                     effect.Square == triggeredEffect.DestinationSquare ||
                     effect.DestinationSquare == triggeredEffect.Square);
@@ -878,6 +1037,11 @@ namespace ChaosChess.AI.Simulation
                 effect.EffectType,
                 effectType,
                 StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static Square CreateMirroredSquare(Square square)
+        {
+            return new Square(Square.BoardSize - 1 - square.File, square.Rank);
         }
 
         private static int GreatestCommonDivisor(int a, int b)

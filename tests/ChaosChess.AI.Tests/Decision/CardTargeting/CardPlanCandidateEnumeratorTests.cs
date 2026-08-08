@@ -12,10 +12,21 @@ public sealed class CardPlanCandidateEnumeratorTests
     private readonly CardPlanCandidateEnumerator enumerator = new();
     private readonly CardUsePlanValidator validator = new();
 
-    [Fact]
-    public void EnumerateLegalCandidates_Charge_ReturnsSingleNoneCandidate()
+    [Theory]
+    [InlineData("arena")]
+    [InlineData("charge")]
+    [InlineData("checkmate_declaration")]
+    [InlineData("democracy")]
+    [InlineData("destroyer_tank_cards")]
+    [InlineData("mutiny")]
+    [InlineData("overbearing")]
+    [InlineData("shuffle_board")]
+    [InlineData("stag_fight")]
+    [InlineData("time_reversal")]
+    [InlineData("windmill")]
+    public void EnumerateLegalCandidates_NoneTargetCards_ReturnSingleNoneCandidate(string cardId)
     {
-        GameState state = State(PieceColor.White, Card("charge"));
+        GameState state = State(PieceColor.White, Card(cardId));
 
         CardPlanCandidate candidate = Assert.Single(
             enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
@@ -89,9 +100,100 @@ public sealed class CardPlanCandidateEnumeratorTests
         Assert.Equal(PieceColor.Black, candidate.Plan.Target.Piece.ExpectedColor);
     }
 
+    [Fact]
+    public void EnumerateLegalCandidates_PreservesPromotionMetadataInPieceTargets()
+    {
+        var startSquare = new Square(3, 1);
+        var promoted = new PieceInfo(
+            PieceKind.Chancellor,
+            PieceColor.Black,
+            new Square(3, 6),
+            "y",
+            isPromotioned: true,
+            startSquare);
+        GameState state = State(
+            PieceColor.White,
+            Card("transmigration"),
+            pieces: new[] { promoted });
+
+        CardPlanCandidate candidate = Assert.Single(
+            enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
+
+        Assert.True(candidate.Plan.Target.Piece!.IsPromotioned);
+        Assert.Equal(startSquare, candidate.Plan.Target.Piece.StartSquare);
+        AssertValid(state, candidate);
+    }
+
+    [Fact]
+    public void EnumerateLegalCandidates_DimensionDisturbanceReturnsDistinctOrderedOpponentPiecePairs()
+    {
+        var actorRook = Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r");
+        var firstOpponent = Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r");
+        var secondOpponent = Piece(PieceKind.Bishop, PieceColor.Black, new Square(2, 7), "b");
+        var excludedQueen = Piece(PieceKind.Queen, PieceColor.Black, new Square(3, 7), "q");
+        GameState state = State(
+            PieceColor.White,
+            Card("dimension_disturbance"),
+            pieces: new[] { actorRook, firstOpponent, secondOpponent, excludedQueen });
+
+        CardPlanCandidate[] candidates = enumerator
+            .EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White)
+            .ToArray();
+
+        Assert.Equal(2, candidates.Length);
+        Assert.Equal(new[] { firstOpponent.Square, secondOpponent.Square }, candidates[0].Plan.Target.Squares);
+        Assert.Equal(new[] { secondOpponent.Square, firstOpponent.Square }, candidates[1].Plan.Target.Squares);
+        Assert.DoesNotContain(candidates, candidate => candidate.Plan.Target.Squares.Contains(excludedQueen.Square));
+        Assert.All(candidates, candidate => AssertValid(state, candidate));
+    }
+
     [Theory]
+    [InlineData("chaotic_knight", PieceKind.Knight)]
+    [InlineData("desperado", PieceKind.Pawn)]
+    [InlineData("desperado", PieceKind.Knight)]
+    [InlineData("desperado", PieceKind.Bishop)]
+    [InlineData("desperado", PieceKind.Rook)]
+    [InlineData("desperado", PieceKind.Queen)]
+    [InlineData("desperado", PieceKind.Amazon)]
+    [InlineData("desperado", PieceKind.Chancellor)]
+    [InlineData("desperado", PieceKind.KnightRider)]
+    [InlineData("dimension_instability", PieceKind.Knight)]
+    [InlineData("father_enemy", PieceKind.Pawn)]
+    [InlineData("giant", PieceKind.Pawn)]
+    [InlineData("giant", PieceKind.Knight)]
+    [InlineData("giant", PieceKind.Bishop)]
+    [InlineData("sunset_blade", PieceKind.Pawn)]
+    public void EnumerateLegalCandidates_PieceEffectCards_ReturnActorAllowedPieceCandidates(
+        string cardId,
+        PieceKind expectedKind)
+    {
+        PieceInfo actorPiece = Piece(expectedKind, PieceColor.White, new Square(3, 3), "p");
+        PieceInfo opponentPiece = Piece(expectedKind, PieceColor.Black, new Square(4, 4), "p");
+        GameState state = State(
+            PieceColor.White,
+            Card(cardId),
+            pieces: new[] { actorPiece, opponentPiece });
+
+        CardPlanCandidate candidate = Assert.Single(
+            enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
+
+        Assert.Equal(actorPiece.Square, candidate.Plan.Target.Piece!.Square);
+        Assert.Equal(expectedKind, candidate.Plan.Target.Piece.ExpectedKind);
+        Assert.Equal(PieceColor.White, candidate.Plan.Target.Piece.ExpectedColor);
+        AssertValid(state, candidate);
+    }
+
+    [Theory]
+    [InlineData("at_mine")]
+    [InlineData("blessing")]
+    [InlineData("cobweb")]
     [InlineData("fire")]
+    [InlineData("jumping_platform")]
+    [InlineData("obey_order")]
     [InlineData("peace_zone")]
+    [InlineData("psilocybin_mushroom")]
+    [InlineData("revive")]
+    [InlineData("time_bomb")]
     public void EnumerateLegalCandidates_BoardSquareCards_ExcludeOccupiedAndEffectSquares(
         string cardId)
     {
@@ -137,6 +239,34 @@ public sealed class CardPlanCandidateEnumeratorTests
             candidates,
             candidate => candidate.Plan.Target.Squares[0] == candidate.Plan.Target.Squares[1]);
         Assert.All(candidates, candidate => AssertValid(state, candidate));
+    }
+
+    [Fact]
+    public void EnumerateLegalCandidates_Teleport_ReturnsActorPawnAndEmptySquarePairs()
+    {
+        var actorPawn = Piece(PieceKind.Pawn, PieceColor.White, new Square(4, 1));
+        var opponentPawn = Piece(PieceKind.Pawn, PieceColor.Black, new Square(5, 6));
+        var occupied = new Square(0, 0);
+        var effected = new Square(1, 0);
+        GameState state = State(
+            PieceColor.White,
+            Card("teleport"),
+            pieces: new[] { actorPawn, opponentPawn, Piece(PieceKind.King, PieceColor.White, occupied, "k") },
+            tileEffects: new[] { TileEffect(effected) });
+
+        CardPlanCandidate[] candidates = enumerator
+            .EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White)
+            .ToArray();
+
+        Assert.Equal(60, candidates.Length);
+        Assert.All(candidates, candidate =>
+        {
+            Assert.Equal(CardTargetKind.PieceAndSquare, candidate.Plan.Target.Kind);
+            Assert.Equal(actorPawn.Square, candidate.Plan.Target.Piece!.Square);
+            Assert.NotEqual(occupied, candidate.Plan.Target.Squares[0]);
+            Assert.NotEqual(effected, candidate.Plan.Target.Squares[0]);
+            AssertValid(state, candidate);
+        });
     }
 
     [Fact]

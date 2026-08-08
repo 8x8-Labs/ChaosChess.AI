@@ -36,14 +36,24 @@ namespace ChaosChess.AI.Domain
                 throw new ArgumentException("Targeted card requirement must have at least one target.", nameof(count));
             }
 
+            if (kind == CardTargetKind.PieceAndSquare && count != 2)
+            {
+                throw new ArgumentException("Piece and square target requirements must have exactly two targets.", nameof(count));
+            }
+
+            if (kind == CardTargetKind.OrderedPieces && count < 1)
+            {
+                throw new ArgumentException("Ordered piece target requirements must have at least one target.", nameof(count));
+            }
+
             IReadOnlyList<PieceKind> allowedKinds = CopyAllowedPieceKinds(allowedPieceKinds);
 
-            if (kind != CardTargetKind.PieceAtSquare && ownerRelation != CardTargetOwnerRelation.Any)
+            if (!CanRestrictPieceTarget(kind) && ownerRelation != CardTargetOwnerRelation.Any)
             {
                 throw new ArgumentException("Only piece targets can restrict owner relation.", nameof(ownerRelation));
             }
 
-            if (kind != CardTargetKind.PieceAtSquare && allowedKinds.Count != 0)
+            if (!CanRestrictPieceTarget(kind) && allowedKinds.Count != 0)
             {
                 throw new ArgumentException("Only piece targets can restrict allowed piece kinds.", nameof(allowedPieceKinds));
             }
@@ -90,6 +100,29 @@ namespace ChaosChess.AI.Domain
                 allowedPieceKinds);
         }
 
+        public static CardTargetRequirement PieceAndSquare(
+            CardTargetOwnerRelation ownerRelation,
+            params PieceKind[] allowedPieceKinds)
+        {
+            return new CardTargetRequirement(
+                CardTargetKind.PieceAndSquare,
+                count: 2,
+                ownerRelation,
+                allowedPieceKinds);
+        }
+
+        public static CardTargetRequirement OrderedPieces(
+            CardTargetOwnerRelation ownerRelation,
+            int count,
+            IEnumerable<PieceKind> allowedPieceKinds)
+        {
+            return new CardTargetRequirement(
+                CardTargetKind.OrderedPieces,
+                count,
+                ownerRelation,
+                allowedPieceKinds);
+        }
+
         private static void EnsureValidTargetKind(CardTargetKind kind)
         {
             switch (kind)
@@ -98,10 +131,19 @@ namespace ChaosChess.AI.Domain
                 case CardTargetKind.PieceAtSquare:
                 case CardTargetKind.BoardSquare:
                 case CardTargetKind.OrderedSquares:
+                case CardTargetKind.PieceAndSquare:
+                case CardTargetKind.OrderedPieces:
                     return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown card target kind.");
             }
+        }
+
+        private static bool CanRestrictPieceTarget(CardTargetKind kind)
+        {
+            return kind == CardTargetKind.PieceAtSquare ||
+                kind == CardTargetKind.PieceAndSquare ||
+                kind == CardTargetKind.OrderedPieces;
         }
 
         private static void EnsureValidOwnerRelation(CardTargetOwnerRelation ownerRelation)

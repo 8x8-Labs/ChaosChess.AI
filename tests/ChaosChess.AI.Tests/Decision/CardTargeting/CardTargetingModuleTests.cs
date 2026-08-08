@@ -15,34 +15,108 @@ public sealed class CardTargetingModuleTests
 
         Assert.True(registry.TryGetStrategy("agile", out _));
         Assert.True(registry.TryGetStrategy("aim", out _));
+        Assert.True(registry.TryGetStrategy("arena", out _));
+        Assert.True(registry.TryGetStrategy("at_mine", out _));
+        Assert.True(registry.TryGetStrategy("blessing", out _));
+        Assert.True(registry.TryGetStrategy("castle_knight", out _));
         Assert.True(registry.TryGetStrategy("caterpillar", out _));
+        Assert.True(registry.TryGetStrategy("chaotic_knight", out _));
         Assert.True(registry.TryGetStrategy("charge", out _));
+        Assert.True(registry.TryGetStrategy("checkmate_declaration", out _));
+        Assert.True(registry.TryGetStrategy("cobweb", out _));
         Assert.True(registry.TryGetStrategy("concentration", out _));
+        Assert.True(registry.TryGetStrategy("dark_hand", out _));
+        Assert.True(registry.TryGetStrategy("democracy", out _));
+        Assert.True(registry.TryGetStrategy("desperado", out _));
+        Assert.True(registry.TryGetStrategy("destroyer_tank_cards", out _));
+        Assert.True(registry.TryGetStrategy("dimension_disturbance", out _));
+        Assert.True(registry.TryGetStrategy("dimension_instability", out _));
+        Assert.True(registry.TryGetStrategy("father_enemy", out _));
         Assert.True(registry.TryGetStrategy("fast_march", out _));
         Assert.True(registry.TryGetStrategy("fire", out _));
+        Assert.True(registry.TryGetStrategy("gaslighting", out _));
+        Assert.True(registry.TryGetStrategy("giant", out _));
+        Assert.True(registry.TryGetStrategy("gods_move", out _));
+        Assert.True(registry.TryGetStrategy("honey_trap", out _));
+        Assert.True(registry.TryGetStrategy("jumping_platform", out _));
         Assert.True(registry.TryGetStrategy("limitless", out _));
+        Assert.True(registry.TryGetStrategy("magnet", out _));
         Assert.True(registry.TryGetStrategy("missing_promotion", out _));
+        Assert.True(registry.TryGetStrategy("mutiny", out _));
+        Assert.True(registry.TryGetStrategy("obey_order", out _));
+        Assert.True(registry.TryGetStrategy("overbearing", out _));
         Assert.True(registry.TryGetStrategy("peace_zone", out _));
         Assert.True(registry.TryGetStrategy("portal", out _));
+        Assert.True(registry.TryGetStrategy("position_swap", out _));
+        Assert.True(registry.TryGetStrategy("psilocybin_mushroom", out _));
+        Assert.True(registry.TryGetStrategy("rampart", out _));
+        Assert.True(registry.TryGetStrategy("revive", out _));
+        Assert.True(registry.TryGetStrategy("shuffle_board", out _));
         Assert.True(registry.TryGetStrategy("sneak_pawn", out _));
+        Assert.True(registry.TryGetStrategy("stag_fight", out _));
+        Assert.True(registry.TryGetStrategy("sunset_blade", out _));
+        Assert.True(registry.TryGetStrategy("sync", out _));
+        Assert.True(registry.TryGetStrategy("teleport", out _));
+        Assert.True(registry.TryGetStrategy("time_bomb", out _));
+        Assert.True(registry.TryGetStrategy("time_reversal", out _));
         Assert.True(registry.TryGetStrategy("thunderclap_flash", out _));
-        Assert.Equal(13, registry.Strategies.Count);
+        Assert.True(registry.TryGetStrategy("transmigration", out _));
+        Assert.True(registry.TryGetStrategy("weird_castling", out _));
+        Assert.True(registry.TryGetStrategy("windmill", out _));
+        Assert.Equal(50, registry.Strategies.Count);
     }
 
     [Theory]
     [InlineData("agile")]
     [InlineData("aim")]
+    [InlineData("arena")]
+    [InlineData("at_mine")]
+    [InlineData("blessing")]
+    [InlineData("castle_knight")]
     [InlineData("caterpillar")]
+    [InlineData("chaotic_knight")]
     [InlineData("charge")]
+    [InlineData("checkmate_declaration")]
+    [InlineData("cobweb")]
     [InlineData("concentration")]
+    [InlineData("dark_hand")]
+    [InlineData("democracy")]
+    [InlineData("desperado")]
+    [InlineData("destroyer_tank_cards")]
+    [InlineData("dimension_disturbance")]
+    [InlineData("dimension_instability")]
+    [InlineData("father_enemy")]
     [InlineData("fast_march")]
     [InlineData("fire")]
+    [InlineData("gaslighting")]
+    [InlineData("giant")]
+    [InlineData("gods_move")]
+    [InlineData("honey_trap")]
+    [InlineData("jumping_platform")]
     [InlineData("limitless")]
+    [InlineData("magnet")]
     [InlineData("missing_promotion")]
+    [InlineData("mutiny")]
+    [InlineData("obey_order")]
+    [InlineData("overbearing")]
     [InlineData("peace_zone")]
     [InlineData("portal")]
+    [InlineData("position_swap")]
+    [InlineData("psilocybin_mushroom")]
+    [InlineData("rampart")]
+    [InlineData("revive")]
+    [InlineData("shuffle_board")]
     [InlineData("sneak_pawn")]
+    [InlineData("stag_fight")]
+    [InlineData("sunset_blade")]
+    [InlineData("sync")]
+    [InlineData("teleport")]
+    [InlineData("time_bomb")]
+    [InlineData("time_reversal")]
     [InlineData("thunderclap_flash")]
+    [InlineData("transmigration")]
+    [InlineData("weird_castling")]
+    [InlineData("windmill")]
     public void DecideBestPlan_DefaultStrategiesReturnPlanForSupportedCards(
         string cardId)
     {
@@ -182,10 +256,15 @@ public sealed class CardTargetingModuleTests
         return new[]
         {
             Pawn(PieceColor.White, new Square(4, 1)),
+            Piece(PieceKind.King, PieceColor.White, new Square(4, 0), "k"),
             Piece(PieceKind.Knight, PieceColor.White, new Square(1, 0), "n"),
             Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r"),
             Piece(PieceKind.Queen, PieceColor.White, new Square(3, 0), "q"),
-            Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r")
+            Piece(PieceKind.King, PieceColor.Black, new Square(4, 7), "k"),
+            Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 6), "r"),
+            Piece(PieceKind.Queen, PieceColor.Black, new Square(6, 6), "q"),
+            Piece(PieceKind.Amazon, PieceColor.Black, new Square(7, 6), "s"),
+            Piece(PieceKind.Chancellor, PieceColor.Black, new Square(5, 6), "y", true, new Square(5, 1))
         };
     }
 
@@ -193,9 +272,11 @@ public sealed class CardTargetingModuleTests
         PieceKind kind,
         PieceColor color,
         Square square,
-        string fenCode)
+        string fenCode,
+        bool isPromotioned = false,
+        Square? startSquare = null)
     {
-        return new PieceInfo(kind, color, square, fenCode);
+        return new PieceInfo(kind, color, square, fenCode, isPromotioned, startSquare);
     }
 
     private static MoveCandidate Move(string uciMove)
