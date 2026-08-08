@@ -21,6 +21,23 @@ public sealed class DomainModelTests
         Assert.Equal(PieceColor.White, piece.Color);
     }
 
+    [Fact]
+    public void PieceInfo_ExplicitKind_PreservesPromotionMetadata()
+    {
+        var startSquare = Square.Parse("e2");
+
+        var piece = new PieceInfo(
+            PieceKind.Queen,
+            PieceColor.White,
+            Square.Parse("e8"),
+            "q",
+            isPromotioned: true,
+            startSquare);
+
+        Assert.True(piece.IsPromotioned);
+        Assert.Equal(startSquare, piece.StartSquare);
+    }
+
     [Theory]
     [InlineData("p", PieceKind.Pawn)]
     [InlineData("S", PieceKind.Amazon)]

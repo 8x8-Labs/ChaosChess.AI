@@ -31,6 +31,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "arena",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "ArenaRandomExpectedValue",
+                        durationTurns: null)
+                }),
+            new CardEffectDefinition(
                 "at_mine",
                 CardTargetQuery.EmptySquare(),
                 new[]
@@ -53,6 +63,17 @@ namespace ChaosChess.AI.Domain.CardEffects
                         durationTurns: -1,
                         tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
+                "castle_knight",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.MergeSelectedPieceIntoNearestAlly,
+                        pieceKind: PieceKind.Chancellor,
+                        effectType: nameof(PieceKind.Rook),
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
                 "caterpillar",
@@ -172,6 +193,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         durationTurns: 1)
                 }),
             new CardEffectDefinition(
+                "dimension_disturbance",
+                CardTargetQuery.OrderedPieces(CardTargetOwnerRelation.Opponent, 2),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "DimensionDisturbanceRandomExpectedValue",
+                        durationTurns: null)
+                }),
+            new CardEffectDefinition(
                 "father_enemy",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -219,6 +250,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
+                "gaslighting",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "GaslightingRandomExpectedValue",
+                        durationTurns: null)
+                }),
+            new CardEffectDefinition(
                 "gods_move",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -226,6 +267,16 @@ namespace ChaosChess.AI.Domain.CardEffects
                     new CardEffectPrimitive(
                         CardEffectPrimitiveKind.ChangePieceKind,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "honey_trap",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "HoneyTrapRandomExpectedValue",
+                        durationTurns: null)
                 }),
             new CardEffectDefinition(
                 "jumping_platform",
@@ -237,6 +288,17 @@ namespace ChaosChess.AI.Domain.CardEffects
                         effectType: "JumpingPlatform",
                         durationTurns: -1,
                         tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
+                "magnet",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "MagnetRandomExpectedValue",
+                        durationTurns: null,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
@@ -329,6 +391,13 @@ namespace ChaosChess.AI.Domain.CardEffects
                         destinationTargetIndex: 0)
                 }),
             new CardEffectDefinition(
+                "position_swap",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(CardEffectPrimitiveKind.FlipBoardPerspective)
+                }),
+            new CardEffectDefinition(
                 "psilocybin_mushroom",
                 CardTargetQuery.EmptySquare(),
                 new[]
@@ -339,6 +408,32 @@ namespace ChaosChess.AI.Domain.CardEffects
                         durationTurns: -1,
                         tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
+                "rampart",
+                CardTargetQuery.OrderedEmptySquares(2),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.CreatePiece,
+                        pieceKind: PieceKind.Wall,
+                        targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
+                        targetIndex: 0),
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.CreatePiece,
+                        pieceKind: PieceKind.Wall,
+                        targetBinding: CardEffectPrimitiveTargetBinding.OrderedSquareByIndex,
+                        targetIndex: 1)
+                }),
+            new CardEffectDefinition(
+                "shuffle_board",
+                CardTargetQuery.None(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddGlobalEffect,
+                        effectType: "ShuffleBoardRandomExpectedValue",
+                        durationTurns: null)
                 }),
             new CardEffectDefinition(
                 "sneak_pawn",
@@ -374,6 +469,29 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(
+                "sync",
+                CardTargetQuery.EmptySquare(),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.AddMirroredTileEffectPair,
+                        effectType: "Sync",
+                        durationTurns: -1,
+                        sharedRemainingUses: 1,
+                        tileEffectLifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
+                }),
+            new CardEffectDefinition(
+                "teleport",
+                CardTargetQuery.PieceAndEmptySquare(CardTargetOwnerRelation.Self),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.MovePiece,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece,
+                        destinationTargetIndex: 0)
+                }),
+            new CardEffectDefinition(
                 "time_bomb",
                 CardTargetQuery.EmptySquare(),
                 new[]
@@ -385,6 +503,20 @@ namespace ChaosChess.AI.Domain.CardEffects
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedSquare)
                 }),
             new CardEffectDefinition(
+                "transmigration",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Opponent, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.ChangePieceKind,
+                        pieceKind: PieceKind.Pawn,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece),
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.MovePiece,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece,
+                        destinationBinding: CardEffectPrimitiveDestinationBinding.SelectedPieceStartSquare)
+                }),
+            new CardEffectDefinition(
                 "thunderclap_flash",
                 CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
                 new[]
@@ -393,6 +525,15 @@ namespace ChaosChess.AI.Domain.CardEffects
                         CardEffectPrimitiveKind.SetMovementOverride,
                         movementOverrideCode: "m",
                         durationTurns: 1,
+                        targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
+                }),
+            new CardEffectDefinition(
+                "weird_castling",
+                CardTargetQuery.Piece(CardTargetOwnerRelation.Self, 1),
+                new[]
+                {
+                    new CardEffectPrimitive(
+                        CardEffectPrimitiveKind.SwapSelectedPieceWithActorKing,
                         targetBinding: CardEffectPrimitiveTargetBinding.SelectedPiece)
                 }),
             new CardEffectDefinition(

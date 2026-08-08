@@ -16,11 +16,13 @@ namespace ChaosChess.AI.Domain.CardEffects
             int? sharedRemainingUses = null,
             TileEffectLifetimeKind tileEffectLifetimeKind = TileEffectLifetimeKind.TurnLimited,
             CardEffectPrimitiveTargetBinding targetBinding = CardEffectPrimitiveTargetBinding.None,
+            CardEffectPrimitiveDestinationBinding destinationBinding = CardEffectPrimitiveDestinationBinding.None,
             int? targetIndex = null,
             int? destinationTargetIndex = null)
         {
             EnsureValidKind(kind);
             EnsureValidTargetBinding(targetBinding);
+            EnsureValidDestinationBinding(destinationBinding);
             TileEffectLifetimeKindGuard.EnsureValid(tileEffectLifetimeKind, nameof(tileEffectLifetimeKind));
 
             if (pieceKind.HasValue && pieceKind.Value == ChaosChess.AI.Domain.PieceKind.Unknown)
@@ -62,11 +64,28 @@ namespace ChaosChess.AI.Domain.CardEffects
             }
 
             if (destinationTargetIndex.HasValue &&
-                targetBinding != CardEffectPrimitiveTargetBinding.OrderedSquareByIndex)
+                targetBinding != CardEffectPrimitiveTargetBinding.OrderedSquareByIndex &&
+                targetBinding != CardEffectPrimitiveTargetBinding.SelectedPiece)
             {
                 throw new ArgumentException(
-                    "Destination target index requires ordered square target binding.",
+                    "Destination target index requires a selected piece or ordered square target binding.",
                     nameof(destinationTargetIndex));
+            }
+
+            if (destinationBinding != CardEffectPrimitiveDestinationBinding.None &&
+                (destinationSquare.HasValue || destinationTargetIndex.HasValue))
+            {
+                throw new ArgumentException(
+                    "Destination binding cannot be combined with an explicit destination square or destination target index.",
+                    nameof(destinationBinding));
+            }
+
+            if (destinationBinding == CardEffectPrimitiveDestinationBinding.SelectedPieceStartSquare &&
+                kind != CardEffectPrimitiveKind.MovePiece)
+            {
+                throw new ArgumentException(
+                    "Selected piece start square destination binding is only supported for MovePiece primitives.",
+                    nameof(destinationBinding));
             }
 
             if (destinationTargetIndex.HasValue &&
@@ -83,6 +102,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                 throw new ArgumentException("Tile effect primitives require a non-empty effect type.", nameof(effectType));
             }
 
+            if (kind == CardEffectPrimitiveKind.AddMirroredTileEffectPair && string.IsNullOrWhiteSpace(effectType))
+            {
+                throw new ArgumentException("Mirrored tile effect pair primitives require a non-empty effect type.", nameof(effectType));
+            }
+
             if (kind == CardEffectPrimitiveKind.AddPieceEffect && string.IsNullOrWhiteSpace(effectType))
             {
                 throw new ArgumentException("Piece effect primitives require a non-empty effect type.", nameof(effectType));
@@ -91,6 +115,19 @@ namespace ChaosChess.AI.Domain.CardEffects
             if (kind == CardEffectPrimitiveKind.AddGlobalEffect && string.IsNullOrWhiteSpace(effectType))
             {
                 throw new ArgumentException("Global effect primitives require a non-empty effect type.", nameof(effectType));
+            }
+
+            if (kind == CardEffectPrimitiveKind.CreatePiece && !pieceKind.HasValue)
+            {
+                throw new ArgumentException("Create piece primitives require a piece kind.", nameof(pieceKind));
+            }
+
+            if (kind == CardEffectPrimitiveKind.MergeSelectedPieceIntoNearestAlly &&
+                (!pieceKind.HasValue || string.IsNullOrWhiteSpace(effectType)))
+            {
+                throw new ArgumentException(
+                    "Merge primitives require a result piece kind and nearest ally effect type.",
+                    nameof(pieceKind));
             }
 
             if (kind == CardEffectPrimitiveKind.SetMovementOverride && string.IsNullOrWhiteSpace(movementOverrideCode))
@@ -109,6 +146,7 @@ namespace ChaosChess.AI.Domain.CardEffects
             SharedRemainingUses = sharedRemainingUses;
             TileEffectLifetimeKind = tileEffectLifetimeKind;
             TargetBinding = targetBinding;
+            DestinationBinding = destinationBinding;
             TargetIndex = targetIndex;
             DestinationTargetIndex = destinationTargetIndex;
         }
@@ -135,6 +173,8 @@ namespace ChaosChess.AI.Domain.CardEffects
 
         public CardEffectPrimitiveTargetBinding TargetBinding { get; }
 
+        public CardEffectPrimitiveDestinationBinding DestinationBinding { get; }
+
         public int? TargetIndex { get; }
 
         public int? DestinationTargetIndex { get; }
@@ -148,6 +188,7 @@ namespace ChaosChess.AI.Domain.CardEffects
             Square? destinationSquare = null,
             TileEffectLifetimeKind tileEffectLifetimeKind = TileEffectLifetimeKind.TurnLimited,
             CardEffectPrimitiveTargetBinding targetBinding = CardEffectPrimitiveTargetBinding.SelectedSquare,
+            CardEffectPrimitiveDestinationBinding destinationBinding = CardEffectPrimitiveDestinationBinding.None,
             int? targetIndex = null,
             int? destinationTargetIndex = null)
         {
@@ -161,6 +202,7 @@ namespace ChaosChess.AI.Domain.CardEffects
                 sharedRemainingUses: sharedRemainingUses,
                 tileEffectLifetimeKind: tileEffectLifetimeKind,
                 targetBinding: targetBinding,
+                destinationBinding: destinationBinding,
                 targetIndex: targetIndex,
                 destinationTargetIndex: destinationTargetIndex);
         }
@@ -189,7 +231,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                 kind != CardEffectPrimitiveKind.AddTileEffect &&
                 kind != CardEffectPrimitiveKind.RemoveTileEffect &&
                 kind != CardEffectPrimitiveKind.AddPieceEffect &&
-                kind != CardEffectPrimitiveKind.AddGlobalEffect)
+                kind != CardEffectPrimitiveKind.AddGlobalEffect &&
+                kind != CardEffectPrimitiveKind.FlipBoardPerspective &&
+                kind != CardEffectPrimitiveKind.MergeSelectedPieceIntoNearestAlly &&
+                kind != CardEffectPrimitiveKind.SwapSelectedPieceWithActorKing &&
+                kind != CardEffectPrimitiveKind.AddMirroredTileEffectPair)
             {
                 throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown effect primitive kind.");
             }
@@ -211,6 +257,15 @@ namespace ChaosChess.AI.Domain.CardEffects
                 targetBinding != CardEffectPrimitiveTargetBinding.OrderedSquareByIndex)
             {
                 throw new ArgumentOutOfRangeException(nameof(targetBinding), targetBinding, "Unknown primitive target binding.");
+            }
+        }
+
+        private static void EnsureValidDestinationBinding(CardEffectPrimitiveDestinationBinding destinationBinding)
+        {
+            if (destinationBinding != CardEffectPrimitiveDestinationBinding.None &&
+                destinationBinding != CardEffectPrimitiveDestinationBinding.SelectedPieceStartSquare)
+            {
+                throw new ArgumentOutOfRangeException(nameof(destinationBinding), destinationBinding, "Unknown primitive destination binding.");
             }
         }
     }

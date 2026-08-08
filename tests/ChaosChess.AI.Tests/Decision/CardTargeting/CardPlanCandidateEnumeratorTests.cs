@@ -13,12 +13,14 @@ public sealed class CardPlanCandidateEnumeratorTests
     private readonly CardUsePlanValidator validator = new();
 
     [Theory]
+    [InlineData("arena")]
     [InlineData("charge")]
     [InlineData("checkmate_declaration")]
     [InlineData("democracy")]
     [InlineData("destroyer_tank_cards")]
     [InlineData("mutiny")]
     [InlineData("overbearing")]
+    [InlineData("shuffle_board")]
     [InlineData("stag_fight")]
     [InlineData("windmill")]
     public void EnumerateLegalCandidates_NoneTargetCards_ReturnSingleNoneCandidate(string cardId)
@@ -95,6 +97,53 @@ public sealed class CardPlanCandidateEnumeratorTests
 
         Assert.Equal(opponentRook.Square, candidate.Plan.Target.Piece!.Square);
         Assert.Equal(PieceColor.Black, candidate.Plan.Target.Piece.ExpectedColor);
+    }
+
+    [Fact]
+    public void EnumerateLegalCandidates_PreservesPromotionMetadataInPieceTargets()
+    {
+        var startSquare = new Square(3, 1);
+        var promoted = new PieceInfo(
+            PieceKind.Chancellor,
+            PieceColor.Black,
+            new Square(3, 6),
+            "y",
+            isPromotioned: true,
+            startSquare);
+        GameState state = State(
+            PieceColor.White,
+            Card("transmigration"),
+            pieces: new[] { promoted });
+
+        CardPlanCandidate candidate = Assert.Single(
+            enumerator.EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White));
+
+        Assert.True(candidate.Plan.Target.Piece!.IsPromotioned);
+        Assert.Equal(startSquare, candidate.Plan.Target.Piece.StartSquare);
+        AssertValid(state, candidate);
+    }
+
+    [Fact]
+    public void EnumerateLegalCandidates_DimensionDisturbanceReturnsDistinctOrderedOpponentPiecePairs()
+    {
+        var actorRook = Piece(PieceKind.Rook, PieceColor.White, new Square(0, 0), "r");
+        var firstOpponent = Piece(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r");
+        var secondOpponent = Piece(PieceKind.Bishop, PieceColor.Black, new Square(2, 7), "b");
+        var excludedQueen = Piece(PieceKind.Queen, PieceColor.Black, new Square(3, 7), "q");
+        GameState state = State(
+            PieceColor.White,
+            Card("dimension_disturbance"),
+            pieces: new[] { actorRook, firstOpponent, secondOpponent, excludedQueen });
+
+        CardPlanCandidate[] candidates = enumerator
+            .EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White)
+            .ToArray();
+
+        Assert.Equal(2, candidates.Length);
+        Assert.Equal(new[] { firstOpponent.Square, secondOpponent.Square }, candidates[0].Plan.Target.Squares);
+        Assert.Equal(new[] { secondOpponent.Square, firstOpponent.Square }, candidates[1].Plan.Target.Squares);
+        Assert.DoesNotContain(candidates, candidate => candidate.Plan.Target.Squares.Contains(excludedQueen.Square));
+        Assert.All(candidates, candidate => AssertValid(state, candidate));
     }
 
     [Theory]
@@ -188,6 +237,34 @@ public sealed class CardPlanCandidateEnumeratorTests
             candidates,
             candidate => candidate.Plan.Target.Squares[0] == candidate.Plan.Target.Squares[1]);
         Assert.All(candidates, candidate => AssertValid(state, candidate));
+    }
+
+    [Fact]
+    public void EnumerateLegalCandidates_Teleport_ReturnsActorPawnAndEmptySquarePairs()
+    {
+        var actorPawn = Piece(PieceKind.Pawn, PieceColor.White, new Square(4, 1));
+        var opponentPawn = Piece(PieceKind.Pawn, PieceColor.Black, new Square(5, 6));
+        var occupied = new Square(0, 0);
+        var effected = new Square(1, 0);
+        GameState state = State(
+            PieceColor.White,
+            Card("teleport"),
+            pieces: new[] { actorPawn, opponentPawn, Piece(PieceKind.King, PieceColor.White, occupied, "k") },
+            tileEffects: new[] { TileEffect(effected) });
+
+        CardPlanCandidate[] candidates = enumerator
+            .EnumerateLegalCandidates(state, state.AvailableCards[0], PieceColor.White)
+            .ToArray();
+
+        Assert.Equal(60, candidates.Length);
+        Assert.All(candidates, candidate =>
+        {
+            Assert.Equal(CardTargetKind.PieceAndSquare, candidate.Plan.Target.Kind);
+            Assert.Equal(actorPawn.Square, candidate.Plan.Target.Piece!.Square);
+            Assert.NotEqual(occupied, candidate.Plan.Target.Squares[0]);
+            Assert.NotEqual(effected, candidate.Plan.Target.Squares[0]);
+            AssertValid(state, candidate);
+        });
     }
 
     [Fact]

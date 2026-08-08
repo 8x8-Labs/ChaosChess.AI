@@ -35,6 +35,11 @@ namespace ChaosChess.AI.Domain.CardEffects
                 throw new ArgumentException("Ordered square targets must preserve order.", nameof(isOrdered));
             }
 
+            if (kind == CardTargetKind.OrderedPieces && !isOrdered)
+            {
+                throw new ArgumentException("Ordered piece targets must preserve order.", nameof(isOrdered));
+            }
+
             Kind = kind;
             OwnerRelation = ownerRelation;
             Count = count;
@@ -108,6 +113,33 @@ namespace ChaosChess.AI.Domain.CardEffects
                 isOrdered: true);
         }
 
+        public static CardTargetQuery PieceAndEmptySquare(
+            CardTargetOwnerRelation ownerRelation)
+        {
+            return new CardTargetQuery(
+                CardTargetKind.PieceAndSquare,
+                ownerRelation,
+                count: 2,
+                requiresEmptySquares: true,
+                requiresOccupiedSquares: false,
+                allowsExistingTileEffect: false,
+                isOrdered: true);
+        }
+
+        public static CardTargetQuery OrderedPieces(
+            CardTargetOwnerRelation ownerRelation,
+            int count)
+        {
+            return new CardTargetQuery(
+                CardTargetKind.OrderedPieces,
+                ownerRelation,
+                count,
+                requiresEmptySquares: false,
+                requiresOccupiedSquares: true,
+                allowsExistingTileEffect: true,
+                isOrdered: true);
+        }
+
         private static void ValidateCount(CardTargetKind kind, int count)
         {
             switch (kind)
@@ -126,10 +158,18 @@ namespace ChaosChess.AI.Domain.CardEffects
                     }
                     break;
                 case CardTargetKind.OrderedSquares:
+                case CardTargetKind.OrderedPieces:
                     if (count < 1)
                     {
-                        throw new ArgumentException("Ordered square target queries must have at least one target.", nameof(count));
+                        throw new ArgumentException("Ordered target queries must have at least one target.", nameof(count));
                     }
+                    break;
+                case CardTargetKind.PieceAndSquare:
+                    if (count != 2)
+                    {
+                        throw new ArgumentException("Piece and square target queries must have exactly two targets.", nameof(count));
+                    }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown target kind.");
@@ -141,7 +181,9 @@ namespace ChaosChess.AI.Domain.CardEffects
             if (kind != CardTargetKind.None &&
                 kind != CardTargetKind.PieceAtSquare &&
                 kind != CardTargetKind.BoardSquare &&
-                kind != CardTargetKind.OrderedSquares)
+                kind != CardTargetKind.OrderedSquares &&
+                kind != CardTargetKind.PieceAndSquare &&
+                kind != CardTargetKind.OrderedPieces)
             {
                 throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown target kind.");
             }

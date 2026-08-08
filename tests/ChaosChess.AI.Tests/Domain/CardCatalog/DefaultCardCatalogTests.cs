@@ -32,17 +32,32 @@ public sealed class DefaultCardCatalogTests
 
     private static readonly string[] ActivatedWaveThreeCardIds =
     {
+        "arena",
+        "chaotic_knight",
         "checkmate_declaration",
         "democracy",
         "destroyer_tank_cards",
+        "dimension_disturbance",
+        "gaslighting",
+        "honey_trap",
+        "magnet",
+        "obey_order",
         "overbearing",
+        "position_swap",
+        "shuffle_board",
         "stag_fight",
+        "sync",
+        "weird_castling",
         "windmill"
     };
 
     private static readonly string[] ActivatedWaveTwoCardIds =
     {
-        "mutiny"
+        "castle_knight",
+        "mutiny",
+        "rampart",
+        "teleport",
+        "transmigration"
     };
 
     [Fact]

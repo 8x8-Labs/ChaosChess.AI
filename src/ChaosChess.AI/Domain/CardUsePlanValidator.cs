@@ -89,6 +89,18 @@ namespace ChaosChess.AI.Domain
                 case CardTargetKind.PieceAtSquare:
                     return ValidatePieceAtSquare(gameState, plan, definition);
 
+                case CardTargetKind.PieceAndSquare:
+                    CardPlanValidationResult pieceResult = ValidatePieceAtSquare(gameState, plan, definition);
+                    return pieceResult.IsValid
+                        ? ValidateBoardSquares(gameState, plan.Target.Squares)
+                        : pieceResult;
+
+                case CardTargetKind.OrderedPieces:
+                    CardPlanValidationResult pieceDuplicateResult = ValidateNoDuplicateSquares(plan.Target.Squares);
+                    return pieceDuplicateResult.IsValid
+                        ? ValidateOrderedPieces(gameState, plan, definition)
+                        : pieceDuplicateResult;
+
                 case CardTargetKind.BoardSquare:
                     return ValidateBoardSquares(gameState, plan.Target.Squares);
 
@@ -126,6 +138,10 @@ namespace ChaosChess.AI.Domain
                     return 0;
                 case CardTargetKind.PieceAtSquare:
                     return target.Piece == null ? 0 : 1;
+                case CardTargetKind.PieceAndSquare:
+                    return (target.Piece == null ? 0 : 1) + target.Squares.Count;
+                case CardTargetKind.OrderedPieces:
+                    return target.Pieces.Count;
                 case CardTargetKind.BoardSquare:
                 case CardTargetKind.OrderedSquares:
                     return target.Squares.Count;
@@ -141,6 +157,15 @@ namespace ChaosChess.AI.Domain
         {
             PieceTargetSnapshot pieceTarget = plan.Target.Piece
                 ?? throw new InvalidOperationException("Piece target selection contains no piece snapshot.");
+            return ValidatePieceTarget(gameState, plan, definition, pieceTarget);
+        }
+
+        private static CardPlanValidationResult ValidatePieceTarget(
+            GameState gameState,
+            CardUsePlan plan,
+            CardPlanningDefinition definition,
+            PieceTargetSnapshot pieceTarget)
+        {
             PieceInfo? piece = gameState.BoardState.FindPiece(pieceTarget.Square);
 
             if (piece == null)
@@ -170,6 +195,41 @@ namespace ChaosChess.AI.Domain
                 return Invalid(
                     CardPlanValidationCode.TargetPieceKindMismatch,
                     $"Piece at {pieceTarget.Square} has a disallowed kind for card '{plan.CardId}'.");
+            }
+
+            if (pieceTarget.IsPromotioned && !piece.IsPromotioned)
+            {
+                return Invalid(
+                    CardPlanValidationCode.TargetPieceKindMismatch,
+                    $"Piece at {pieceTarget.Square} is no longer promoted.");
+            }
+
+            if (pieceTarget.StartSquare.HasValue && piece.StartSquare != pieceTarget.StartSquare)
+            {
+                return Invalid(
+                    CardPlanValidationCode.TargetPieceKindMismatch,
+                    $"Piece at {pieceTarget.Square} has an unexpected start square.");
+            }
+
+            return CardPlanValidationResult.Valid();
+        }
+
+        private static CardPlanValidationResult ValidateOrderedPieces(
+            GameState gameState,
+            CardUsePlan plan,
+            CardPlanningDefinition definition)
+        {
+            foreach (PieceTargetSnapshot pieceTarget in plan.Target.Pieces)
+            {
+                CardPlanValidationResult result = ValidatePieceTarget(
+                    gameState,
+                    plan,
+                    definition,
+                    pieceTarget);
+                if (!result.IsValid)
+                {
+                    return result;
+                }
             }
 
             return CardPlanValidationResult.Valid();

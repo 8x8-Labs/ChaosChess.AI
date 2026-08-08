@@ -10,6 +10,7 @@ public sealed class CardEffectCompatibilityContractTests
     [Theory]
     [InlineData("agile")]
     [InlineData("aim")]
+    [InlineData("arena")]
     [InlineData("at_mine")]
     [InlineData("blessing")]
     [InlineData("caterpillar")]
@@ -22,14 +23,18 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("democracy")]
     [InlineData("desperado")]
     [InlineData("destroyer_tank_cards")]
+    [InlineData("dimension_disturbance")]
     [InlineData("dimension_instability")]
     [InlineData("father_enemy")]
     [InlineData("fast_march")]
     [InlineData("fire")]
+    [InlineData("gaslighting")]
     [InlineData("giant")]
     [InlineData("gods_move")]
+    [InlineData("honey_trap")]
     [InlineData("jumping_platform")]
     [InlineData("limitless")]
+    [InlineData("magnet")]
     [InlineData("missing_promotion")]
     [InlineData("mutiny")]
     [InlineData("obey_order")]
@@ -37,11 +42,13 @@ public sealed class CardEffectCompatibilityContractTests
     [InlineData("peace_zone")]
     [InlineData("portal")]
     [InlineData("psilocybin_mushroom")]
+    [InlineData("shuffle_board")]
     [InlineData("sneak_pawn")]
     [InlineData("stag_fight")]
     [InlineData("sunset_blade")]
     [InlineData("time_bomb")]
     [InlineData("thunderclap_flash")]
+    [InlineData("transmigration")]
     [InlineData("windmill")]
     public void DefaultEffectDefinitions_PreservePlanningCatalogTargetShape(string cardId)
     {
@@ -86,6 +93,13 @@ public sealed class CardEffectCompatibilityContractTests
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(4, 1), PieceColor.White, PieceKind.Pawn))),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan("arena", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Unsupported);
         AssertValidWithStatus(
             state,
@@ -179,6 +193,20 @@ public sealed class CardEffectCompatibilityContractTests
             effectCatalog,
             applier,
             new CardUsePlan(
+                "dimension_disturbance",
+                PieceColor.White,
+                CardTargetSelection.OrderedPieces(new[]
+                {
+                    new PieceTargetSnapshot(new Square(0, 7), PieceColor.Black, PieceKind.Rook),
+                    new PieceTargetSnapshot(new Square(2, 7), PieceColor.Black, PieceKind.Bishop)
+                })),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
                 "dimension_instability",
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
@@ -223,7 +251,7 @@ public sealed class CardEffectCompatibilityContractTests
                 PieceColor.White,
                 CardTargetSelection.PieceAtSquare(
                     new PieceTargetSnapshot(new Square(0, 7), PieceColor.Black, PieceKind.Rook))),
-            CardEffectApplicationStatus.Unsupported);
+            CardEffectApplicationStatus.Exact);
         AssertValidWithStatus(
             state,
             validator,
@@ -332,6 +360,13 @@ public sealed class CardEffectCompatibilityContractTests
             validator,
             effectCatalog,
             applier,
+            new CardUsePlan("shuffle_board", PieceColor.White, CardTargetSelection.None()),
+            CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
             new CardUsePlan(
                 "sneak_pawn",
                 PieceColor.White,
@@ -381,6 +416,22 @@ public sealed class CardEffectCompatibilityContractTests
             applier,
             new CardUsePlan("windmill", PieceColor.White, CardTargetSelection.None()),
             CardEffectApplicationStatus.Unsupported);
+        AssertValidWithStatus(
+            state,
+            validator,
+            effectCatalog,
+            applier,
+            new CardUsePlan(
+                "transmigration",
+                PieceColor.White,
+                CardTargetSelection.PieceAtSquare(
+                    new PieceTargetSnapshot(
+                        new Square(5, 6),
+                        PieceColor.Black,
+                        PieceKind.Chancellor,
+                        isPromotioned: true,
+                        new Square(5, 1)))),
+            CardEffectApplicationStatus.Exact);
     }
 
     private static void AssertValidWithStatus(
@@ -414,7 +465,9 @@ public sealed class CardEffectCompatibilityContractTests
                 new PieceInfo(PieceKind.Knight, PieceColor.White, new Square(1, 0), "N"),
                 new PieceInfo(PieceKind.Queen, PieceColor.White, new Square(3, 0), "Q"),
                 new PieceInfo(PieceKind.Pawn, PieceColor.White, new Square(4, 1), "P"),
-                new PieceInfo(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r")
+                new PieceInfo(PieceKind.Rook, PieceColor.Black, new Square(0, 7), "r"),
+                new PieceInfo(PieceKind.Bishop, PieceColor.Black, new Square(2, 7), "b"),
+                new PieceInfo(PieceKind.Chancellor, PieceColor.Black, new Square(5, 6), "y", true, new Square(5, 1))
             },
             PieceColor.White,
             CastlingRights.None,
@@ -428,6 +481,7 @@ public sealed class CardEffectCompatibilityContractTests
             {
                 new CardInfo("agile", "Mobility", 1),
                 new CardInfo("aim", "Mobility", 1),
+                new CardInfo("arena", "Tactical", 1),
                 new CardInfo("at_mine", "BoardControl", 1),
                 new CardInfo("blessing", "Transformation", 1),
                 new CardInfo("caterpillar", "Mobility", 1),
@@ -440,6 +494,7 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("democracy", "Tactical", 1),
                 new CardInfo("desperado", "Tactical", 1),
                 new CardInfo("destroyer_tank_cards", "Tactical", 1),
+                new CardInfo("dimension_disturbance", "Tactical", 1),
                 new CardInfo("dimension_instability", "Mobility", 1),
                 new CardInfo("father_enemy", "Tactical", 1),
                 new CardInfo("fast_march", "Mobility", 1),
@@ -455,11 +510,13 @@ public sealed class CardEffectCompatibilityContractTests
                 new CardInfo("peace_zone", "BoardControl", 1),
                 new CardInfo("portal", "Mobility", 1),
                 new CardInfo("psilocybin_mushroom", "BoardControl", 1),
+                new CardInfo("shuffle_board", "Tactical", 1),
                 new CardInfo("sneak_pawn", "Mobility", 1),
                 new CardInfo("stag_fight", "Mobility", 1),
                 new CardInfo("sunset_blade", "Tactical", 1),
                 new CardInfo("time_bomb", "BoardControl", 1),
                 new CardInfo("thunderclap_flash", "Mobility", 1),
+                new CardInfo("transmigration", "Transformation", 1),
                 new CardInfo("windmill", "Mobility", 1)
             },
             Array.Empty<TileEffectInfo>());

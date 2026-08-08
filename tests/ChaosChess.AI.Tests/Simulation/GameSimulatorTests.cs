@@ -231,6 +231,37 @@ public sealed class GameSimulatorTests
     }
 
     [Fact]
+    public void SimulateFuture_SyncExit_TeleportsLinkedPieceAndRemovesPair()
+    {
+        GameState state = State(
+            new[]
+            {
+                Piece(PieceKind.King, PieceColor.White, "e1", "k"),
+                Piece(PieceKind.King, PieceColor.Black, "e8", "k"),
+                Piece(PieceKind.Pawn, PieceColor.White, "c3", "p"),
+                Piece(PieceKind.Rook, PieceColor.White, "f3", "r")
+            },
+            PieceColor.White,
+            CastlingRights.None,
+            null,
+            Sync("sync-a", "c3", "f3"),
+            Sync("sync-b", "f3", "c3"));
+        GameSimulator simulator = Simulator(new StubChessEngine(new[] { Move("c3c4", 13) }));
+
+        SimulationResult result = simulator.SimulateFuture(
+            state,
+            PieceColor.White,
+            new SimulationOptions(horizonPly: 1, variationCount: 1));
+
+        Assert.NotNull(result.FinalState.BoardState.FindPiece(Square.Parse("c4")));
+        Assert.Null(result.FinalState.BoardState.FindPiece(Square.Parse("f3")));
+        PieceInfo? linked = result.FinalState.BoardState.FindPiece(Square.Parse("f4"));
+        Assert.NotNull(linked);
+        Assert.Equal(PieceKind.Rook, linked!.Kind);
+        Assert.Empty(result.FinalState.TileEffects);
+    }
+
+    [Fact]
     public void SimulateFuture_FireAndBlessing_RecordWarningsWithoutChangingEffect()
     {
         GameState state = State(
@@ -464,6 +495,22 @@ public sealed class GameSimulatorTests
             remainingTurns: 3,
             destinationSquare: Square.Parse(destination),
             sharedRemainingUses: sharedUses);
+    }
+
+    private static TileEffectInfo Sync(
+        string id,
+        string square,
+        string destination)
+    {
+        return new TileEffectInfo(
+            id,
+            "Sync",
+            Square.Parse(square),
+            PieceColor.White,
+            remainingTurns: -1,
+            destinationSquare: Square.Parse(destination),
+            sharedRemainingUses: 1,
+            lifetimeKind: TileEffectLifetimeKind.PersistentUntilTriggered);
     }
 
     private static string SortedSquares(IEnumerable<PieceInfo> pieces)

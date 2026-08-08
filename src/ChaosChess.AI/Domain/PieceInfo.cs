@@ -10,6 +10,17 @@ namespace ChaosChess.AI.Domain
         }
 
         public PieceInfo(PieceKind kind, PieceColor color, Square square, string fenCode)
+            : this(kind, color, square, fenCode, isPromotioned: false, startSquare: null)
+        {
+        }
+
+        public PieceInfo(
+            PieceKind kind,
+            PieceColor color,
+            Square square,
+            string fenCode,
+            bool isPromotioned,
+            Square? startSquare)
         {
             if (fenCode == null)
             {
@@ -25,6 +36,8 @@ namespace ChaosChess.AI.Domain
             Color = color;
             Square = square;
             FenCode = char.ToLowerInvariant(fenCode[0]).ToString();
+            IsPromotioned = isPromotioned;
+            StartSquare = startSquare;
         }
 
         public PieceKind Kind { get; }
@@ -34,6 +47,10 @@ namespace ChaosChess.AI.Domain
         public Square Square { get; }
 
         public string FenCode { get; }
+
+        public bool IsPromotioned { get; }
+
+        public Square? StartSquare { get; }
 
         public static PieceKind InferKind(string fenCode)
         {
